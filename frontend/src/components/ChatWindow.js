@@ -18,6 +18,8 @@ const MessageBubble = styled.div`
   max-width: 60%;
   margin-bottom: 20px;
   align-self: ${(props) => (props.isUser ? 'flex-end' : 'flex-start')};
+  display: flex;
+  align-items: center; /* 使文字框和 Avatar 垂直對齊 */
 `;
 
 const BubbleContent = styled.div`
@@ -61,6 +63,22 @@ const Avatar = styled.img`
   height: 40px;
   border-radius: 50%;
   margin-right: 10px;
+`;
+
+const TextContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+`;
+
+const NameText = styled.div`
+  font-weight: bold;
+  margin-bottom: 4px;
+`;
+
+const SettingsText = styled.div`
+  font-size: 12px;
+  color: gray;
 `;
 
 
@@ -127,7 +145,13 @@ function ChatWindow({ token }) {
         {messages.map((msg, index) => (
           <MessageBubble key={index} isUser={msg.sender === 'user'}>
             {msg.sender === 'assistant' && (
-              <Avatar src="/static/assets/images/A001.png" alt="A001" />
+              <div>
+                  <Avatar src="/static/assets/images/A001.png" alt="A001" />
+                  <TextContainer>
+                  <NameText>Assistant</NameText>
+                  <SettingsText>Active</SettingsText>
+                </TextContainer>
+              </div>
             )}
             <BubbleContent isUser={msg.sender === 'user'}>
               <p style={{ margin: 0, whiteSpace: 'pre-wrap' }}>{msg.text}</p>
