@@ -19,8 +19,18 @@ const MessageBubble = styled.div`
   margin-bottom: 20px;
   align-self: ${(props) => (props.isUser ? 'flex-end' : 'flex-start')};
   display: flex;
-  align-items: center; /* 使文字框和 Avatar 垂直對齊 */
+  flex-direction: column;
 `;
+
+
+const UserInfoContainer = styled.div`
+  display: flex;
+  flex-direction: row;
+  align-items: center; /* 讓 Avatar 和文字框垂直對齊 */
+  margin-bottom: 4px; /* Avatar 和訊息間的間距 */
+`;
+
+
 
 const BubbleContent = styled.div`
   background-color: ${(props) => (props.isUser ? '#007aff' : '#e5e5ea')};
@@ -68,12 +78,11 @@ const Avatar = styled.img`
 const TextContainer = styled.div`
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
 `;
 
 const NameText = styled.div`
   font-weight: bold;
-  margin-bottom: 4px;
+  margin-bottom: 2px;
 `;
 
 const SettingsText = styled.div`
@@ -145,13 +154,13 @@ function ChatWindow({ token }) {
         {messages.map((msg, index) => (
           <MessageBubble key={index} isUser={msg.sender === 'user'}>
             {msg.sender === 'assistant' && (
-              <div>
+              <UserInfoContainer>
                   <Avatar src="/static/assets/images/A001.png" alt="A001" />
                   <TextContainer>
-                  <NameText>Assistant</NameText>
-                  <SettingsText>Active</SettingsText>
+                    <NameText>Assistant</NameText>
+                    <SettingsText>Active</SettingsText>
                 </TextContainer>
-              </div>
+              </UserInfoContainer>
             )}
             <BubbleContent isUser={msg.sender === 'user'}>
               <p style={{ margin: 0, whiteSpace: 'pre-wrap' }}>{msg.text}</p>
