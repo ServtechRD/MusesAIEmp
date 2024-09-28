@@ -126,7 +126,9 @@ function ChatWindow({ token }) {
       <MessagesContainer>
         {messages.map((msg, index) => (
           <MessageBubble key={index} isUser={msg.sender === 'user'}>
-
+            {msg.sender === 'assistant' && (
+              <Avatar src="../assets/images/A001.webp" alt="A001" />
+            )}
             <BubbleContent isUser={msg.sender === 'user'}>
               <p style={{ margin: 0, whiteSpace: 'pre-wrap' }}>{msg.text}</p>
             </BubbleContent>
