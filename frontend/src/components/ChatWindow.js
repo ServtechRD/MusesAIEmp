@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import styled from 'styled-components';
 import api from '../services/api';
 import ReactMarkdown from 'react-markdown';
-import jwtDecode from 'jwt-decode'; // 引入 jwt-decode 用於解析 JWT
+import { decode as jwtDecode } from 'jwt-decode';
 
 const ChatContainer = styled.div`
   display: flex;
