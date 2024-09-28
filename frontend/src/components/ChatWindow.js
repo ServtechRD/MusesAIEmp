@@ -93,6 +93,13 @@ const SettingsText = styled.div`
   color: gray;
 `;
 
+const UserName = styled.div`
+  font-size: 14px;
+  font-weight: bold;
+  color: ${(props) => (props.isUser ? '#007aff' : '#000')};
+  margin-bottom: 5px;
+  align-self: ${(props) => (props.isUser ? 'flex-end' : 'flex-start')};
+`;
 
 
 function ChatWindow({ token }) {
