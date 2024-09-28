@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import styled from 'styled-components';
 import api from '../services/api';
+import ReactMarkdown from 'react-markdown';
+import jwtDecode from 'jwt-decode'; // 引入 jwt-decode 用於解析 JWT
 
 const ChatContainer = styled.div`
   display: flex;
@@ -39,6 +41,7 @@ const BubbleContent = styled.div`
   border-radius: 20px;
   border-bottom-right-radius: ${(props) => (props.isUser ? '0' : '20px')};
   border-bottom-left-radius: ${(props) => (props.isUser ? '20px' : '0')};
+  word-break: break-word; /* 防止長字串溢出 */
 `;
 
 const InputContainer = styled.div`
@@ -95,6 +98,7 @@ const SettingsText = styled.div`
 function ChatWindow({ token }) {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
+  const [userName, setUserName] = useState(''); // 儲存使用者名稱
   const messagesEndRef = useRef(null);
 
   // 滚动到底部
@@ -104,6 +108,12 @@ function ChatWindow({ token }) {
 
   // 从服务器获取历史消息
   useEffect(() => {
+
+    if (token) {
+      const decodedToken = jwtDecode(token);
+      setUserName(decodedToken?.sub || 'User'); // 根據 token 中的 name 字段設置名稱
+    }
+
     const fetchMessages = async () => {
       try {
         const response = await api.get('/messages', {
@@ -127,7 +137,7 @@ function ChatWindow({ token }) {
     if (!input.trim()) return;
 
     // 更新本地消息列表
-    setMessages([...messages, { sender: 'user', text: input }]);
+    setMessages([...messages, { sender: 'user', text: input ,name: userName}]);
 
     try {
       const response = await api.post(
@@ -153,6 +163,11 @@ function ChatWindow({ token }) {
       <MessagesContainer>
         {messages.map((msg, index) => (
           <MessageBubble key={index} isUser={msg.sender === 'user'}>
+            {msg.sender === 'user' && (
+              <UserName isUser={msg.sender === 'user'}>
+                 {msg.name}
+             </UserName>
+            )}
             {msg.sender === 'assistant' && (
               <UserInfoContainer>
                   <Avatar src="/static/assets/images/A001.png" alt="A001" />
@@ -163,7 +178,7 @@ function ChatWindow({ token }) {
               </UserInfoContainer>
             )}
             <BubbleContent isUser={msg.sender === 'user'}>
-              <p style={{ margin: 0, whiteSpace: 'pre-wrap' }}>{msg.text}</p>
+              <ReactMarkdown>{msg.text}</ReactMarkdown>
             </BubbleContent>
           </MessageBubble>
         ))}
