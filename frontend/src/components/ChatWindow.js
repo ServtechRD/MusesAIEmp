@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import styled from 'styled-components';
 import api from '../services/api';
 import ReactMarkdown from 'react-markdown';
-import { decode as jwtDecode } from 'jwt-decode';
+import jwtDecode from 'jwt-decode';
 
 const ChatContainer = styled.div`
   display: flex;
