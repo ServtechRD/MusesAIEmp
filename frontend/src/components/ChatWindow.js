@@ -102,6 +102,21 @@ const UserName = styled.div`
 `;
 
 
+const ThumbnailContainer = styled.div`
+  display: flex;
+  justify-content: center;
+  margin-bottom: 10px;
+`;
+
+const Thumbnail = styled.img`
+  max-width: 100px;
+  max-height: 100px;
+  margin: 5px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+`;
+
+
 function ChatWindow({ token }) {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
@@ -156,17 +171,24 @@ function ChatWindow({ token }) {
         const reader = new FileReader();
 
         reader.onload = (e) => {
-          setUploadedImage(e.target.result); // 設定圖片 URL
+          //setUploadedImage(e.target.result); // 設定圖片 URL
+          setUploadedImages((prevImages) => [...prevImages, e.target.result]); // 添加圖片 URL
         };
         
         reader.readAsDataURL(file);
         event.preventDefault(); // 阻止預設行為，不插入圖片的文字描述
         return;
+      } else if (item.kind === 'string') {
+        // 處理文字
+        item.getAsString((text) => {
+          textContent += text;
+          setInput((prevValue) => prevValue + textContent);
+        });
       }
     }
 
     // 如果沒有圖片，直接插入文字
-    setInput(event.clipboardData.getData('text'));
+    //setInput(event.clipboardData.getData('text'));
   };
 
   const handleSend = async () => {
@@ -220,7 +242,17 @@ function ChatWindow({ token }) {
         ))}
         <div ref={messagesEndRef} />
       </MessagesContainer>
+
+
       <InputContainer>
+
+        {uploadedImages.length > 0 && (
+        <ThumbnailContainer>
+          {uploadedImages.map((image, index) => (
+            <Thumbnail key={index} src={image} alt={`Pasted content ${index}`} />
+          ))}
+        </ThumbnailContainer>
+      )}
         <InputField
           rows={3}
           value={input}
@@ -228,12 +260,7 @@ function ChatWindow({ token }) {
           onChange={(e) => setInput(e.target.value)}
           placeholder="輸入需求或插入圖片"
         />
-        {uploadedImage && (
-        <div>
-          <p>Uploaded Image:</p>
-          <img src={uploadedImage} alt="Pasted content" style={{ maxWidth: '100%' }} />
-        </div>
-      )}
+       
         <SendButton onClick={handleSend}>送出</SendButton>
       </InputContainer>
     </ChatContainer>

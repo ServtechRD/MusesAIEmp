@@ -20,8 +20,12 @@ function App() {
       ) : (
         <div>
           <ChatWindow token={token} />
+          
+          {/* 
           <ImageUpload token={token} />
           <CodeUpload token={token} />
+           */}
+           
         </div>
       )}
     </>
