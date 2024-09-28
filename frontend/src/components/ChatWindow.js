@@ -106,6 +106,8 @@ function ChatWindow({ token }) {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
   const [userName, setUserName] = useState(''); // 儲存使用者名稱
+  const [uploadedImage, setUploadedImage] = useState(null);
+
   const messagesEndRef = useRef(null);
 
   // 滚动到底部
@@ -139,6 +141,33 @@ function ChatWindow({ token }) {
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
+
+
+  // 處理貼上事件
+  const handlePaste = (event) => {
+    const clipboardItems = event.clipboardData.items;
+    
+    for (let i = 0; i < clipboardItems.length; i++) {
+      const item = clipboardItems[i];
+
+      // 判斷是否是圖片類型
+      if (item.type.includes('image')) {
+        const file = item.getAsFile();
+        const reader = new FileReader();
+
+        reader.onload = (e) => {
+          setUploadedImage(e.target.result); // 設定圖片 URL
+        };
+        
+        reader.readAsDataURL(file);
+        event.preventDefault(); // 阻止預設行為，不插入圖片的文字描述
+        return;
+      }
+    }
+
+    // 如果沒有圖片，直接插入文字
+    setInput(event.clipboardData.getData('text'));
+  };
 
   const handleSend = async () => {
     if (!input.trim()) return;
@@ -193,12 +222,19 @@ function ChatWindow({ token }) {
       </MessagesContainer>
       <InputContainer>
         <InputField
-          rows={1}
+          rows={3}
           value={input}
+          onPaste={handlePaste}
           onChange={(e) => setInput(e.target.value)}
-          placeholder="请输入消息"
+          placeholder="輸入需求或插入圖片"
         />
-        <SendButton onClick={handleSend}>发送</SendButton>
+        {uploadedImage && (
+        <div>
+          <p>Uploaded Image:</p>
+          <img src={uploadedImage} alt="Pasted content" style={{ maxWidth: '100%' }} />
+        </div>
+      )}
+        <SendButton onClick={handleSend}>送出</SendButton>
       </InputContainer>
     </ChatContainer>
   );
