@@ -121,7 +121,7 @@ function ChatWindow({ token }) {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
   const [userName, setUserName] = useState(''); // 儲存使用者名稱
-  const [uploadedImage, setUploadedImage] = useState(null);
+  const [uploadedImages, setUploadedImages] = useState([]);
 
   const messagesEndRef = useRef(null);
 
@@ -252,7 +252,7 @@ function ChatWindow({ token }) {
             <Thumbnail key={index} src={image} alt={`Pasted content ${index}`} />
           ))}
         </ThumbnailContainer>
-      )}
+       )}
         <InputField
           rows={3}
           value={input}
