@@ -210,7 +210,7 @@ def send_message(
         )
         assistant_reply = response.choices[0].message.content.strip()
     except Exception as e:
-        assistant_reply = '与 OpenAI GPT 交互失败 ['+str(e)+']'
+        assistant_reply = '与 OpenAI GPT 交互失败 ::['+str(e)+']'
 
     # 将助手的回复添加到对话历史
     conversation.append({'role': 'assistant', 'content': assistant_reply})
