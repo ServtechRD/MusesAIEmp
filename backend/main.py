@@ -286,7 +286,7 @@ async def send_message(
     # return assistant_reply
 
 
-async def general_rep(user_input, user_id, task_id,
+def general_rep(user_input, user_id, task_id,
                       current_user: models.User,
                       db: Session = Depends(database.get_db)
                       ):
@@ -327,7 +327,7 @@ async def general_rep(user_input, user_id, task_id,
     tasks[task_id] = "處理完畢"
 
 
-async def analyze_image(images_b64: [str],
+def analyze_image(images_b64: [str],
                         images_type: [str],
                         user_input,
                         user_id,

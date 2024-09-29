@@ -160,7 +160,7 @@ function ChatWindow({ token }) {
         if (response.data.status === "處理完畢" || response.data.status.startsWith("錯誤")) {
           clearInterval(intervalId);
         }
-      }, 50);
+      }, 100);
 
       // 清除計時器
       return () => clearInterval(intervalId);
