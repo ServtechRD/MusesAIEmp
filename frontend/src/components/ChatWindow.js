@@ -142,7 +142,7 @@ function ChatWindow({ token }) {
 
     
     if (taskId) {
-      // 每隔 5 秒查詢一次任務狀態
+      // 每隔 200 秒查詢一次任務狀態
 
       const intervalId = setInterval(async () => {
         const response = await api.get(`task_status/${taskId}`);
@@ -161,7 +161,7 @@ function ChatWindow({ token }) {
         if (response.data.status === "處理完畢" || response.data.status.startsWith("錯誤")) {
           clearInterval(intervalId);
         }
-      }, 1000);
+      }, 200);
 
       // 清除計時器
       return () => clearInterval(intervalId);
