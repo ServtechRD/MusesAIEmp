@@ -148,18 +148,26 @@ function ChatWindow({ token }) {
         //setStatus(response.data.status);
 
         console.log("prevStatus =>"+prevStatus);
-        console.log(response.data.status);
-        if(response.data.status !== prevStatus) {
+        let curStatus = response.data.status 
+        console.log("currentStatus =>"+curStatus);
+
+        if(curStatus.startsWith("@@END@@")) {
+          console.log("is final status");
+          curStatus = curStatus.replace("@@END@@","");
+        }
+       
+        
+        if(curStatus !== prevStatus) {
           setMessages((prevMessages) => [
             ...prevMessages,
-            { sender: 'assistant', text: response.data.status },
+            { sender: 'assistant', text: curStatus},
           ]);
         }
 
-        setPrevStatus(response.data.status);
+        setPrevStatus(curStatus);
         
         // 如果任務已完成，停止查詢
-        if (response.data.status === "處理完畢" || response.data.status.startsWith("錯誤")) {
+        if (response.data.status.startsWith("@@END@@") || response.data.status.startsWith("錯誤")) {
           clearInterval(intervalId);
         }
       }, 500);

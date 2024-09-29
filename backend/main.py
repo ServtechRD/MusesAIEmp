@@ -223,6 +223,7 @@ async def send_message(
             return JSONResponse(content={"message": "命令結果"},
                                 status_code=200)
         else:
+            tasks[task_id] = "分析中"
             background_tasks.add_task(general_rep, user_input, user_id, task_id, current_user.username)
             return JSONResponse(content={"task_id": task_id, "message": "分析中"},
                                 status_code=200)
@@ -323,7 +324,7 @@ def general_rep(user_input, user_id, task_id,
         assistant_reply = '与 OpenAI GPT 交互失败 ::[' + str(e) + ']'
 
     print(assistant_reply)
-    tasks[task_id] = assistant_reply
+    tasks[task_id] = "@@END@@"+assistant_reply
     # 将助手的回复添加到对话历史
     conversation.append({'role': 'assistant', 'content': assistant_reply})
 
@@ -339,7 +340,7 @@ def general_rep(user_input, user_id, task_id,
     # db.add(new_message)
     # db.commit()
 
-    tasks[task_id] = "處理完畢"
+    #tasks[task_id] = "@@END@@處理完畢"
 
 
 def analyze_image(images_b64: [str],
@@ -473,7 +474,7 @@ def analyze_image(images_b64: [str],
         # db.add(new_message)
         # db.commit()
 
-        tasks[task_id] = "處理完畢"
+        tasks[task_id] = "@@END@@處理完畢"
 
         print(str(tasks[task_id]))
     except Exception as e:
