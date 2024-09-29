@@ -239,10 +239,6 @@ function ChatWindow({ token }) {
     // 更新本地消息列表
     setMessages([...messages, { sender: 'user', text: input ,name: userName}]);
     
-    setInput('');
-    setImageFiles([])
-    setUploadedImages([])
-
     try {
 
       const formData = new FormData();
@@ -268,6 +264,9 @@ function ChatWindow({ token }) {
          setTaskId(response.data.task_id); // 設置任務 ID
       }
      
+      setInput('');
+      setImageFiles([])
+      setUploadedImages([])  
 
       // 更新本地消息列表
       setMessages((prevMessages) => [
