@@ -275,8 +275,8 @@ async def send_message(
                     db.refresh(new_image)
                     image_paths.append(file_location)
 
-                background_tasks.add_task(analyze_image, image_b64s, image_types, user_input, user_id, task_id,
-                                          current_user)
+                background_tasks.add_task(analyze_image, image_b64s, image_types, user_input, user_id,
+                                          current_user.username, task_id)
                 return JSONResponse(content={"task_id": task_id, "message": "資料已上傳,進行分析中"},
                                     status_code=200)
     else:
@@ -331,8 +331,9 @@ async def analyze_image(images_b64: [str],
                         images_type: [str],
                         user_input,
                         user_id,
+                        username,
                         task_id,
-                        current_user: models.User,
+
                         db: Session = Depends(database.get_db)
                         ):
     try:
@@ -407,7 +408,7 @@ async def analyze_image(images_b64: [str],
 
             print(WORK_PATH)
 
-            user_config = config['users'][current_user.username]
+            user_config = config['users'][username]
 
             print(user_config)
 
