@@ -440,9 +440,14 @@ def analyze_image(images_b64: [str],
 
             # 3. 分析結果包含程式碼時，進行檔案寫入
             if "```" in assistant_reply:
+                print("remove markdown and write")
                 code_blocks = extract_code_blocks(assistant_reply)
                 with open(output_path, "w") as out_f:
-                    out_f.writelines(code_blocks[1:-1])
+                    out_f.writelines(code_blocks)
+            else:
+                print("write program")
+                with open(output_path, "w") as out_f:
+                    out_f.write(assistant_reply)
 
             # lines = generated_code.splitlines(True)
             # with open(output_path,"w") as out_f:
