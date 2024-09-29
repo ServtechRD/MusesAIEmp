@@ -228,7 +228,7 @@ function ChatWindow({ token }) {
     try {
       const response = await api.post(
         '/message',
-        { text: input ,images:uploadedImages},
+        { message: input ,images:uploadedImages},
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
