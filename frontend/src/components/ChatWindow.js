@@ -178,7 +178,7 @@ function ChatWindow({ token }) {
       }
     };
     fetchMessages();
-  }, [token]);
+  }, [token,taskId]);
 
   // 当消息更新时滚动到底部
   useEffect(() => {
@@ -200,7 +200,7 @@ function ChatWindow({ token }) {
         const reader = new FileReader();
 
         setImageFiles(file)
-        
+
         reader.onload = (e) => {
           //setUploadedImage(e.target.result); // 設定圖片 URL
           setUploadedImages((prevImages) => [...prevImages, e.target.result]); // 添加圖片 URL
@@ -241,7 +241,9 @@ function ChatWindow({ token }) {
          'Content-Type': 'multipart/form-data', } }
       );
 
+      console.log(response.data)
       if(response.data.task_id) {
+         console.log('task id :'+response.data.taskId)
          setTaskId(response.data.task_id); // 設置任務 ID
       }
      
@@ -256,6 +258,8 @@ function ChatWindow({ token }) {
     }
 
     setInput('');
+    setImageFiles([])
+    setUploadedImages([])
   };
 
   return (

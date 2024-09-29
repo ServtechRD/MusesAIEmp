@@ -364,6 +364,10 @@ async def analyze_image(images_b64: [str],
                 print(str(imge))
                 tasks[task_id] = f"圖片分析錯誤:{str(idx) + ' => ' + str(imge)}"
 
+        tasks[task_id] = "解析完成"
+
+        print(str( tasks[task_id] ))
+
         # 获取用户的对话历史，如果没有则初始化
         conversation = user_conversations.get(user_id, [])
         # 添加用户的消息到对话历史
@@ -388,6 +392,9 @@ async def analyze_image(images_b64: [str],
 
         try:
             tasks[task_id] = "生成程式碼"
+
+            print(str(tasks[task_id]))
+
             response = client.chat.completions.create(
                 model='gpt-3.5-turbo',
                 messages=messages,
@@ -413,6 +420,9 @@ async def analyze_image(images_b64: [str],
             #    out_f.writelines(lines[1:-1])
 
             tasks[task_id] = "完成程式碼寫入"
+
+            print(str(tasks[task_id]))
+
         except Exception as e:
             # raise HTTPException(status_code=500, detail='与 OpenAI GPT 交互失败 ['+str(e)+']')
             tasks[task_id] = "生成程式碼失敗-[" + str(e) + "]"
@@ -436,6 +446,8 @@ async def analyze_image(images_b64: [str],
 
 
         tasks[task_id] = "處理完畢"
+
+        print(str(tasks[task_id]))
     except Exception as e:
         tasks[task_id] = f"錯誤發生: {str(e)}"
 
