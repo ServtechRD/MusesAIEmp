@@ -1,3 +1,5 @@
+import json
+
 from fastapi import FastAPI, Depends, HTTPException, status, UploadFile, File, Form, BackgroundTasks
 from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
@@ -30,6 +32,7 @@ models.Base.metadata.create_all(bind=database.engine)
 # 获取环境变量
 SECRET_KEY = os.getenv('SECRET_KEY')
 OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')
+ASSISTANT_NAME = os.getenv('ASSISTANT_NAME', 'ASSISTANT')
 
 client = OpenAI(api_key=OPENAI_API_KEY)
 
@@ -78,6 +81,12 @@ user_conversations = {}
 @app.get("/")
 def read_root():
     return {"message": "Hello API Server ! Cross-Domain is enabled"}
+
+
+@app.get("/info")
+def read_info(current_user: models.User = Depends(auth.get_current_user)):
+    user_config = config['users'][current_user.username]
+    return {"name": ASSISTANT_NAME, "setting": setting, "config": user_config}
 
 
 @app.post('/register', response_model=schemas.Token)
@@ -214,10 +223,11 @@ async def send_message(
 
     if len(user_input) > 0:
         if (user_input.startswith("/SETTING")):
-            return JSONResponse(content={"message": "設定資料"},
+            return JSONResponse(content={"message": json.dumps(setting)},
                                 status_code=200)
         elif (user_input.startswith("/CONFIG")):
-            return JSONResponse(content={"message": "狀態資料"},
+            user_config = config['users'][current_user.username]
+            return JSONResponse(content={"message": json.dumps(user_config)},
                                 status_code=200)
         elif (user_input.startswith("/COMMAND")):
             return JSONResponse(content={"message": "命令結果"},
@@ -324,7 +334,7 @@ def general_rep(user_input, user_id, task_id,
         assistant_reply = '与 OpenAI GPT 交互失败 ::[' + str(e) + ']'
 
     print(assistant_reply)
-    tasks[task_id] = "@@END@@"+assistant_reply
+    tasks[task_id] = "@@END@@" + assistant_reply
     # 将助手的回复添加到对话历史
     conversation.append({'role': 'assistant', 'content': assistant_reply})
 
@@ -340,7 +350,7 @@ def general_rep(user_input, user_id, task_id,
     # db.add(new_message)
     # db.commit()
 
-    #tasks[task_id] = "@@END@@處理完畢"
+    # tasks[task_id] = "@@END@@處理完畢"
 
 
 def analyze_image(images_b64: [str],
