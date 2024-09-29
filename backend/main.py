@@ -218,7 +218,7 @@ async def send_message(
         os.makedirs(UPLOAD_DIR)
 
 
-    task_id = uuid.uuid4()
+    task_id = str(uuid.uuid4())
 
 
     if len(user_input) > 0:
