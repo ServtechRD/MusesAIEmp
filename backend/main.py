@@ -401,11 +401,21 @@ async def analyze_image(images_b64: [str],
 
             assistant_reply = response.choices[0].message.content.strip()
 
+            print(assistant_reply)
+
             WORK_PATH = setting['WORK_PATH']
+
+            print(WORK_PATH)
+
             user_config = config[user_id]
 
+            print(user_config)
+
             prj_id = user_config['PROJ_ID']
+            print(prj_id)
+            
             prj_file = user_config['PROJ_FILE']
+            print(prj_file)
 
             output_path = f"{WORK_PATH}/{prj_id}/{prj_file}"
 
