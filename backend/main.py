@@ -396,13 +396,16 @@ async def analyze_image(images_b64: [str],
                 model='gpt-3.5-turbo',
                 messages=messages,
             )
+
+            print(response)
+
             assistant_reply = response.choices[0].message.content.strip()
 
             WORK_PATH = setting['WORK_PATH']
             user_config = config[user_id]
 
-            prj_id = user_config['PRJ_ID']
-            prj_file = user_config['PRJ_FILE']
+            prj_id = user_config['PROJ_ID']
+            prj_file = user_config['PROJ_FILE']
 
             output_path = f"{WORK_PATH}/{prj_id}/{prj_file}"
 
