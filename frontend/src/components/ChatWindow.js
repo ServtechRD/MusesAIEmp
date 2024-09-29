@@ -244,6 +244,8 @@ function ChatWindow({ token }) {
       const formData = new FormData();
       formData.append('message', input);  // 添加文字字段
 
+      console.log("images :");
+      console.log(imageFiles);
 
       let api_name = '/message'
       if(imageFiles.length > 0) {
