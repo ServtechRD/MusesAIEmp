@@ -213,7 +213,8 @@ function ChatWindow({ token }) {
         });
         setAssistantName(response.data.name);
         let config =  response.data.config
-        let configStatus = config['PROJ_ID']+ ' / '+config['PROJ_DESC'] +' / '+config['PROJ_FILE'];
+        let configStatus = config['PROJ_ID']+ ' / '+config['PROJ_DESC'] +' / '+
+                           config['APP_DESC']+'/'+config['FUNC_DESC']+'/'+config['FUNC_FILE'];
         setConfigStatus(configStatus);
       } catch (error) {
         // 处理错误
@@ -302,6 +303,22 @@ function ChatWindow({ token }) {
       if(response.data.task_id) {
          console.log('task id :'+response.data.task_id)
          setTaskId(response.data.task_id); // 設置任務 ID
+      } else {
+        if(input.indexOf("/CONFIG") != -1 && input.indexOf("SET")  != -1) {
+          try {
+            const response = await api.get('/info', {
+              headers: { Authorization: `Bearer ${token}` },
+            });
+            setAssistantName(response.data.name);
+            let config =  response.data.config
+            let configStatus = config['PROJ_ID']+ ' / '+config['PROJ_DESC'] +' / '+
+                               config['APP_DESC']+'/'+config['FUNC_DESC']+'/'+config['FUNC_FILE'];
+            setConfigStatus(configStatus);
+          } catch (error) {
+            // 处理错误
+            console.log(error)
+          }
+        }
       }
      
       setInput('');

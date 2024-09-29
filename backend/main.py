@@ -45,7 +45,10 @@ data = {"sub": "user_id"}
 setting = {
     "ASSISTANT_NAME": "Adam",
     "WORK_PATH": "../../WORK",
-    "TEMP_PATH": "../../TEMP"
+    "TEMP_PATH": "../../TEMP",
+    "prj01": "http://192.168.1.234:35200",
+    "prj02": "http://192.168.1.234:35300",
+    "prj03": "http://192.168.1.234:35400",
 }
 
 config = {
@@ -53,7 +56,11 @@ config = {
         "aa": {
             "PROJ_ID": "prj01",
             "PROJ_DESC": "測試專案",
-            "PROJ_FILE": "public/index.html"
+            "APP_DESC": "報表",
+            "APP_NAME": "01_Report",
+            "FUNC_DESC": "查詢子報表",
+            "FUNC_FILE": "public/index.html",
+            "PROJ_MODE": 1,
         }
     }
 }
@@ -227,6 +234,14 @@ async def send_message(
                                 status_code=200)
         elif (user_input.startswith("/CONFIG")):
             user_config = config['users'][current_user.username]
+            input_items = user_input.split()
+            if (len(input_items) > 1):
+                if (input_items[1].upper() == "SET"):
+                    if (len(input_items) > 3):
+                        config_key = input_items[2]
+                        config_value = input_items[3]
+                        user_config[config_key] = config_value
+
             return JSONResponse(content={"message": json.dumps(user_config)},
                                 status_code=200)
         elif (user_input.startswith("/COMMAND")):
@@ -441,10 +456,10 @@ def analyze_image(images_b64: [str],
             prj_id = user_config['PROJ_ID']
             print(prj_id)
 
-            prj_file = user_config['PROJ_FILE']
-            print(prj_file)
+            func_file = user_config['FUNC_FILE']
+            print(func_file)
 
-            output_path = f"{WORK_PATH}/{prj_id}/{prj_file}"
+            output_path = f"{WORK_PATH}/{prj_id}/{func_file}"
 
             print("prog path :" + output_path)
 
