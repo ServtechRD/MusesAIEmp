@@ -212,7 +212,7 @@ async def send_message(
     user_id = current_user.id
     user_input = message #.text
 
-    UPLOAD_DIR = setting['TEMP_PATH'] + "/uploads/" + user_id
+    UPLOAD_DIR = setting['TEMP_PATH'] + "/uploads/" + current_user.username
 
     if not os.path.exists(UPLOAD_DIR):
         os.makedirs(UPLOAD_DIR)
