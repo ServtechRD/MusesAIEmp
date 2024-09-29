@@ -226,10 +226,15 @@ function ChatWindow({ token }) {
     setMessages([...messages, { sender: 'user', text: input ,name: userName}]);
 
     try {
+
+      formData.append('message', input);  // 添加文字字段
+      formData.append('images', uploadedImages);     // 添加圖片文件
+
       const response = await api.post(
         '/message',
-        { message: input ,images:uploadedImages},
-        { headers: { Authorization: `Bearer ${token}` } }
+        formData,
+        { headers: { Authorization: `Bearer ${token}` ,
+         'Content-Type': 'multipart/form-data', } }
       );
 
       if(response.data.task_id) {
