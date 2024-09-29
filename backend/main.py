@@ -204,7 +204,7 @@ async def upload_images(
 async def send_message(
         message: schemas.Message,
         images: List[UploadFile] = File(...),
-        background_tasks: BackgroundTasks,
+        background_tasks: BackgroundTasks = BackgroundTasks(),
         current_user: models.User = Depends(auth.get_current_user),
         db: Session = Depends(database.get_db),
 
@@ -418,7 +418,7 @@ async def analyze_image(images_b64: [str],
             tasks[task_id] = "生成程式碼失敗-[" + str(e) + "]"
 
         tasks[task_id] = assistant_reply
-        
+
         # 将助手的回复添加到对话历史
         conversation.append({'role': 'assistant', 'content': assistant_reply})
 
