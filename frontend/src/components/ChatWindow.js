@@ -124,7 +124,7 @@ function ChatWindow({ token }) {
   const [uploadedImages, setUploadedImages] = useState([]);
   const [imageFiles, setImageFiles] = useState([]);
   const [taskId, setTaskId] = useState(null);
-  const [prevStatus, setPrevStatus] = useState('');
+  const [prevStatus, setPrevStatus] = useState('---');
   const messagesEndRef = useRef(null);
 
   // 滚动到底部
@@ -177,10 +177,11 @@ function ChatWindow({ token }) {
         scrollToBottom();
       } catch (error) {
         // 处理错误
+        console.log(error)
       }
     };
     fetchMessages();
-  }, [token,taskId]);
+  }, [token,taskId,prevStatus]);
 
   // 当消息更新时滚动到底部
   useEffect(() => {
