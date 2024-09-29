@@ -122,6 +122,7 @@ function ChatWindow({ token }) {
   const [input, setInput] = useState('');
   const [userName, setUserName] = useState(''); // 儲存使用者名稱
   const [uploadedImages, setUploadedImages] = useState([]);
+  const [taskId, setTaskId] = useState(null);
 
   const messagesEndRef = useRef(null);
 
@@ -136,6 +137,32 @@ function ChatWindow({ token }) {
     if (token) {
       const decodedToken = jwtDecode(token);
       setUserName(decodedToken?.sub || 'User'); // 根據 token 中的 name 字段設置名稱
+    }
+
+    if (taskId) {
+      // 每隔 5 秒查詢一次任務狀態
+      prevStatus = ''
+      const intervalId = setInterval(async () => {
+        const response = await api.get(`task_status/${taskId}`);
+        //setStatus(response.data.status);
+
+        if(response.data.status != prevStatus) {
+          setMessages((prevMessages) => [
+            ...prevMessages,
+            { sender: 'assistant', text: response.data.status },
+          ]);
+        }
+
+        prevMessages = response.data.status;
+        
+        // 如果任務已完成，停止查詢
+        if (response.data.status === "處理完畢" || response.data.status.startsWith("錯誤")) {
+          clearInterval(intervalId);
+        }
+      }, 1000);
+
+      // 清除計時器
+      return () => clearInterval(intervalId);
     }
 
     const fetchMessages = async () => {
@@ -204,10 +231,15 @@ function ChatWindow({ token }) {
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
+      if(response.data.task_id) {
+         setTaskId(response.data.task_id); // 設置任務 ID
+      }
+     
+
       // 更新本地消息列表
       setMessages((prevMessages) => [
         ...prevMessages,
-        { sender: 'assistant', text: response.data },
+        { sender: 'assistant', text: response.data.message },
       ]);
     } catch (error) {
       // 处理错误
