@@ -422,9 +422,9 @@ async def analyze_image(images_b64: [str],
 
             print(str(tasks[task_id]))
 
-        except Exception as e:
+        except Exception as gee:
             # raise HTTPException(status_code=500, detail='与 OpenAI GPT 交互失败 ['+str(e)+']')
-            tasks[task_id] = "生成程式碼失敗-[" + str(e) + "]"
+            tasks[task_id] = "生成程式碼失敗-[" + str(gee) + "]"
             print(str(tasks[task_id]))
 
         tasks[task_id] = assistant_reply
