@@ -137,6 +137,8 @@ function ChatWindow({ token }) {
   const [imageFiles, setImageFiles] = useState([]);
   const [taskId, setTaskId] = useState(null);
   const [prevStatus, setPrevStatus] = useState('---');
+  const [assistantName,setAssistantName] = useState('A001');
+  const [configStatus,setConfigStatus] = useState('Activate');
   const messagesEndRef = useRef(null);
 
   // 滚动到底部
@@ -202,6 +204,24 @@ function ChatWindow({ token }) {
     };
     fetchMessages();
   }, [token,taskId,prevStatus]);
+
+  useEffect(() => {
+    const getInfo = async () => {
+      try {
+        const response = await api.get('/info', {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        setAssistantName(response.data.name);
+        let config =  response.data.config
+        let configStatus = config['PROJ_ID']+ ' / '+config['PROJ_DESC'] +' / '+config['PROJ_FILE'];
+        setConfigStatus(configStatus);
+      } catch (error) {
+        // 处理错误
+        console.log(error)
+      }
+    };
+    getInfo();
+  },[assistantName,configStatus]);
 
   // 当消息更新时滚动到底部
   useEffect(() => {
@@ -318,8 +338,8 @@ function ChatWindow({ token }) {
               <UserInfoContainer>
                   <Avatar src="/static/assets/images/A001.png" alt="A001" />
                   <TextContainer>
-                    <NameText>Assistant</NameText>
-                    <SettingsText>Active</SettingsText>
+                    <NameText>{assistantName}</NameText>
+                    <SettingsText>{configStatus}</SettingsText>
                 </TextContainer>
               </UserInfoContainer>
             )}
