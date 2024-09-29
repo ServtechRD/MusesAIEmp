@@ -124,7 +124,7 @@ function ChatWindow({ token }) {
   const [uploadedImages, setUploadedImages] = useState([]);
   const [imageFiles, setImageFiles] = useState([]);
   const [taskId, setTaskId] = useState(null);
-
+  const [prevStatus, setPrevStatus] = useState('');
   const messagesEndRef = useRef(null);
 
   // 滚动到底部
@@ -140,9 +140,10 @@ function ChatWindow({ token }) {
       setUserName(decodedToken?.sub || 'User'); // 根據 token 中的 name 字段設置名稱
     }
 
+    
     if (taskId) {
       // 每隔 5 秒查詢一次任務狀態
-      prevStatus = ''
+
       const intervalId = setInterval(async () => {
         const response = await api.get(`task_status/${taskId}`);
         //setStatus(response.data.status);
@@ -154,7 +155,7 @@ function ChatWindow({ token }) {
           ]);
         }
 
-        prevMessages = response.data.status;
+        setPrevStatus(response.data.status);
         
         // 如果任務已完成，停止查詢
         if (response.data.status === "處理完畢" || response.data.status.startsWith("錯誤")) {
@@ -243,7 +244,7 @@ function ChatWindow({ token }) {
 
       console.log(response.data)
       if(response.data.task_id) {
-         console.log('task id :'+response.data.taskId)
+         console.log('task id :'+response.data.task_id)
          setTaskId(response.data.task_id); // 設置任務 ID
       }
      
