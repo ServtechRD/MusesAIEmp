@@ -189,7 +189,7 @@ function ChatWindow({ token }) {
   const handlePaste = (event) => {
     const clipboardItems = event.clipboardData.items;
     let textContent = '';
-    
+
     for (let i = 0; i < clipboardItems.length; i++) {
       const item = clipboardItems[i];
 
@@ -228,7 +228,7 @@ function ChatWindow({ token }) {
     try {
       const response = await api.post(
         '/message',
-        { text: input },
+        { text: input ,images:uploadedImages},
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
