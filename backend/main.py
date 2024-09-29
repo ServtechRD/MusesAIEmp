@@ -435,13 +435,13 @@ async def analyze_image(images_b64: [str],
         user_conversations[user_id] = conversation
 
         # 保存对话记录到数据库
-        new_message = models.Conversation(
-            user_id=current_user.id,
-            message=user_input,
-            response=assistant_reply,
-        )
-        db.add(new_message)
-        db.commit()
+        # new_message = models.Conversation(
+        #    user_id=current_user.id,
+        #    message=user_input,
+        #    response=assistant_reply,
+        # )
+        # db.add(new_message)
+        # db.commit()
 
         tasks[task_id] = "處理完畢"
 
