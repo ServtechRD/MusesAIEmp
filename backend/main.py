@@ -210,7 +210,7 @@ async def send_message(
 
 ):
     user_id = current_user.id
-    user_input = message.text
+    user_input = message #.text
 
     UPLOAD_DIR = setting['TEMP_PATH'] + "/uploads/" + user_id
 
