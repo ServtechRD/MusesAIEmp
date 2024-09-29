@@ -202,7 +202,7 @@ async def upload_images(
 
 @app.post('/message')
 async def send_message(
-        message: Form(...),
+        message: List[str] = Form(...),
         images: List[UploadFile] = File(...),
         background_tasks: BackgroundTasks = BackgroundTasks(),
         current_user: models.User = Depends(auth.get_current_user),
