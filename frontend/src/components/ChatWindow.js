@@ -162,7 +162,7 @@ function ChatWindow({ token }) {
         if (response.data.status === "處理完畢" || response.data.status.startsWith("錯誤")) {
           clearInterval(intervalId);
         }
-      }, 1000);
+      }, 500);
 
       // 清除計時器
       return () => clearInterval(intervalId);
@@ -239,10 +239,16 @@ function ChatWindow({ token }) {
 
       const formData = new FormData();
       formData.append('message', input);  // 添加文字字段
-      formData.append('images', imageFiles);     // 添加圖片文件
+
+
+      let api_name = '/message'
+      if(imageFiles.length > 0) {
+        api_name = '/message_images'
+        formData.append('images', imageFiles);     // 添加圖片文件
+      }
 
       const response = await api.post(
-        '/message',
+        api_name,
         formData,
         { headers: { Authorization: `Bearer ${token}` ,
          'Content-Type': 'multipart/form-data', } }

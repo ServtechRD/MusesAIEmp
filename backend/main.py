@@ -199,7 +199,6 @@ async def upload_images(
     # 返回生成的代码
     return {'code': generated_code}
 
-
 @app.post('/message')
 async def send_message(
         message: str = Form(...),
@@ -211,12 +210,6 @@ async def send_message(
 ):
     user_id = current_user.id
     user_input = message  # .text
-
-    UPLOAD_DIR = setting['TEMP_PATH'] + "/uploads/" + current_user.username
-
-    if not os.path.exists(UPLOAD_DIR):
-        os.makedirs(UPLOAD_DIR)
-
     task_id = str(uuid.uuid4())
 
     if len(user_input) > 0:
@@ -230,58 +223,79 @@ async def send_message(
             return JSONResponse(content={"message": "命令結果"},
                                 status_code=200)
         else:
-            if len(images) == 0:
-                background_tasks.add_task(general_rep(), user_input, user_id, task_id, current_user)
-                return JSONResponse(content={"task_id": task_id, "message": "分析中"},
-                                    status_code=200)
-            else:
-                image_paths = []
-                image_b64s = []
-                image_types = []
-
-                if len(images) > 5:
-                    raise HTTPException(status_code=400, detail='最多只能上传5张图片')
-
-                for idx, image in enumerate(images):
-                    filename = f"{task_id}_{image.filename}"
-                    file_location = f"{UPLOAD_DIR}/{filename}"
-                    os.makedirs(os.path.dirname(file_location), exist_ok=True)
-                    img_content = await image.read()
-                    with open(file_location, "wb+") as file_object:
-                        shutil.copyfileobj(image.file, file_object)
-                        try:
-                            # img_content = await image.read()
-                            # print("content")
-                            # print(img_content)
-                            file_type = image.content_type.split("/")[1]
-                            print("file_type:" + file_type)
-                            encode_image = base64.b64encode(img_content).decode('utf-8')
-                            image_b64s.append(encode_image)
-                            image_types.append(file_type)
-                            # print("base64")
-                            # print(encode_image)
-
-                        except Exception as ce:
-                            print(str(ce))
-
-                    # 保存到数据库
-                    new_image = models.Image(
-                        user_id=current_user.id,
-                        image_path=file_location,
-                        description=user_input,
-                    )
-                    db.add(new_image)
-                    db.commit()
-                    db.refresh(new_image)
-                    image_paths.append(file_location)
-
-                background_tasks.add_task(analyze_image, image_b64s, image_types, user_input, user_id,
-                                          current_user.username, task_id)
-                return JSONResponse(content={"task_id": task_id, "message": "資料已上傳,進行分析中"},
-                                    status_code=200)
+            background_tasks.add_task(general_rep(), user_input, user_id, task_id, current_user)
+            return JSONResponse(content={"task_id": task_id, "message": "分析中"},
+                                status_code=200)
     else:
-        return JSONResponse(content={"message": "無回應"},
+        return JSONResponse(content={"message": "無輸入"},
                             status_code=200)
+
+@app.post('/message_images')
+async def send_message(
+        message: str = Form(...),
+        images: List[UploadFile] = File(...),
+        background_tasks: BackgroundTasks = BackgroundTasks(),
+        current_user: models.User = Depends(auth.get_current_user),
+        db: Session = Depends(database.get_db),
+
+):
+    user_id = current_user.id
+    user_input = message  # .text
+
+    task_id = str(uuid.uuid4())
+
+    UPLOAD_DIR = setting['TEMP_PATH'] + "/uploads/" + current_user.username
+
+    if not os.path.exists(UPLOAD_DIR):
+        os.makedirs(UPLOAD_DIR)
+
+
+
+    image_paths = []
+    image_b64s = []
+    image_types = []
+
+    if len(images) > 5:
+        raise HTTPException(status_code=400, detail='最多只能上传5张图片')
+
+    for idx, image in enumerate(images):
+        filename = f"{task_id}_{image.filename}"
+        file_location = f"{UPLOAD_DIR}/{filename}"
+        os.makedirs(os.path.dirname(file_location), exist_ok=True)
+        img_content = await image.read()
+        with open(file_location, "wb+") as file_object:
+            shutil.copyfileobj(image.file, file_object)
+            try:
+                # img_content = await image.read()
+                # print("content")
+                # print(img_content)
+                file_type = image.content_type.split("/")[1]
+                print("file_type:" + file_type)
+                encode_image = base64.b64encode(img_content).decode('utf-8')
+                image_b64s.append(encode_image)
+                image_types.append(file_type)
+                # print("base64")
+                # print(encode_image)
+
+            except Exception as ce:
+                print(str(ce))
+
+        # 保存到数据库
+        new_image = models.Image(
+            user_id=current_user.id,
+            image_path=file_location,
+            description=user_input,
+        )
+        db.add(new_image)
+        db.commit()
+        db.refresh(new_image)
+        image_paths.append(file_location)
+
+    background_tasks.add_task(analyze_image, image_b64s, image_types, user_input, user_id,
+                              current_user.username, task_id)
+    return JSONResponse(content={"task_id": task_id, "message": "資料已上傳,進行分析中"},
+                        status_code=200)
+
 
     # return assistant_reply
 
