@@ -188,6 +188,7 @@ function ChatWindow({ token }) {
   // 處理貼上事件
   const handlePaste = (event) => {
     const clipboardItems = event.clipboardData.items;
+    let textContent = '';
     
     for (let i = 0; i < clipboardItems.length; i++) {
       const item = clipboardItems[i];
