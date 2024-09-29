@@ -233,8 +233,7 @@ async def send_message(
                                 status_code=200)
         else:
            if len(images) == 0:
-               background_tasks.add_task(general_rep(), user_input, user_id, task_id,
-                                         current_user, db)
+               background_tasks.add_task(general_rep(), user_input, user_id, task_id)
                return JSONResponse(content={"task_id": task_id, "message": "分析中"},
                                    status_code=200)
            else:
@@ -280,8 +279,7 @@ async def send_message(
                     image_paths.append(file_location)
 
 
-                background_tasks.add_task(analyze_image, image_b64s, image_types, user_input, user_id, task_id,
-                                          current_user, db)
+                background_tasks.add_task(analyze_image, image_b64s, image_types, user_input, user_id, task_id)
                 return JSONResponse(content={"task_id": task_id, "message": "資料已上傳,進行分析中"},
                                     status_code=200)
     else:
@@ -291,8 +289,10 @@ async def send_message(
     # return assistant_reply
 
 
-async def general_rep(user_input, user_id, task_id, current_user: models.User,
-                      db: Session):
+async def general_rep(user_input, user_id, task_id,
+                      current_user: models.User = Depends(auth.get_current_user),
+                      db: Session = Depends(database.get_db)
+                      ):
     # 获取用户的对话历史，如果没有则初始化
     conversation = user_conversations.get(user_id, [])
     if not conversation:
@@ -336,8 +336,9 @@ async def analyze_image(images_b64: [str],
                         user_input,
                         user_id,
                         task_id,
-                        current_user: models.User,
-                        db: Session):
+                        current_user: models.User = Depends(auth.get_current_user),
+                        db: Session = Depends(database.get_db)
+                        ):
     try:
         tasks[task_id] = f"分析圖片中"
         image_desc = []
@@ -408,6 +409,8 @@ async def analyze_image(images_b64: [str],
             prj_file = user_config['PRJ_FILE']
 
             output_path = f"{WORK_PATH}/{prj_id}/{prj_file}"
+
+            print("prog path :"+output_path)
 
             # 3. 分析結果包含程式碼時，進行檔案寫入
             if "```" in assistant_reply:
