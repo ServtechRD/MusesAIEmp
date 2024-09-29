@@ -199,7 +199,8 @@ function ChatWindow({ token }) {
         const file = item.getAsFile();
         const reader = new FileReader();
 
-        setImageFiles((prevFile) =>[...prevFile, file]);
+        setImageFiles(file)
+        
         reader.onload = (e) => {
           //setUploadedImage(e.target.result); // 設定圖片 URL
           setUploadedImages((prevImages) => [...prevImages, e.target.result]); // 添加圖片 URL
