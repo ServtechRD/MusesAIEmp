@@ -210,7 +210,7 @@ function ChatWindow({ token }) {
         const file = item.getAsFile();
         const reader = new FileReader();
 
-        setImageFiles([file])
+        setImageFiles(file)
 
         reader.onload = (e) => {
           //setUploadedImage(e.target.result); // 設定圖片 URL
@@ -248,7 +248,7 @@ function ChatWindow({ token }) {
       console.log(imageFiles);
 
       let api_name = '/message'
-      if(imageFiles.length > 0) {
+      if(imageFiles instanceof File) {
         api_name = '/message_images'
         formData.append('images', imageFiles);     // 添加圖片文件
       }
