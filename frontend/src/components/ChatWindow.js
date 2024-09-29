@@ -140,23 +140,6 @@ function ChatWindow({ token }) {
       setUserName(decodedToken?.sub || 'User'); // 根據 token 中的 name 字段設置名稱
     }
 
-
-    const fetchMessages = async () => {
-      try {
-        const response = await api.get('/messages', {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        setMessages(response.data);
-        scrollToBottom();
-      } catch (error) {
-        // 处理错误
-      }
-    };
-    fetchMessages();
-  }, [token]);
-
-  useEffect(() => {
-
     if (taskId) {
       // 每隔 200 秒查詢一次任務狀態
 
@@ -182,7 +165,20 @@ function ChatWindow({ token }) {
       // 清除計時器
       return () => clearInterval(intervalId);
     }
-  },[taskId]);
+
+    const fetchMessages = async () => {
+      try {
+        const response = await api.get('/messages', {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        setMessages(response.data);
+        scrollToBottom();
+      } catch (error) {
+        // 处理错误
+      }
+    };
+    fetchMessages();
+  }, [token,taskId]);
 
   // 当消息更新时滚动到底部
   useEffect(() => {
@@ -231,6 +227,10 @@ function ChatWindow({ token }) {
 
     // 更新本地消息列表
     setMessages([...messages, { sender: 'user', text: input ,name: userName}]);
+    
+    setInput('');
+    setImageFiles([])
+    setUploadedImages([])
 
     try {
 
@@ -259,11 +259,13 @@ function ChatWindow({ token }) {
       ]);
     } catch (error) {
       // 处理错误
+      setMessages((prevMessages) => [
+        ...prevMessages,
+        { sender: 'assistant', text: error },
+      ]);
     }
 
-    setInput('');
-    setImageFiles([])
-    setUploadedImages([])
+    
   };
 
   return (
