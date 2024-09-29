@@ -227,6 +227,7 @@ function ChatWindow({ token }) {
 
     try {
 
+      const formData = new FormData();
       formData.append('message', input);  // 添加文字字段
       formData.append('images', uploadedImages);     // 添加圖片文件
 
