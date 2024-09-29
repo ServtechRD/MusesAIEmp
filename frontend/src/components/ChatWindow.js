@@ -71,6 +71,18 @@ const SendButton = styled.button`
   font-size: 16px;
 `;
 
+const ResetButton = styled.button`
+  background-color: #7a0000;
+  color: #fff;
+  border: none;
+  border-radius: 20px;
+  padding: 10px 15px;
+  margin-left: 10px;
+  cursor: pointer;
+  font-size: 16px;
+`;
+
+
 const Avatar = styled.img`
   width: 40px;
   height: 40px;
@@ -233,6 +245,12 @@ function ChatWindow({ token }) {
     //setInput(event.clipboardData.getData('text'));
   };
 
+  const handleReset = async () => {
+    setInput('');
+    setImageFiles([])
+    setUploadedImages([])  
+  }
+
   const handleSend = async () => {
     if (!input.trim()) return;
 
@@ -332,6 +350,7 @@ function ChatWindow({ token }) {
         />
        
         <SendButton onClick={handleSend}>送出</SendButton>
+        <ResetButton onClick={handleReset}>清除</ResetButton>
       </InputContainer>
     </ChatContainer>
   );
