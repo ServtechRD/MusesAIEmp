@@ -210,19 +210,17 @@ async def send_message(
 
 ):
     user_id = current_user.id
-    user_input = message #.text
+    user_input = message  # .text
 
     UPLOAD_DIR = setting['TEMP_PATH'] + "/uploads/" + current_user.username
 
     if not os.path.exists(UPLOAD_DIR):
         os.makedirs(UPLOAD_DIR)
 
-
     task_id = str(uuid.uuid4())
 
-
     if len(user_input) > 0:
-        if(user_input.startswith("/SETTING")):
+        if (user_input.startswith("/SETTING")):
             return JSONResponse(content={"message": "設定資料"},
                                 status_code=200)
         elif (user_input.startswith("/CONFIG")):
@@ -232,18 +230,17 @@ async def send_message(
             return JSONResponse(content={"message": "命令結果"},
                                 status_code=200)
         else:
-           if len(images) == 0:
-               background_tasks.add_task(general_rep(), user_input, user_id, task_id)
-               return JSONResponse(content={"task_id": task_id, "message": "分析中"},
-                                   status_code=200)
-           else:
+            if len(images) == 0:
+                background_tasks.add_task(general_rep(), user_input, user_id, task_id, current_user)
+                return JSONResponse(content={"task_id": task_id, "message": "分析中"},
+                                    status_code=200)
+            else:
                 image_paths = []
                 image_b64s = []
                 image_types = []
 
                 if len(images) > 5:
                     raise HTTPException(status_code=400, detail='最多只能上传5张图片')
-
 
                 for idx, image in enumerate(images):
                     filename = f"{task_id}_{image.filename}"
@@ -278,8 +275,8 @@ async def send_message(
                     db.refresh(new_image)
                     image_paths.append(file_location)
 
-
-                background_tasks.add_task(analyze_image, image_b64s, image_types, user_input, user_id, task_id)
+                background_tasks.add_task(analyze_image, image_b64s, image_types, user_input, user_id, task_id,
+                                          current_user)
                 return JSONResponse(content={"task_id": task_id, "message": "資料已上傳,進行分析中"},
                                     status_code=200)
     else:
@@ -290,7 +287,7 @@ async def send_message(
 
 
 async def general_rep(user_input, user_id, task_id,
-                      current_user: models.User = Depends(auth.get_current_user),
+                      current_user: models.User,
                       db: Session = Depends(database.get_db)
                       ):
     # 获取用户的对话历史，如果没有则初始化
@@ -330,13 +327,12 @@ async def general_rep(user_input, user_id, task_id,
     tasks[task_id] = "處理完畢"
 
 
-
 async def analyze_image(images_b64: [str],
                         images_type: [str],
                         user_input,
                         user_id,
                         task_id,
-                        current_user: models.User = Depends(auth.get_current_user),
+                        current_user: models.User,
                         db: Session = Depends(database.get_db)
                         ):
     try:
@@ -367,7 +363,7 @@ async def analyze_image(images_b64: [str],
 
         tasks[task_id] = "解析完成"
 
-        print(str( tasks[task_id] ))
+        print(str(tasks[task_id]))
 
         # 获取用户的对话历史，如果没有则初始化
         conversation = user_conversations.get(user_id, [])
@@ -410,7 +406,7 @@ async def analyze_image(images_b64: [str],
 
             output_path = f"{WORK_PATH}/{prj_id}/{prj_file}"
 
-            print("prog path :"+output_path)
+            print("prog path :" + output_path)
 
             # 3. 分析結果包含程式碼時，進行檔案寫入
             if "```" in assistant_reply:
@@ -446,7 +442,6 @@ async def analyze_image(images_b64: [str],
         )
         db.add(new_message)
         db.commit()
-
 
         tasks[task_id] = "處理完畢"
 
