@@ -128,6 +128,10 @@ const Thumbnail = styled.img`
   border-radius: 8px;
 `;
 
+const FileInput = styled.input`
+  margin-bottom: 10px;
+`;
+
 
 function ChatWindow({ token }) {
   const [messages, setMessages] = useState([]);
@@ -213,8 +217,8 @@ function ChatWindow({ token }) {
         });
         setAssistantName(response.data.name);
         let config =  response.data.config
-        let configStatus = config['PROJ_ID']+ ' / '+config['PROJ_DESC'] +' / '+
-                           config['APP_DESC']+'/'+config['FUNC_DESC']+'/'+config['FUNC_FILE'];
+        let configStatus = config['PROJ_ID']+ ' | '+config['PROJ_DESC'] +' | '+
+                           config['APP_DESC']+' | '+config['FUNC_DESC'] +' | '+config['FUNC_FILE'];
         setConfigStatus(configStatus);
       } catch (error) {
         // 处理错误
@@ -230,10 +234,23 @@ function ChatWindow({ token }) {
   }, [messages]);
 
 
+
+  const handleImageChange = (e) => {
+    const files = Array.from(e.target.files).slice(0, 5); // 最多5张图片
+    setImageFiles(files[0])
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      //setUploadedImage(e.target.result); // 設定圖片 URL
+      setUploadedImages((prevImages) => [...prevImages, e.target.result]); // 添加圖片 URL
+    };
+    
+    reader.readAsDataURL(files[0].name);
+  };
+
   // 處理貼上事件
   const handlePaste = (event) => {
     const clipboardItems = event.clipboardData.items;
-    let textContent = '';
+    //let textContent = '';
 
     for (let i = 0; i < clipboardItems.length; i++) {
       const item = clipboardItems[i];
@@ -256,8 +273,8 @@ function ChatWindow({ token }) {
       } else if (item.kind === 'string') {
         // 處理文字
         item.getAsString((text) => {
-          textContent += text;
-          setInput((prevValue) => prevValue + textContent);
+          //textContent += text;
+          setInput((prevValue) => prevValue + text);
         });
       }
     }
@@ -311,8 +328,8 @@ function ChatWindow({ token }) {
             });
             setAssistantName(response.data.name);
             let config =  response.data.config
-            let configStatus = config['PROJ_ID']+ ' / '+config['PROJ_DESC'] +' / '+
-                               config['APP_DESC']+'/'+config['FUNC_DESC']+'/'+config['FUNC_FILE'];
+            let configStatus = config['PROJ_ID']+ ' | '+config['PROJ_DESC'] +' | '+
+                               config['APP_DESC']+' | '+config['FUNC_DESC']+' | '+config['FUNC_FILE'];
             setConfigStatus(configStatus);
           } catch (error) {
             // 处理错误
@@ -378,6 +395,8 @@ function ChatWindow({ token }) {
           ))}
         </ThumbnailContainer>
        )}
+
+        <FileInput type="file" multiple onChange={handleImageChange} placeholder='上傳圖片' />
         <InputField
           rows={3}
           value={input}
