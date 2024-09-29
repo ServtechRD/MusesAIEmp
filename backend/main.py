@@ -199,6 +199,7 @@ async def upload_images(
     # 返回生成的代码
     return {'code': generated_code}
 
+
 @app.post('/message')
 async def send_message(
         message: str = Form(...),
@@ -222,12 +223,13 @@ async def send_message(
             return JSONResponse(content={"message": "命令結果"},
                                 status_code=200)
         else:
-            background_tasks.add_task(general_rep(), user_input, user_id, task_id, current_user)
+            background_tasks.add_task(general_rep, user_input, user_id, task_id, current_user.username)
             return JSONResponse(content={"task_id": task_id, "message": "分析中"},
                                 status_code=200)
     else:
         return JSONResponse(content={"message": "無輸入"},
                             status_code=200)
+
 
 @app.post('/message_images')
 async def send_message(
@@ -247,8 +249,6 @@ async def send_message(
 
     if not os.path.exists(UPLOAD_DIR):
         os.makedirs(UPLOAD_DIR)
-
-
 
     image_paths = []
     image_b64s = []
@@ -295,14 +295,12 @@ async def send_message(
     return JSONResponse(content={"task_id": task_id, "message": "資料已上傳,進行分析中"},
                         status_code=200)
 
-
     # return assistant_reply
 
 
 def general_rep(user_input, user_id, task_id,
-                      current_user: models.User,
-                      db: Session = Depends(database.get_db)
-                      ):
+                user_name
+                ):
     # 获取用户的对话历史，如果没有则初始化
     conversation = user_conversations.get(user_id, [])
     if not conversation:
@@ -329,26 +327,26 @@ def general_rep(user_input, user_id, task_id,
     user_conversations[user_id] = conversation
 
     # 保存对话记录到数据库
-    new_message = models.Conversation(
-        user_id=current_user.id,
-        message=user_input,
-        response=assistant_reply,
-    )
-    db.add(new_message)
-    db.commit()
+    #new_message = models.Conversation(
+    #    user_id=user_id,
+    #    message=user_input,
+    #    response=assistant_reply,
+    #)
+   # db.add(new_message)
+   # db.commit()
 
     tasks[task_id] = "處理完畢"
 
 
 def analyze_image(images_b64: [str],
-                        images_type: [str],
-                        user_input,
-                        user_id,
-                        username,
-                        task_id,
+                  images_type: [str],
+                  user_input,
+                  user_id,
+                  username,
+                  task_id,
 
-                        db: Session = Depends(database.get_db)
-                        ):
+                  db: Session = Depends(database.get_db)
+                  ):
     try:
         tasks[task_id] = f"分析圖片中"
         image_desc = []
