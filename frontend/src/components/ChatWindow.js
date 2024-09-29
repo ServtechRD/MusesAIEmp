@@ -147,7 +147,9 @@ function ChatWindow({ token }) {
         const response = await api.get(`task_status/${taskId}`);
         //setStatus(response.data.status);
 
-        if(response.data.status != prevStatus) {
+        console.log("prevStatus =>"+prevStatus);
+        console.log(response.data.status);
+        if(response.data.status !== prevStatus) {
           setMessages((prevMessages) => [
             ...prevMessages,
             { sender: 'assistant', text: response.data.status },
@@ -160,7 +162,7 @@ function ChatWindow({ token }) {
         if (response.data.status === "處理完畢" || response.data.status.startsWith("錯誤")) {
           clearInterval(intervalId);
         }
-      }, 100);
+      }, 1000);
 
       // 清除計時器
       return () => clearInterval(intervalId);
