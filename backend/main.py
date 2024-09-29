@@ -309,6 +309,9 @@ def general_rep(user_input, user_id, task_id,
             'content': '你是一个智能助手，帮助用户回答问题。',
         })
 
+    conversation.append({"role": "user",
+                         "content": user_input})
+
     # 与 OpenAI GPT 交互
     try:
         response = client.chat.completions.create(
@@ -319,6 +322,7 @@ def general_rep(user_input, user_id, task_id,
     except Exception as e:
         assistant_reply = '与 OpenAI GPT 交互失败 ::[' + str(e) + ']'
 
+    print(assistant_reply)
     tasks[task_id] = assistant_reply
     # 将助手的回复添加到对话历史
     conversation.append({'role': 'assistant', 'content': assistant_reply})
@@ -327,13 +331,13 @@ def general_rep(user_input, user_id, task_id,
     user_conversations[user_id] = conversation
 
     # 保存对话记录到数据库
-    #new_message = models.Conversation(
+    # new_message = models.Conversation(
     #    user_id=user_id,
     #    message=user_input,
     #    response=assistant_reply,
-    #)
-   # db.add(new_message)
-   # db.commit()
+    # )
+    # db.add(new_message)
+    # db.commit()
 
     tasks[task_id] = "處理完畢"
 
