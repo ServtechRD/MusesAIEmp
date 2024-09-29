@@ -239,12 +239,12 @@ function ChatWindow({ token }) {
     const files = Array.from(e.target.files).slice(0, 5); // 最多5张图片
     setImageFiles(files[0])
     const reader = new FileReader();
-    reader.onload = (e) => {
+    //reader.onload = (e) => {
       //setUploadedImage(e.target.result); // 設定圖片 URL
-      setUploadedImages((prevImages) => [...prevImages, e.target.result]); // 添加圖片 URL
-    };
-    
-    reader.readAsDataURL(files[0].name);
+    //  setUploadedImages((prevImages) => [...prevImages, e.target.result]); // 添加圖片 URL
+    //};
+    setUploadedImages((prevImages) => [...prevImages, URL.createObjectURL(files[0])]);
+    //reader.readAsDataURL(files[0].name);
   };
 
   // 處理貼上事件
