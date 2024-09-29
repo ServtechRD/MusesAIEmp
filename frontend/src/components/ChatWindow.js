@@ -122,6 +122,7 @@ function ChatWindow({ token }) {
   const [input, setInput] = useState('');
   const [userName, setUserName] = useState(''); // 儲存使用者名稱
   const [uploadedImages, setUploadedImages] = useState([]);
+  const [imageFiles, setImageFiles] = useState([]);
   const [taskId, setTaskId] = useState(null);
 
   const messagesEndRef = useRef(null);
@@ -198,6 +199,7 @@ function ChatWindow({ token }) {
         const file = item.getAsFile();
         const reader = new FileReader();
 
+        setImageFiles((prevFile) =>[...prevFile, file]);
         reader.onload = (e) => {
           //setUploadedImage(e.target.result); // 設定圖片 URL
           setUploadedImages((prevImages) => [...prevImages, e.target.result]); // 添加圖片 URL
@@ -229,7 +231,7 @@ function ChatWindow({ token }) {
 
       const formData = new FormData();
       formData.append('message', input);  // 添加文字字段
-      formData.append('images', uploadedImages);     // 添加圖片文件
+      formData.append('images', imageFiles);     // 添加圖片文件
 
       const response = await api.post(
         '/message',
