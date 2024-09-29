@@ -407,13 +407,13 @@ async def analyze_image(images_b64: [str],
 
             print(WORK_PATH)
 
-            user_config = config[user_id]
+            user_config = config['users'][current_user.username]
 
             print(user_config)
 
             prj_id = user_config['PROJ_ID']
             print(prj_id)
-            
+
             prj_file = user_config['PROJ_FILE']
             print(prj_file)
 
