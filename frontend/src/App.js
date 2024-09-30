@@ -5,6 +5,7 @@ import Register from './components/Register';
 import ChatWindow from './components/ChatWindow';
 import ImageUpload from './components/ImageUpload';
 import CodeUpload from './components/CodeUpload';
+import LoginPage from './components/LoginScreen';
 
 function App() {
   const [token, setToken] = useState(null);
@@ -14,7 +15,7 @@ function App() {
       <GlobalStyles />
       {!token ? (
         <div>
-          <Login setToken={setToken} />
+          <LoginPage setToken={setToken} />
           <Register />
         </div>
       ) : (
