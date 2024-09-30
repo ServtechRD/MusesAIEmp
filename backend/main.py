@@ -497,7 +497,7 @@ def analyze_image(images_b64: [str],
                 if (route_item["APP_DESC"] == new_route["APP_DESC"] and
                         route_item["FUNC_DESC"] == new_route["FUNC_DESC"]):
                     found = True
-                    route_item["FUNC_NAME"] = new_route["FUN_NAME"]
+                    route_item["FUNC_NAME"] = new_route["FUNC_NAME"]
 
             if not found:
                 route_js.append(new_route)
