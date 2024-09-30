@@ -235,14 +235,14 @@ async def send_message(
         elif (user_input.startswith("/CONFIG")):
             user_config = config['users'][current_user.username]
             input_items = user_input.split()
-            print("parser items :"+len(input_items))
+            print("parser items :"+str(len(input_items)))
             if (len(input_items) > 1):
                 if (input_items[1].upper() == "SET"):
                     if (len(input_items) > 3):
                         config_key = input_items[2]
                         config_value = input_items[3]
                         user_config[config_key] = config_value
-                    
+
 
             return JSONResponse(content={"message": json.dumps(user_config)},
                                 status_code=200)
