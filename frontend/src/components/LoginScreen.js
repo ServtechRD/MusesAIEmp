@@ -40,7 +40,9 @@ export default function LoginPage({ setToken }) {
     setOpenRegister(false);
     // 這裡添加實際的註冊邏輯
     try {
-        const response = await api.post('/register', { registerUsername, registerPassword });
+        let username = registerUsername;
+        let password = registerPassword;
+        const response = await api.post('/register', { username, password });
         setSuccess('註冊成功, 請登入');
       } catch (error) {
         setError('註冊失敗, 使用者代碼可能已存在');
@@ -62,7 +64,7 @@ export default function LoginPage({ setToken }) {
            <Box
             component="img"
             sx={{
-              height: 300,
+              height: 200,
               mb: 2
             }}
             alt="A001 logo"

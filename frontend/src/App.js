@@ -16,7 +16,6 @@ function App() {
       {!token ? (
         <div>
           <LoginPage setToken={setToken} />
-          <Register />
         </div>
       ) : (
         <div>
