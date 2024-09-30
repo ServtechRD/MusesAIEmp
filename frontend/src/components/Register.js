@@ -11,9 +11,9 @@ function Register() {
   const handleRegister = async () => {
     try {
       const response = await api.post('/register', { username, password });
-      setSuccess('注册成功，请登录');
+      setSuccess('註冊成功, 請登入');
     } catch (error) {
-      setError('注册失败，用户名可能已存在');
+      setError('註冊失敗, 使用者代碼可能已存在');
     }
   };
 
@@ -22,12 +22,12 @@ function Register() {
       <h2>注册</h2>
       <input
         type="text"
-        placeholder="用户名"
+        placeholder="使用者代號"
         onChange={(e) => setUsername(e.target.value)}
       />
       <input
         type="password"
-        placeholder="密码"
+        placeholder="使用者密碼"
         onChange={(e) => setPassword(e.target.value)}
       />
       {/* 如果需要邮箱
