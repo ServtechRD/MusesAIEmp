@@ -46,10 +46,10 @@ export default function LoginPage({ setToken }) {
            <Box
             component="img"
             sx={{
-              height: 100,
+              height: 300,
               mb: 2
             }}
-            alt="Your logo"
+            alt="A001 logo"
             src="/static/assets/images/logo.png"
           />
           <Typography component="h1" variant="h5">
