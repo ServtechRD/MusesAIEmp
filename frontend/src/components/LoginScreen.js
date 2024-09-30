@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { Box, TextField, Button, Typography, Container, CssBaseline, Avatar, Alert } from '@mui/material';
+import { Box, TextField, Button, Typography, Container, CssBaseline, Alert, Dialog, DialogTitle, DialogContent, DialogActions } from '@mui/material';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
-import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
+
 
 import api from '../services/api';
 
@@ -11,6 +11,9 @@ export default function LoginPage({ setToken }) {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [openRegister, setOpenRegister] = useState(false);
+  const [registerUsername, setRegisterUsername] = useState('');
+  const [registerPassword, setRegisterPassword] = useState('');
 
   const handleSubmit = async (event)  => {
     event.preventDefault();
@@ -28,6 +31,19 @@ export default function LoginPage({ setToken }) {
         setToken(response.data.access_token);
       } catch (error) {
         setError('代號或密碼錯誤');
+      }
+  };
+
+
+  const handleRegister = async () => {
+    console.log('Register:', registerUsername, registerPassword);
+    setOpenRegister(false);
+    // 這裡添加實際的註冊邏輯
+    try {
+        const response = await api.post('/register', { registerUsername, registerPassword });
+        setSuccess('註冊成功, 請登入');
+      } catch (error) {
+        setError('註冊失敗, 使用者代碼可能已存在');
       }
   };
 
@@ -94,8 +110,51 @@ export default function LoginPage({ setToken }) {
               登入
             </Button>
           </Box>
+          <Button
+            fullWidth
+            variant="outlined"
+            sx={{ mt: 1, mb: 2 }}
+            onClick={() => setOpenRegister(true)}
+          >
+            註冊新帳號
+          </Button>
         </Box>
+        <Typography variant="body2" color="text.secondary" align="center" sx={{ mt: 5 }}>
+          版本 1.0.0
+        </Typography>
       </Container>
+
+
+      <Dialog open={openRegister} onClose={() => setOpenRegister(false)}>
+        <DialogTitle>註冊新帳號</DialogTitle>
+        <DialogContent>
+          <TextField
+            autoFocus
+            margin="dense"
+            id="register-username"
+            label="帳號"
+            type="text"
+            fullWidth
+            variant="standard"
+            value={registerUsername}
+            onChange={(e) => setRegisterUsername(e.target.value)}
+          />
+          <TextField
+            margin="dense"
+            id="register-password"
+            label="密碼"
+            type="password"
+            fullWidth
+            variant="standard"
+            value={registerPassword}
+            onChange={(e) => setRegisterPassword(e.target.value)}
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setOpenRegister(false)}>取消</Button>
+          <Button onClick={handleRegister}>註冊</Button>
+        </DialogActions>
+      </Dialog>
     </ThemeProvider>
   );
 }
