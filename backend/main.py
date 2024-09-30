@@ -237,11 +237,14 @@ async def send_message(
             input_items = user_input.split()
             print("parser items :"+str(len(input_items)))
             if (len(input_items) > 1):
+                print("config have action")
                 if (input_items[1].upper() == "SET"):
+                    print("config setting")
                     if (len(input_items) > 3):
                         config_key = input_items[2]
                         config_value = input_items[3]
                         user_config[config_key] = config_value
+                        print(f"update {config_key} = {config_value}")
 
 
             return JSONResponse(content={"message": json.dumps(user_config)},
