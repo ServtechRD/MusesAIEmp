@@ -11,6 +11,7 @@ export default function LoginPage({ setToken }) {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
   const [openRegister, setOpenRegister] = useState(false);
   const [registerUsername, setRegisterUsername] = useState('');
   const [registerPassword, setRegisterPassword] = useState('');
@@ -43,6 +44,7 @@ export default function LoginPage({ setToken }) {
         let username = registerUsername;
         let password = registerPassword;
         const response = await api.post('/register', { username, password });
+        setError('');
         setSuccess('註冊成功, 請登入');
       } catch (error) {
         setError('註冊失敗, 使用者代碼可能已存在');
@@ -76,6 +78,11 @@ export default function LoginPage({ setToken }) {
           {error && (
             <Alert severity="error" sx={{ mt: 2, width: '100%' }}>
               {error}
+            </Alert>
+          )}
+          {success && (
+            <Alert severity="success" sx={{ mt: 2, width: '100%' }}>
+              {success}
             </Alert>
           )}
           <Box component="form" onSubmit={handleSubmit} noValidate sx={{ mt: 1 }}>
