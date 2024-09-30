@@ -391,6 +391,7 @@ def analyze_image(images_b64: [str],
                          "content":
                              [
                                  {"type": "text", "text": "Please analyze this image, include content, color and size"},
+                                 {"type": "text", "text": user_input},
                                  {"type": "image_url",
                                   "image_url": {"url": f"data:image/{file_type};base64,{encode_image}"}},
                              ]
@@ -427,7 +428,7 @@ def analyze_image(images_b64: [str],
 
         messages.append(
             {'role': 'user', 'content': 'write only program,no any description or explain, no markdown tag , output full html code embedd css and javascript'})
-        messages.append({'role': 'user', 'content': user_input})
+      #  messages.append({'role': 'user', 'content': user_input})
 
         try:
             tasks[task_id] = "生成程式碼"
