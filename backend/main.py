@@ -426,7 +426,7 @@ def analyze_image(images_b64: [str],
             })
 
         messages.append(
-            {'role': 'user', 'content': 'write only program,no any description or explain, no markdown tag'})
+            {'role': 'user', 'content': 'write only program,no any description or explain, no markdown tag , output full html code embedd css and javascript'})
         messages.append({'role': 'user', 'content': user_input})
 
         try:
