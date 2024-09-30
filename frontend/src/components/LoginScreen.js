@@ -43,9 +43,15 @@ export default function LoginPage({ setToken }) {
             alignItems: 'center',
           }}
         >
-          <Avatar sx={{ m: 1, bgcolor: 'secondary.main', width: 56, height: 56 }}>
-            <LockOutlinedIcon />
-          </Avatar>
+           <Box
+            component="img"
+            sx={{
+              height: 100,
+              mb: 2
+            }}
+            alt="Your logo"
+            src="/static/assets/images/logo.png"
+          />
           <Typography component="h1" variant="h5">
             登入
           </Typography>
