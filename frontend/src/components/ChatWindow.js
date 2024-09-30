@@ -143,6 +143,7 @@ function ChatWindow({ token }) {
   const [prevStatus, setPrevStatus] = useState('---');
   const [assistantName,setAssistantName] = useState('A001');
   const [configStatus,setConfigStatus] = useState('Activate');
+  const [fileInputKey,setFileInputKey] = useState(Date.now());
   const messagesEndRef = useRef(null);
 
   // 滚动到底部
@@ -270,7 +271,7 @@ function ChatWindow({ token }) {
         reader.readAsDataURL(file);
         event.preventDefault(); // 阻止預設行為，不插入圖片的文字描述
         return;
-      } else if (item.kind === 'string') {
+      } else if (item.kind === 'text') {
         // 處理文字
         item.getAsString((text) => {
           //textContent += text;
@@ -285,8 +286,9 @@ function ChatWindow({ token }) {
 
   const handleReset = async () => {
     setInput('');
-    setImageFiles([])
-    setUploadedImages([])  
+    setImageFiles([]);
+    setUploadedImages([]);
+    setfileInputKey(Date.now());  
   }
 
   const handleSend = async () => {
@@ -339,8 +341,9 @@ function ChatWindow({ token }) {
       }
      
       setInput('');
-      setImageFiles([])
-      setUploadedImages([])  
+      setImageFiles([]);
+      setUploadedImages([]);  
+      setfileInputKey(Date.now());
 
       // 更新本地消息列表
       setMessages((prevMessages) => [
@@ -396,7 +399,7 @@ function ChatWindow({ token }) {
         </ThumbnailContainer>
        )}
 
-        <FileInput type="file" multiple onChange={handleImageChange} placeholder='上傳圖片' />
+        <FileInput type="file" key={fileInputKey} multiple onChange={handleImageChange} placeholder='上傳圖片' />
         <InputField
           rows={3}
           value={input}
