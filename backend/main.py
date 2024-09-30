@@ -463,7 +463,11 @@ def analyze_image(images_b64: [str],
             func_file = user_config['FUNC_FILE']
             print(func_file)
 
-            output_path = f"{WORK_PATH}/{prj_id}/public/{app_name}/{func_file}"
+            output_folder = f"{WORK_PATH}/{prj_id}/public/{app_name}"
+            if not os.path.exists(output_folder):
+                os.makedirs(output_folder)
+
+            output_path = f"{output_folder}/{func_file}"
 
             print("prog path :" + output_path)
 
