@@ -59,7 +59,7 @@ config = {
             "APP_DESC": "報表",
             "APP_NAME": "01_Report",
             "FUNC_DESC": "查詢子報表",
-            "FUNC_FILE": "public/index.html",
+            "FUNC_FILE": "query1.html",
             "PROJ_MODE": 1,
         }
     }
@@ -415,7 +415,7 @@ def analyze_image(images_b64: [str],
         messages = [
             {
                 'role': 'system',
-                'content': '你是一个擅長web畫面生成代码的助手。',
+                'content': '你是一個資深的前端工程師, 擅長javascript , css, html , 可以根據畫面描述, 撰寫Web前端程式。',
             },
         ]
 
@@ -456,10 +456,14 @@ def analyze_image(images_b64: [str],
             prj_id = user_config['PROJ_ID']
             print(prj_id)
 
+            app_desc = user_config['APP_DESC']
+            app_name = user_config['APP_NAME']
+            func_desc = user_config['FUNC_DESC']
+
             func_file = user_config['FUNC_FILE']
             print(func_file)
 
-            output_path = f"{WORK_PATH}/{prj_id}/{func_file}"
+            output_path = f"{WORK_PATH}/{prj_id}/public/{app_name}/{func_file}"
 
             print("prog path :" + output_path)
 
@@ -474,6 +478,30 @@ def analyze_image(images_b64: [str],
                 with open(output_path, "w") as out_f:
                     out_f.write(assistant_reply)
 
+            # 更新路由
+            print("開始更新路由")
+            tasks[task_id] = "更新路由"
+            route_path = f"{WORK_PATH}/{prj_id}/route.json"
+            with open(route_path, "r") as route_f:
+                original_route = route_f.read()
+
+            route_js = json.loads(original_route)
+
+            new_route = {"APP_DESC": app_desc, "FUNC_DESC": func_desc, "FUN_NAME": f"/{app_name}/{func_file}"}
+            found = False
+            for route_item in route_js:
+                if (route_item["APP_DESC"] == new_route["APP_DESC"] and
+                        route_item["FUNC_DESC"] == new_route["FUNC_DESC"]):
+                    found = True
+                    route_item["FUNC_NAME"] = new_route["FUN_NAME"]
+
+            if not found:
+                route_js.append(new_route)
+
+            with open(route_path, "w") as route_f:
+                route_f.write(json.dumps(route_js, indent=4))
+
+            print("結束更新路由")
             # lines = generated_code.splitlines(True)
             # with open(output_path,"w") as out_f:
             #    out_f.writelines(lines[1:-1])
