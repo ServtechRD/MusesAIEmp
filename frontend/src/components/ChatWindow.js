@@ -288,7 +288,7 @@ function ChatWindow({ token }) {
     setInput('');
     setImageFiles([]);
     setUploadedImages([]);
-    setfileInputKey(Date.now());  
+    setFileInputKey(Date.now());  
   }
 
   const handleSend = async () => {
@@ -343,7 +343,7 @@ function ChatWindow({ token }) {
       setInput('');
       setImageFiles([]);
       setUploadedImages([]);  
-      setfileInputKey(Date.now());
+      setFileInputKey(Date.now());
 
       // 更新本地消息列表
       setMessages((prevMessages) => [
