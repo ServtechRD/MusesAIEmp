@@ -6,6 +6,7 @@ import ChatWindow from './components/ChatWindow';
 import ImageUpload from './components/ImageUpload';
 import CodeUpload from './components/CodeUpload';
 import LoginPage from './components/LoginScreen';
+import ChatPage from './components/ChatPage';
 
 function App() {
   const [token, setToken] = useState(null);
@@ -19,7 +20,7 @@ function App() {
         </div>
       ) : (
         <div>
-          <ChatWindow token={token} />
+          <ChatPage token={token} />
           
           {/* 
           <ImageUpload token={token} />
