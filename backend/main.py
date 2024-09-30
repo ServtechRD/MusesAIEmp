@@ -491,7 +491,7 @@ def analyze_image(images_b64: [str],
 
             route_js = json.loads(original_route)
 
-            new_route = {"APP_DESC": app_desc, "FUNC_DESC": func_desc, "FUN_NAME": f"/{app_name}/{func_file}"}
+            new_route = {"APP_DESC": app_desc, "FUNC_DESC": func_desc, "FUNC_NAME": f"/{app_name}/{func_file}"}
             found = False
             for route_item in route_js:
                 if (route_item["APP_DESC"] == new_route["APP_DESC"] and
