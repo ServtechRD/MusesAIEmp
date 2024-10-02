@@ -120,7 +120,7 @@ const InputContainer = styled(Box)(({ theme }) => ({
 const UserName = styled(Typography)(({ theme, isUser }) => ({
   fontSize: 14,
   fontWeight: "bold",
-  color: isUser ? theme.palette.color.primary : theme.palette.text.primary,
+  color: isUser ? theme.palette.info.main : theme.palette.success.main,
   marginBottom: theme.spacing(0.5),
   alignSelf: isUser ? "flex-end" : "flex-start",
 }));
