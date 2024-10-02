@@ -140,7 +140,7 @@ const Thumbnail = styled("img")(({ theme }) => ({
   borderRadius: theme.shape.borderRadius,
 }));
 
-function ChatPage({ token }) {
+function ChatPage({ token, engineerType }) {
   const [darkMode, setDarkMode] = useState(false);
   const [code, setCode] = useState("// Your React code here");
   const [codeDialogOpen, setCodeDialogOpen] = useState(false);
@@ -561,7 +561,7 @@ function ChatPage({ token }) {
               <MenuIcon fontSize="small" />
             </IconButton>
             <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-              AI Employee - Front-end Engineer
+              AI Employee - {engineerType == 1 ? "前端工程師" : "Andrid工程師"}
             </Typography>
             <IconButton
               color="inherit"
