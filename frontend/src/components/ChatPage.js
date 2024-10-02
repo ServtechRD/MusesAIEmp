@@ -325,7 +325,7 @@ function ChatPage({ token }) {
 
   const handleApiCall = async (msg, images) => {
     const formData = new FormData();
-    formData.append("message", msg, images);
+    formData.append("message", msg);
 
     let api_name = "/message";
     if (images instanceof File) {
