@@ -131,6 +131,9 @@ const Thumbnail = styled("img")(({ theme }) => ({
 function ChatPage({ token }) {
   const [darkMode, setDarkMode] = useState(false);
   const [code, setCode] = useState("// Your React code here");
+  const [codeDialogOpen, setCodeDialogOpen] = useState(false);
+  const [conversations, setConversations] = useState([]);
+  const [currentConversationId, setCurrentConversationId] = useState(null);
 
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
