@@ -260,25 +260,26 @@ function ChatPage({ token }) {
   }, [token, taskId, prevStatus]);
 
   useEffect(() => {
-    const getInfo = async () => {
-      try {
-        const response = await api.get("/info", {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        setAssistantName(response.data.name);
-        let config = response.data.config;
-        let configStatus = `${config["PROJ_ID"]} | ${config["PROJ_DESC"]} | ${config["APP_DESC"]} | ${config["FUNC_DESC"]} | ${config["FUNC_FILE"]}`;
-        setConfigStatus(configStatus);
-      } catch (error) {
-        console.log(error);
-      }
-    };
     getInfo();
   }, [assistantName, configStatus, token]);
 
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
+
+  const getInfo = async () => {
+    try {
+      const response = await api.get("/info", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setAssistantName(response.data.name);
+      let config = response.data.config;
+      let configStatus = `${config["PROJ_ID"]} | ${config["PROJ_DESC"]} | ${config["APP_DESC"]} | ${config["FUNC_DESC"]} | ${config["FUNC_FILE"]}`;
+      setConfigStatus(configStatus);
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
   const handleImageChange = (e) => {
     const files = Array.from(e.target.files).slice(0, 5);
