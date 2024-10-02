@@ -62,7 +62,7 @@ const NewConversationButton = styled(Button)(({ theme }) => ({
 
 // 调整主容器高度计算
 const MainContainer = styled(Box)(({ theme }) => ({
-  height: "calc(100vh - 48px)", // 根据新的 AppBar 高度调整
+  height: "calc(100vh - 20vh)", // 根据新的 AppBar 高度调整
   display: "flex",
 }));
 
@@ -99,11 +99,11 @@ const BubbleContent = styled(Paper)(({ theme, isUser }) => ({
   borderBottomRightRadius: isUser ? 0 : 20,
   borderBottomLeftRadius: isUser ? 20 : 0,
   backgroundColor: isUser
-    ? theme.palette.primary.main
-    : theme.palette.secondary.main,
+    ? theme.palette.info.main
+    : theme.palette.success.main,
   color: isUser
-    ? theme.palette.primary.contrastText
-    : theme.palette.secondary.contrastText,
+    ? theme.palette.info.contrastText
+    : theme.palette.success.contrastText,
   wordBreak: "break-word",
 }));
 
@@ -116,7 +116,7 @@ const InputContainer = styled(Box)(({ theme }) => ({
 const UserName = styled(Typography)(({ theme, isUser }) => ({
   fontSize: 14,
   fontWeight: "bold",
-  color: isUser ? theme.palette.primary.main : theme.palette.text.primary,
+  color: isUser ? theme.palette.color.info : theme.palette.text.info,
   marginBottom: theme.spacing(0.5),
   alignSelf: isUser ? "flex-end" : "flex-start",
 }));
@@ -142,6 +142,30 @@ function ChatPage({ token }) {
   const [conversations, setConversations] = useState([]);
   const [currentConversationId, setCurrentConversationId] = useState(null);
   const [showConversationList, setShowConversationList] = useState(true);
+
+  // State for dialogs
+  const [projectDialogOpen, setProjectDialogOpen] = useState(false);
+  const [switchProjectDialogOpen, setSwitchProjectDialogOpen] = useState(false);
+  const [switchFunctionDialogOpen, setSwitchFunctionDialogOpen] =
+    useState(false);
+
+  // Project data
+  const [projectId, setProjectId] = useState("");
+  const [projectDescription, setProjectDescription] = useState("");
+  const [projectMode, setProjectMode] = useState("Basic");
+
+  // Feature data
+  const [appName, setAppName] = useState("");
+  const [appDescription, setAppDescription] = useState("");
+  const [funcDescription, setFuncDescription] = useState("");
+  const [funcFileName, setFuncFileName] = useState("");
+
+  const [currentProject, setCurrentProject] = useState("");
+  const [projects, setProjects] = useState([
+    "Project A",
+    "Project B",
+    "Project C",
+  ]); // Placeholder project list
 
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
@@ -295,33 +319,38 @@ function ChatPage({ token }) {
     setFileInputKey(Date.now());
   };
 
+  const handleApiCall = async (msg) => {
+    const formData = new FormData();
+    formData.append("message", msg, images);
+
+    let api_name = "/message";
+    if (images instanceof File) {
+      api_name = "/message_images";
+      formData.append("images", images);
+    }
+
+    const response = await api.post(api_name, formData, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "multipart/form-data",
+      },
+    });
+
+    if (response.data.task_id) {
+      setTaskId(response.data.task_id);
+    } else if (input.includes("/CONFIG") && input.includes("SET")) {
+      await getInfo();
+    }
+    return response;
+  };
+
   const handleSend = async () => {
     if (!input.trim()) return;
 
     setMessages([...messages, { sender: "user", text: input, name: userName }]);
 
     try {
-      const formData = new FormData();
-      formData.append("message", input);
-
-      let api_name = "/message";
-      if (imageFiles instanceof File) {
-        api_name = "/message_images";
-        formData.append("images", imageFiles);
-      }
-
-      const response = await api.post(api_name, formData, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "multipart/form-data",
-        },
-      });
-
-      if (response.data.task_id) {
-        setTaskId(response.data.task_id);
-      } else if (input.includes("/CONFIG") && input.includes("SET")) {
-        await getInfo();
-      }
+      const response = await handleApiCall(input, imageFiles);
 
       setInput("");
       setImageFiles([]);
@@ -355,6 +384,126 @@ function ChatPage({ token }) {
     } catch (error) {
       console.log(error);
     }
+  };
+
+  // Function to handle creating a new project
+  const handleCreateProject = async () => {
+    try {
+      const input1 = "/CONFIG SET PROJ_ID " + projectId;
+      const input2 = "/CONFIG SET PROJ_DESC" + projectDescription;
+      const input3 = "/CONFIG SET PROJ_MODE" + projectMode;
+
+      setMessages([
+        ...messages,
+        {
+          sender: "user",
+          text: "建立專案" + projectDescription,
+          name: userName,
+        },
+      ]);
+
+      const rep1 = handleApiCall(input1, null);
+      console.log("Creating project id:", rep1);
+
+      const rep2 = handleApiCall(input2, null);
+      console.log("Creating project desc:", rep2);
+
+      const rep3 = handleApiCall(input3, null);
+      console.log("Creating project mode:", rep3);
+
+      setProjects([...projects, projectId]);
+      setMessages((prevMessages) => [
+        ...prevMessages,
+        { sender: "assistant", text: "建立成功" },
+      ]);
+    } catch (error) {
+      setMessages((prevMessages) => [
+        ...prevMessages,
+        { sender: "assistant", text: "建立失敗-" + error.toString() },
+      ]);
+    }
+    setProjectDialogOpen(false);
+  };
+
+  // Function to handle switching projects
+  const handleSwitchProject = async () => {
+    try {
+      const input1 = "/CONFIG SET PROJ_ID " + projectId;
+      const input2 = "/CONFIG SET PROJ_DESC" + projectDescription;
+      const input3 = "/CONFIG SET PROJ_MODE" + projectMode;
+
+      setMessages([
+        ...messages,
+        {
+          sender: "user",
+          text: "切換專案 :" + projectDescription,
+          name: userName,
+        },
+      ]);
+
+      const rep1 = handleApiCall(input1, null);
+      console.log("Creating project id:", rep1);
+
+      const rep2 = handleApiCall(input2, null);
+      console.log("Creating project desc:", rep2);
+
+      const rep3 = handleApiCall(input3, null);
+      console.log("Creating project mode:", rep3);
+
+      setProjects([...projects, projectId]);
+      setMessages((prevMessages) => [
+        ...prevMessages,
+        { sender: "assistant", text: "切換成功" },
+      ]);
+    } catch (error) {
+      setMessages((prevMessages) => [
+        ...prevMessages,
+        { sender: "assistant", text: "切換失敗-" + error.toString() },
+      ]);
+    }
+    setSwitchProjectDialogOpen(false);
+  };
+
+  // Function to handle creating a new feature
+  const handleSwitchFunction = async () => {
+    try {
+      const input1 = "/CONFIG SET APP_NAME " + appName;
+      const input2 = "/CONFIG SET APP_DESC" + appDescription;
+      const input3 = "/CONFIG SET FUNC_DESC" + funcDescription;
+      const input4 = "/CONFIG SET FUNC_FILE" + funcFileName;
+
+      setMessages([
+        ...messages,
+        {
+          sender: "user",
+          text: "切換功能 :" + appDescription + " > " + funcDescription,
+          name: userName,
+        },
+      ]);
+
+      const rep1 = handleApiCall(input1, null);
+      console.log("switch app name:", rep1);
+
+      const rep2 = handleApiCall(input2, null);
+      console.log("switch app desc:", rep2);
+
+      const rep3 = handleApiCall(input3, null);
+      console.log("switch func desc:", rep3);
+
+      const rep4 = handleApiCall(input4, null);
+      console.log("switch func name:", rep4);
+
+      setMessages((prevMessages) => [
+        ...prevMessages,
+        { sender: "assistant", text: "切換成功" },
+      ]);
+    } catch (error) {
+      setMessages((prevMessages) => [
+        ...prevMessages,
+        { sender: "assistant", text: "切換失敗-" + error.toString() },
+      ]);
+    }
+    setSwitchFunctionDialogOpen(false);
   };
 
   return (
@@ -445,10 +594,7 @@ function ChatPage({ token }) {
                             <Typography variant="subtitle2">
                               {assistantName}
                             </Typography>
-                            <Typography
-                              variant="caption"
-                              color="text.secondary"
-                            >
+                            <Typography variant="caption" color="text.success">
                               {configStatus}
                             </Typography>
                           </Box>
@@ -461,6 +607,33 @@ function ChatPage({ token }) {
                   ))}
                   <div ref={messagesEndRef} />
                 </MessagesContainer>
+
+                <Grid container spacing={2}>
+                  {/* Main content area */}
+                  <Grid item xs={12}>
+                    <Box sx={{ display: "flex", gap: 2, p: 2 }}>
+                      {/* Buttons */}
+                      <Button
+                        variant="contained"
+                        onClick={() => setProjectDialogOpen(true)}
+                      >
+                        建立專案
+                      </Button>
+                      <Button
+                        variant="contained"
+                        onClick={() => setSwitchProjectDialogOpen(true)}
+                      >
+                        切換專案
+                      </Button>
+                      <Button
+                        variant="contained"
+                        onClick={() => setSwitchFunctionDialogOpen(true)}
+                      >
+                        切換功能
+                      </Button>
+                    </Box>
+                  </Grid>
+                </Grid>
 
                 <InputContainer>
                   {uploadedImages.length > 0 && (
@@ -518,7 +691,7 @@ function ChatPage({ token }) {
         fullWidth
         maxWidth="md"
       >
-        <DialogTitle>代码视图</DialogTitle>
+        <DialogTitle>程式碼</DialogTitle>
         <DialogContent>
           <SyntaxHighlighter
             language="jsx"
@@ -530,6 +703,118 @@ function ChatPage({ token }) {
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setCodeDialogOpen(false)}>关闭</Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Create Project Dialog */}
+      <Dialog
+        open={projectDialogOpen}
+        onClose={() => setProjectDialogOpen(false)}
+      >
+        <DialogTitle>建立專案</DialogTitle>
+        <DialogContent>
+          <TextField
+            label="專案代號"
+            fullWidth
+            value={projectId}
+            onChange={(e) => setProjectId(e.target.value)}
+            margin="dense"
+          />
+          <TextField
+            label="專案描述"
+            fullWidth
+            value={projectDescription}
+            onChange={(e) => setProjectDescription(e.target.value)}
+            margin="dense"
+          />
+          <FormControl fullWidth margin="dense">
+            <InputLabel>專案類型</InputLabel>
+            <Select
+              value={projectType}
+              onChange={(e) => setProjectMode(e.target.value)}
+            >
+              <MenuItem value="Basic">Basic</MenuItem>
+              <MenuItem value="React">React</MenuItem>
+              <MenuItem value="SmartAdmin">SmartAdmin</MenuItem>
+            </Select>
+          </FormControl>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setProjectDialogOpen(false)}>取消</Button>
+          <Button onClick={handleCreateProject}>建立</Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Switch Project Dialog */}
+      <Dialog
+        open={switchProjectDialogOpen}
+        onClose={() => setSwitchProjectDialogOpen(false)}
+      >
+        <DialogTitle>切換專案</DialogTitle>
+        <DialogContent>
+          <FormControl fullWidth margin="dense">
+            <InputLabel>選擇專案</InputLabel>
+            <Select
+              value={currentProject}
+              onChange={(e) => setCurrentProject(e.target.value)}
+            >
+              {projects.map((project) => (
+                <MenuItem key={project} value={project}>
+                  {project}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setSwitchProjectDialogOpen(false)}>
+            取消
+          </Button>
+          <Button onClick={handleSwitchProject}>切換</Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Create Feature Dialog */}
+      <Dialog
+        open={createFeatureDialogOpen}
+        onClose={() => setCreateFeatureDialogOpen(false)}
+      >
+        <DialogTitle>建立功能</DialogTitle>
+        <DialogContent>
+          <TextField
+            label="應用代號"
+            fullWidth
+            value={appName}
+            onChange={(e) => setAppName(e.target.value)}
+            margin="dense"
+          />
+          <TextField
+            label="應用描述"
+            fullWidth
+            value={appDescription}
+            onChange={(e) => setAppDescription(e.target.value)}
+            margin="dense"
+          />
+          <TextField
+            label="功能描述"
+            fullWidth
+            value={funcDescription}
+            onChange={(e) => setFuncDescription(e.target.value)}
+            margin="dense"
+          />
+          <TextField
+            label="功能檔名"
+            fullWidth
+            value={funcFileName}
+            onChange={(e) => setFuncFileName(e.target.value)}
+            margin="dense"
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setSwitchFunctionDialogOpenn(false)}>
+            取消
+          </Button>
+          <Button onClick={handleSwitchFunction}>建立</Button>
         </DialogActions>
       </Dialog>
     </ThemeProvider>
