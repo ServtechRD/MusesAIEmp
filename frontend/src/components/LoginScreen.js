@@ -22,7 +22,7 @@ import api from "../services/api";
 
 const theme = createTheme();
 
-export default function LoginPage({ setToken, setEngineerType }) {
+export default function LoginPage({ setToken, setEngineerType, engineerType }) {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
