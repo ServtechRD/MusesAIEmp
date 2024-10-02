@@ -104,10 +104,10 @@ const BubbleContent = styled(Paper)(({ theme, isUser }) => ({
   borderBottomRightRadius: isUser ? 0 : 20,
   borderBottomLeftRadius: isUser ? 20 : 0,
   backgroundColor: isUser
-    ? theme.palette.info.main
-    : theme.palette.success.main,
+    ? theme.palette.secondary.light
+    : theme.palette.success.light,
   color: isUser
-    ? theme.palette.info.contrastText
+    ? theme.palette.secondary.contrastText
     : theme.palette.success.contrastText,
   wordBreak: "break-word",
 }));
@@ -191,6 +191,8 @@ function ChatPage({ token }) {
   const theme = createTheme({
     palette: {
       mode: darkMode ? "dark" : "light",
+      success: "#d0fcad",
+      secondary: "#e1f38d",
     },
   });
 
