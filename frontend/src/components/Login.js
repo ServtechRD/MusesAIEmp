@@ -10,8 +10,6 @@ const LoginContainer = styled.div`
   height: '100vh' 
 `;
 
-
-
 const LogoItem = styled.img`
   width: '100px';
   height: '100px';
