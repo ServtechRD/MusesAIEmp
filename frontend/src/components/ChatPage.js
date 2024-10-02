@@ -163,6 +163,23 @@ function ChatPage({ token }) {
       setUserName(decodedToken?.sub || "User");
     }
 
+    const fetchConversations = async () => {
+      try {
+        const response = await api.get("/conversations", {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        setConversations(response.data);
+        if (response.data.length > 0) {
+          setCurrentConversationId(response.data[0].id);
+        }
+      } catch (error) {
+        console.log(error);
+      }
+    };
+    fetchConversations();
+  }, [currentConversationId, token]);
+
+  useEffect(() => {
     if (taskId) {
       const intervalId = setInterval(async () => {
         const response = await api.get(`task_status/${taskId}`);
@@ -312,6 +329,23 @@ function ChatPage({ token }) {
         ...prevMessages,
         { sender: "assistant", text: error.toString() },
       ]);
+    }
+  };
+
+  const handleNewConversation = async () => {
+    try {
+      const response = await api.post(
+        "/conversations",
+        {},
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        },
+      );
+      setConversations([...conversations, response.data]);
+      setCurrentConversationId(response.data.id);
+      setMessages([]);
+    } catch (error) {
+      console.log(error);
     }
   };
 
