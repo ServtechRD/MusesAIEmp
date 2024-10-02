@@ -568,9 +568,7 @@ function ChatPage({ token }) {
             >
               <CodeIcon fontSize="small" />
             </IconButton>
-            <IconButton color="primary" onClick={handleOpenLink}>
-              <LinkIcon fontSize="small" />
-            </IconButton>
+
             <IconButton color="inherit" onClick={() => setDarkMode(!darkMode)}>
               {darkMode ? <Brightness7Icon /> : <Brightness4Icon />}
             </IconButton>
@@ -645,6 +643,13 @@ function ChatPage({ token }) {
                               size="small"
                             >
                               <CodeIcon fontSize="small" />
+                            </IconButton>
+                            <IconButton
+                              color="inherit"
+                              onClick={handleOpenLink}
+                              size="small"
+                            >
+                              <LinkIcon fontSize="small" />
                             </IconButton>
                           </Box>
                         </UserInfoContainer>
