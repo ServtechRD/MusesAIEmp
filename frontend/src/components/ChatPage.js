@@ -31,6 +31,7 @@ import {
   Delete as DeleteIcon,
   Code as CodeIcon,
   Menu as MenuIcon,
+  Image as ImageIcon,
 } from "@mui/icons-material";
 
 import { PrismLight as SyntaxHighlighter } from "react-syntax-highlighter";
