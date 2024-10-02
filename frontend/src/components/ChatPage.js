@@ -395,8 +395,8 @@ function ChatPage({ token }) {
   const handleCreateProject = async () => {
     try {
       const input1 = "/CONFIG SET PROJ_ID " + projectId;
-      const input2 = "/CONFIG SET PROJ_DESC" + projectDescription;
-      const input3 = "/CONFIG SET PROJ_MODE" + projectMode;
+      const input2 = "/CONFIG SET PROJ_DESC " + projectDescription;
+      const input3 = "/CONFIG SET PROJ_MODE " + projectMode;
 
       setMessages([
         ...messages,
@@ -434,8 +434,8 @@ function ChatPage({ token }) {
   const handleSwitchProject = async () => {
     try {
       const input1 = "/CONFIG SET PROJ_ID " + projectId;
-      const input2 = "/CONFIG SET PROJ_DESC" + projectDescription;
-      const input3 = "/CONFIG SET PROJ_MODE" + projectMode;
+      const input2 = "/CONFIG SET PROJ_DESC " + projectDescription;
+      const input3 = "/CONFIG SET PROJ_MODE " + projectMode;
 
       setMessages([
         ...messages,
@@ -473,9 +473,9 @@ function ChatPage({ token }) {
   const handleSwitchFunction = async () => {
     try {
       const input1 = "/CONFIG SET APP_NAME " + appName;
-      const input2 = "/CONFIG SET APP_DESC" + appDescription;
-      const input3 = "/CONFIG SET FUNC_DESC" + funcDescription;
-      const input4 = "/CONFIG SET FUNC_FILE" + funcFileName;
+      const input2 = "/CONFIG SET APP_DESC " + appDescription;
+      const input3 = "/CONFIG SET FUNC_DESC " + funcDescription;
+      const input4 = "/CONFIG SET FUNC_FILE " + funcFileName;
 
       setMessages([
         ...messages,
