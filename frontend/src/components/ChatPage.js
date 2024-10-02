@@ -734,7 +734,7 @@ function ChatPage({ token }) {
           <FormControl fullWidth margin="dense">
             <InputLabel>專案類型</InputLabel>
             <Select
-              value={projectType}
+              value={projectMode}
               onChange={(e) => setProjectMode(e.target.value)}
             >
               <MenuItem value="Basic">Basic</MenuItem>
