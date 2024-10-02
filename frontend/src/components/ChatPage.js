@@ -360,8 +360,8 @@ function ChatPage({ token }) {
   return (
     <ThemeProvider theme={theme}>
       <Box sx={{ flexGrow: 1 }}>
-        <LowAppBar position="static">
-          <LowToolbar>
+        <AppBar position="static" sx={{ flexShrink: 0 }}>
+          <Toolbar>
             <IconButton
               color="inherit"
               onClick={() => setShowConversationList(!showConversationList)}
@@ -384,8 +384,8 @@ function ChatPage({ token }) {
             <IconButton color="inherit" onClick={() => setDarkMode(!darkMode)}>
               {darkMode ? <Brightness7Icon /> : <Brightness4Icon />}
             </IconButton>
-          </LowToolbar>
-        </LowAppBar>
+          </Toolbar>
+        </AppBar>
         <MainContainer>
           <Grid container spacing={2}>
             {showConversationList && (
