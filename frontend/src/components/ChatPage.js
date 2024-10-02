@@ -10,6 +10,13 @@ import {
   Paper,
   Avatar,
   IconButton,
+  List,
+  ListItem,
+  ListItemText,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
 } from "@mui/material";
 import { ThemeProvider, createTheme, styled } from "@mui/material/styles";
 //import SendIcon from '@mui/icons-material/Send';
@@ -22,6 +29,7 @@ import {
   Brightness7 as Brightness7Icon,
   Send as SendIcon,
   Delete as DeleteIcon,
+  Code as CodeIcon,
 } from "@mui/icons-material";
 
 import { PrismLight as SyntaxHighlighter } from "react-syntax-highlighter";
@@ -33,6 +41,23 @@ import { jwtDecode } from "jwt-decode";
 import api from "../services/api";
 
 SyntaxHighlighter.registerLanguage("jsx", jsx);
+
+// 调整 AppBar 高度
+const LowAppBar = styled(AppBar)(({ theme }) => ({
+  height: 48, // 降低 AppBar 高度
+}));
+
+const LowToolbar = styled(Toolbar)(({ theme }) => ({
+  minHeight: 48, // 降低 Toolbar 高度
+  paddingTop: theme.spacing(0.5),
+  paddingBottom: theme.spacing(0.5),
+}));
+
+// 调整主容器高度计算
+const MainContainer = styled(Box)(({ theme }) => ({
+  height: "calc(100vh - 48px)", // 根据新的 AppBar 高度调整
+  display: "flex",
+}));
 
 const ChatContainer = styled(Box)(({ theme }) => ({
   display: "flex",
@@ -47,7 +72,7 @@ const MessagesContainer = styled(Box)(({ theme }) => ({
 }));
 
 const MessageBubble = styled(Box)(({ theme, isUser }) => ({
-  maxWidth: "60%",
+  maxWidth: "80%",
   marginBottom: theme.spacing(2),
   alignSelf: isUser ? "flex-end" : "flex-start",
   display: "flex",
@@ -290,111 +315,158 @@ function ChatPage({ token }) {
   return (
     <ThemeProvider theme={theme}>
       <Box sx={{ flexGrow: 1 }}>
-        <AppBar position="static">
-          <Toolbar>
+        <LowAppBar position="static">
+          <LowToolbar>
             <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-              AI Chat & Code Editor
+              AI Employee - Front-end Engineer
             </Typography>
+            <IconButton
+              color="inherit"
+              onClick={() => setCodeDialogOpen(true)}
+              size="small"
+            >
+              <CodeIcon fontSize="small" />
+            </IconButton>
             <IconButton color="inherit" onClick={() => setDarkMode(!darkMode)}>
               {darkMode ? <Brightness7Icon /> : <Brightness4Icon />}
             </IconButton>
-          </Toolbar>
-        </AppBar>
-        <Grid container spacing={2} sx={{ height: "calc(100vh - 64px)" }}>
-          <Grid item xs={12} md={6}>
-            <ChatContainer>
-              <MessagesContainer>
-                {messages.map((msg, index) => (
-                  <MessageBubble key={index} isUser={msg.sender === "user"}>
-                    {msg.sender === "user" && (
-                      <UserName variant="body2" isUser={msg.sender === "user"}>
-                        {msg.name}
-                      </UserName>
-                    )}
-                    {msg.sender === "assistant" && (
-                      <UserInfoContainer>
-                        <Avatar
-                          src="/static/assets/images/A001.png"
-                          alt="A001"
-                          sx={{ width: 40, height: 40, marginRight: 1 }}
-                        />
-                        <Box>
-                          <Typography variant="subtitle2">
-                            {assistantName}
-                          </Typography>
-                          <Typography variant="caption" color="text.secondary">
-                            {configStatus}
-                          </Typography>
-                        </Box>
-                      </UserInfoContainer>
-                    )}
-                    <BubbleContent isUser={msg.sender === "user"}>
-                      <ReactMarkdown>{msg.text}</ReactMarkdown>
-                    </BubbleContent>
-                  </MessageBubble>
-                ))}
-                <div ref={messagesEndRef} />
-              </MessagesContainer>
-
-              <InputContainer>
-                {uploadedImages.length > 0 && (
-                  <ThumbnailContainer>
-                    {uploadedImages.map((image, index) => (
-                      <Thumbnail
-                        key={index}
-                        src={image}
-                        alt={`Pasted content ${index}`}
-                      />
-                    ))}
-                  </ThumbnailContainer>
-                )}
-
-                <input
-                  type="file"
-                  key={fileInputKey}
-                  multiple
-                  onChange={handleImageChange}
-                  style={{ display: "none" }}
-                  id="image-upload"
-                />
-                <label htmlFor="image-upload">
-                  <Button variant="contained" component="span" sx={{ mr: 1 }}>
-                    Upload Image
-                  </Button>
-                </label>
-                <TextField
-                  multiline
-                  rows={3}
-                  value={input}
-                  onPaste={handlePaste}
-                  onChange={(e) => setInput(e.target.value)}
-                  placeholder="輸入需求或插入圖片"
+          </LowToolbar>
+        </LowAppBar>
+        <MainContainer>
+          <Grid container spacing={2}>
+            <Grid item xs={3}>
+              <Paper sx={{ height: "100%", overflow: "auto" }}>
+                <List>
+                  {conversations.map((conversation) => (
+                    <ListItem
+                      key={conversation.id}
+                      button
+                      onClick={() => setCurrentConversationId(conversation.id)}
+                      selected={currentConversationId === conversation.id}
+                    >
+                      <ListItemText primary={`对话 ${conversation.id}`} />
+                    </ListItem>
+                  ))}
+                </List>
+                <Button
+                  variant="contained"
+                  onClick={handleNewConversation}
                   fullWidth
-                  variant="outlined"
-                  sx={{ mr: 1 }}
-                />
-                <IconButton color="primary" onClick={handleSend}>
-                  <SendIcon />
-                </IconButton>
-                <IconButton color="error" onClick={handleReset}>
-                  <DeleteIcon />
-                </IconButton>
-              </InputContainer>
-            </ChatContainer>
+                >
+                  新建对话
+                </Button>
+              </Paper>
+            </Grid>
+            <Grid item xs={9}>
+              <ChatContainer>
+                <MessagesContainer>
+                  {messages.map((msg, index) => (
+                    <MessageBubble key={index} isUser={msg.sender === "user"}>
+                      {msg.sender === "user" && (
+                        <UserName
+                          variant="body2"
+                          isUser={msg.sender === "user"}
+                        >
+                          {msg.name}
+                        </UserName>
+                      )}
+                      {msg.sender === "assistant" && (
+                        <UserInfoContainer>
+                          <Avatar
+                            src="/static/assets/images/A001.png"
+                            alt="A001"
+                            sx={{ width: 40, height: 40, marginRight: 1 }}
+                          />
+                          <Box>
+                            <Typography variant="subtitle2">
+                              {assistantName}
+                            </Typography>
+                            <Typography
+                              variant="caption"
+                              color="text.secondary"
+                            >
+                              {configStatus}
+                            </Typography>
+                          </Box>
+                        </UserInfoContainer>
+                      )}
+                      <BubbleContent isUser={msg.sender === "user"}>
+                        <ReactMarkdown>{msg.text}</ReactMarkdown>
+                      </BubbleContent>
+                    </MessageBubble>
+                  ))}
+                  <div ref={messagesEndRef} />
+                </MessagesContainer>
+
+                <InputContainer>
+                  {uploadedImages.length > 0 && (
+                    <ThumbnailContainer>
+                      {uploadedImages.map((image, index) => (
+                        <Thumbnail
+                          key={index}
+                          src={image}
+                          alt={`Pasted content ${index}`}
+                        />
+                      ))}
+                    </ThumbnailContainer>
+                  )}
+
+                  <input
+                    type="file"
+                    key={fileInputKey}
+                    multiple
+                    onChange={handleImageChange}
+                    style={{ display: "none" }}
+                    id="image-upload"
+                  />
+                  <label htmlFor="image-upload">
+                    <Button variant="contained" component="span" sx={{ mr: 1 }}>
+                      Upload Image
+                    </Button>
+                  </label>
+                  <TextField
+                    multiline
+                    rows={3}
+                    value={input}
+                    onPaste={handlePaste}
+                    onChange={(e) => setInput(e.target.value)}
+                    placeholder="輸入需求或插入圖片"
+                    fullWidth
+                    variant="outlined"
+                    sx={{ mr: 1 }}
+                  />
+                  <IconButton color="primary" onClick={handleSend}>
+                    <SendIcon />
+                  </IconButton>
+                  <IconButton color="error" onClick={handleReset}>
+                    <DeleteIcon />
+                  </IconButton>
+                </InputContainer>
+              </ChatContainer>
+            </Grid>
           </Grid>
-          <Grid item xs={12} md={6}>
-            <Paper sx={{ height: "100%", overflow: "auto" }}>
-              <SyntaxHighlighter
-                language="jsx"
-                style={darkMode ? dracula : prism}
-                customStyle={{ height: "100%", margin: 0 }}
-              >
-                {code}
-              </SyntaxHighlighter>
-            </Paper>
-          </Grid>
-        </Grid>
+        </MainContainer>
       </Box>
+      <Dialog
+        open={codeDialogOpen}
+        onClose={() => setCodeDialogOpen(false)}
+        fullWidth
+        maxWidth="md"
+      >
+        <DialogTitle>代码视图</DialogTitle>
+        <DialogContent>
+          <SyntaxHighlighter
+            language="jsx"
+            style={darkMode ? dracula : prism}
+            customStyle={{ height: "400px", margin: 0 }}
+          >
+            {code}
+          </SyntaxHighlighter>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setCodeDialogOpen(false)}>关闭</Button>
+        </DialogActions>
+      </Dialog>
     </ThemeProvider>
   );
 }
