@@ -784,11 +784,7 @@ function ChatPage({ token, engineerType }) {
             onChange={(e) => setProjectDescription(e.target.value)}
             margin="dense"
           />
-          <FormControl
-            fullWidth
-            margin="normal"
-            sx={{ "& .MuiInputLabel-root": { marginTop: "16px" } }}
-          >
+          <FormControl fullWidth margin="dense">
             <InputLabel id="selectLabelProjMode">專案類型</InputLabel>
             <Select
               labelId="selectLabelProjMode"
