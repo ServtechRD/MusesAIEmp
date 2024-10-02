@@ -323,7 +323,7 @@ function ChatPage({ token }) {
     setFileInputKey(Date.now());
   };
 
-  const handleApiCall = async (msg) => {
+  const handleApiCall = async (msg, images) => {
     const formData = new FormData();
     formData.append("message", msg, images);
 
