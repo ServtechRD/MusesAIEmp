@@ -30,6 +30,7 @@ import {
   Send as SendIcon,
   Delete as DeleteIcon,
   Code as CodeIcon,
+  Menu as MenuIcon,
 } from "@mui/icons-material";
 
 import { PrismLight as SyntaxHighlighter } from "react-syntax-highlighter";
@@ -51,6 +52,11 @@ const LowToolbar = styled(Toolbar)(({ theme }) => ({
   minHeight: 48, // 降低 Toolbar 高度
   paddingTop: theme.spacing(0.5),
   paddingBottom: theme.spacing(0.5),
+}));
+
+const NewConversationButton = styled(Button)(({ theme }) => ({
+  margin: theme.spacing(2),
+  padding: theme.spacing(1, 2),
 }));
 
 // 调整主容器高度计算
@@ -134,6 +140,7 @@ function ChatPage({ token }) {
   const [codeDialogOpen, setCodeDialogOpen] = useState(false);
   const [conversations, setConversations] = useState([]);
   const [currentConversationId, setCurrentConversationId] = useState(null);
+  const [showConversationList, setShowConversationList] = useState(true);
 
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
@@ -354,6 +361,15 @@ function ChatPage({ token }) {
       <Box sx={{ flexGrow: 1 }}>
         <LowAppBar position="static">
           <LowToolbar>
+            <IconButton
+              color="inherit"
+              onClick={() => setShowConversationList(!showConversationList)}
+              size="small"
+              edge="start"
+              sx={{ mr: 2 }}
+            >
+              <MenuIcon fontSize="small" />
+            </IconButton>
             <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
               AI Employee - Front-end Engineer
             </Typography>
@@ -372,8 +388,15 @@ function ChatPage({ token }) {
         <MainContainer>
           <Grid container spacing={2}>
             <Grid item xs={3}>
-              <Paper sx={{ height: "100%", overflow: "auto" }}>
-                <List>
+              <Paper
+                sx={{
+                  height: "100%",
+                  overflow: "auto",
+                  display: "flex",
+                  flexDirection: "column",
+                }}
+              >
+                <List sx={{ flexGrow: 1, overflowY: "auto" }}>
                   {conversations.map((conversation) => (
                     <ListItem
                       key={conversation.id}
@@ -385,16 +408,16 @@ function ChatPage({ token }) {
                     </ListItem>
                   ))}
                 </List>
-                <Button
+                <NewConversationButton
                   variant="contained"
                   onClick={handleNewConversation}
                   fullWidth
                 >
                   新建对话
-                </Button>
+                </NewConversationButton>
               </Paper>
             </Grid>
-            <Grid item xs={9}>
+            <Grid item xs={showConversationList ? 9 : 12}>
               <ChatContainer>
                 <MessagesContainer>
                   {messages.map((msg, index) => (
@@ -457,10 +480,11 @@ function ChatPage({ token }) {
                     id="image-upload"
                   />
                   <label htmlFor="image-upload">
-                    <Button variant="contained" component="span" sx={{ mr: 1 }}>
-                      Upload Image
-                    </Button>
+                    <IconButton component="span" color="primary">
+                      <ImageIcon />
+                    </IconButton>
                   </label>
+
                   <TextField
                     multiline
                     rows={3}
