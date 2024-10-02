@@ -36,6 +36,7 @@ import {
   Code as CodeIcon,
   Menu as MenuIcon,
   Image as ImageIcon,
+  Link as LinkIcon,
 } from "@mui/icons-material";
 
 import { PrismLight as SyntaxHighlighter } from "react-syntax-highlighter";
@@ -539,6 +540,10 @@ function ChatPage({ token }) {
     setCodeDialogOpen(true);
   };
 
+  const handleOpenLink = () => {
+    window.open("https://www.google.com.tw", "_blank");
+  };
+
   return (
     <ThemeProvider theme={theme}>
       <Box sx={{ flexGrow: 1 }}>
@@ -562,6 +567,9 @@ function ChatPage({ token }) {
               size="small"
             >
               <CodeIcon fontSize="small" />
+            </IconButton>
+            <IconButton color="primary" onClick={handleOpenLink}>
+              <LinkIcon fontSize="small" />
             </IconButton>
             <IconButton color="inherit" onClick={() => setDarkMode(!darkMode)}>
               {darkMode ? <Brightness7Icon /> : <Brightness4Icon />}
