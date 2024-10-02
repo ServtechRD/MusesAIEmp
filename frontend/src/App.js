@@ -16,7 +16,11 @@ function App() {
       <GlobalStyles />
       {!token ? (
         <div>
-          <LoginPage setToken={setToken} setEngineerType={setEngineerType} />
+          <LoginPage
+            setToken={setToken}
+            setEngineerType={setEngineerType}
+            engineerType={engineerType}
+          />
         </div>
       ) : (
         <div>
