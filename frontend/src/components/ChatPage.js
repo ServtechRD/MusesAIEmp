@@ -191,8 +191,8 @@ function ChatPage({ token }) {
   const theme = createTheme({
     palette: {
       mode: darkMode ? "dark" : "light",
-      success: "#d0fcad",
-      secondary: "#e1f38d",
+      success: { main: "#bcfa8d" },
+      secondary: { main: "#daf079" },
     },
   });
 
