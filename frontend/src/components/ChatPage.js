@@ -511,6 +511,34 @@ function ChatPage({ token }) {
     setSwitchFunctionDialogOpen(false);
   };
 
+  const handleViewCode = async () => {
+    try {
+      setMessages([
+        ...messages,
+        {
+          sender: "user",
+          text: "讀取程式碼",
+          name: userName,
+        },
+      ]);
+
+      const rep = "<html> <body>b1</body> </html>";
+
+      setCode(rep);
+
+      setMessages((prevMessages) => [
+        ...prevMessages,
+        { sender: "assistant", text: "讀取程式碼成功" },
+      ]);
+    } catch (error) {
+      setMessages((prevMessages) => [
+        ...prevMessages,
+        { sender: "assistant", text: "讀取程式碼失敗-" + error.toString() },
+      ]);
+    }
+    setCodeDialogOpen(true);
+  };
+
   return (
     <ThemeProvider theme={theme}>
       <Box sx={{ flexGrow: 1 }}>
@@ -602,6 +630,14 @@ function ChatPage({ token }) {
                             <Typography variant="caption" color="text.success">
                               {configStatus}
                             </Typography>
+
+                            <IconButton
+                              color="inherit"
+                              onClick={() => handleViewCode()}
+                              size="small"
+                            >
+                              <CodeIcon fontSize="small" />
+                            </IconButton>
                           </Box>
                         </UserInfoContainer>
                       )}
@@ -707,7 +743,8 @@ function ChatPage({ token }) {
           </SyntaxHighlighter>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setCodeDialogOpen(false)}>关闭</Button>
+          <Button onClick={() => setCodeDialogOpen(false)}>下載</Button>
+          <Button onClick={() => setCodeDialogOpen(false)}>關閉</Button>
         </DialogActions>
       </Dialog>
 
