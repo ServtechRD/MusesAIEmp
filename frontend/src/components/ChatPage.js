@@ -342,7 +342,7 @@ function ChatPage({ token }) {
 
     if (response.data.task_id) {
       setTaskId(response.data.task_id);
-    } else if (input.includes("/CONFIG") && input.includes("SET")) {
+    } else if (msg.includes("/CONFIG") && msg.includes("SET")) {
       await getInfo();
     }
     return response;
