@@ -132,7 +132,12 @@ export default function LoginPage({ setToken, setEngineerType, engineerType }) {
               onChange={(e) => setPassword(e.target.value)}
             />
 
-            <FormControl fullWidth margin="normal">
+            <FormControl
+              fullWidth
+              margin="normal"
+              margin="normal"
+              sx={{ "& .MuiInputLabel-root": { marginTop: "16px" } }}
+            >
               <InputLabel>工程師類型</InputLabel>
               <Select
                 value={engineerType}
