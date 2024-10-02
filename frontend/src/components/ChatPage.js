@@ -780,8 +780,8 @@ function ChatPage({ token }) {
 
       {/* Create Feature Dialog */}
       <Dialog
-        open={createFeatureDialogOpen}
-        onClose={() => setCreateFeatureDialogOpen(false)}
+        open={switchFunctionDialogOpen}
+        onClose={() => setSwitchFunctionDialogOpen(false)}
       >
         <DialogTitle>建立功能</DialogTitle>
         <DialogContent>
