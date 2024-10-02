@@ -475,7 +475,7 @@ function ChatPage({ token }) {
       const input1 = "/CONFIG SET APP_NAME " + appName;
       const input2 = "/CONFIG SET APP_DESC " + appDescription;
       const input3 = "/CONFIG SET FUNC_DESC " + funcDescription;
-      const input4 = "/CONFIG SET FUNC_NAME " + funcFileName;
+      const input4 = "/CONFIG SET FUNC_FILE " + funcFileName;
 
       setMessages([
         ...messages,
