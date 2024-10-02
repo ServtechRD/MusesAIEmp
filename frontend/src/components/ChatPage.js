@@ -100,10 +100,10 @@ const BubbleContent = styled(Paper)(({ theme, isUser }) => ({
   borderBottomLeftRadius: isUser ? 20 : 0,
   backgroundColor: isUser
     ? theme.palette.primary.main
-    : theme.palette.grey[200],
+    : theme.palette.secondary.main,
   color: isUser
     ? theme.palette.primary.contrastText
-    : theme.palette.text.primary,
+    : theme.palette.secondary.contrastText,
   wordBreak: "break-word",
 }));
 
