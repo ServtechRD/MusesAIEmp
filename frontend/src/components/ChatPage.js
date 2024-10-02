@@ -789,8 +789,11 @@ function ChatPage({ token, engineerType }) {
             margin="normal"
             sx={{ "& .MuiInputLabel-root": { marginTop: "16px" } }}
           >
-            <InputLabel>專案類型</InputLabel>
+            <InputLabel id="selectLabelProjMode">專案類型</InputLabel>
             <Select
+              labelId="selectLabelProjMode"
+              label="專案類型"
+              id="selectProjeMode"
               value={projectMode}
               onChange={(e) => setProjectMode(e.target.value)}
             >
