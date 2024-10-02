@@ -388,36 +388,39 @@ function ChatPage({ token }) {
         </LowAppBar>
         <MainContainer>
           <Grid container spacing={2}>
-            <Grid item xs={3}>
-              <Paper
-                sx={{
-                  height: "100%",
-                  overflow: "auto",
-                  display: "flex",
-                  flexDirection: "column",
-                }}
-              >
-                <List sx={{ flexGrow: 1, overflowY: "auto" }}>
-                  {conversations.map((conversation) => (
-                    <ListItem
-                      key={conversation.id}
-                      button
-                      onClick={() => setCurrentConversationId(conversation.id)}
-                      selected={currentConversationId === conversation.id}
-                    >
-                      <ListItemText primary={`对话 ${conversation.id}`} />
-                    </ListItem>
-                  ))}
-                </List>
-                <NewConversationButton
-                  variant="contained"
-                  onClick={handleNewConversation}
-                  fullWidth
+            {showConversationList && (
+              <Grid item xs={3}>
+                <Paper
+                  sx={{
+                    height: "100%",
+                    overflow: "auto",
+                    display: "flex",
+                    flexDirection: "column",
+                  }}
                 >
-                  新建对话
-                </NewConversationButton>
-              </Paper>
-            </Grid>
+                  <List sx={{ flexGrow: 1, overflowY: "auto" }}>
+                    {conversations.map((conversation) => (
+                      <ListItem
+                        key={conversation.id}
+                        button
+                        onClick={() =>
+                          setCurrentConversationId(conversation.id)
+                        }
+                        selected={currentConversationId === conversation.id}
+                      >
+                        <ListItemText primary={`需求列表 ${conversation.id}`} />
+                      </ListItem>
+                    ))}
+                  </List>
+                  <NewConversationButton
+                    variant="contained"
+                    onClick={handleNewConversation}
+                  >
+                    新需求
+                  </NewConversationButton>
+                </Paper>
+              </Grid>
+            )}
             <Grid item xs={showConversationList ? 9 : 12}>
               <ChatContainer>
                 <MessagesContainer>
