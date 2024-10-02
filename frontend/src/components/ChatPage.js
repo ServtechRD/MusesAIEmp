@@ -11,7 +11,7 @@ import {
   Avatar,
   IconButton,
 } from "@mui/material";
-import { styled } from "@mui/material/styles";
+import { ThemeProvider, createTheme, styled } from "@mui/material/styles";
 //import SendIcon from '@mui/icons-material/Send';
 //import DeleteIcon from '@mui/icons-material/Delete';
 
