@@ -1,22 +1,35 @@
-import React, { useState } from 'react';
-import { Box, TextField, Button, Typography, Container, CssBaseline, Alert, Dialog, DialogTitle, DialogContent, DialogActions } from '@mui/material';
-import { createTheme, ThemeProvider } from '@mui/material/styles';
+import React, { useState } from "react";
+import {
+  Box,
+  TextField,
+  Button,
+  Typography,
+  Container,
+  CssBaseline,
+  Alert,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+} from "@mui/material";
+import { createTheme, ThemeProvider } from "@mui/material/styles";
 
-
-import api from '../services/api';
+import api from "../services/api";
 
 const theme = createTheme();
 
-export default function LoginPage({ setToken }) {
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
+export default function LoginPage({ setToken, setEngineerType }) {
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
   const [openRegister, setOpenRegister] = useState(false);
-  const [registerUsername, setRegisterUsername] = useState('');
-  const [registerPassword, setRegisterPassword] = useState('');
+  const [registerUsername, setRegisterUsername] = useState("");
+  const [registerPassword, setRegisterPassword] = useState("");
 
-  const handleSubmit = async (event)  => {
+  const [version, setVersion] = useState("0.5.1");
+
+  const handleSubmit = async (event) => {
     event.preventDefault();
     // 這裡模擬登入邏輯
     /*if (username === 'admin' && password === 'password') {
@@ -28,27 +41,26 @@ export default function LoginPage({ setToken }) {
     }*/
 
     try {
-        const response = await api.post('/login', { username, password });
-        setToken(response.data.access_token);
-      } catch (error) {
-        setError('代號或密碼錯誤');
-      }
+      const response = await api.post("/login", { username, password });
+      setToken(response.data.access_token);
+    } catch (error) {
+      setError("代號或密碼錯誤");
+    }
   };
 
-
   const handleRegister = async () => {
-    console.log('Register:', registerUsername, registerPassword);
+    console.log("Register:", registerUsername, registerPassword);
     setOpenRegister(false);
     // 這裡添加實際的註冊邏輯
     try {
-        let username = registerUsername;
-        let password = registerPassword;
-        const response = await api.post('/register', { username, password });
-        setError('');
-        setSuccess('註冊成功, 請登入');
-      } catch (error) {
-        setError('註冊失敗, 使用者代碼可能已存在');
-      }
+      let username = registerUsername;
+      let password = registerPassword;
+      const response = await api.post("/register", { username, password });
+      setError("");
+      setSuccess("註冊成功, 請登入");
+    } catch (error) {
+      setError("註冊失敗, 使用者代碼可能已存在");
+    }
   };
 
   return (
@@ -58,16 +70,16 @@ export default function LoginPage({ setToken }) {
         <Box
           sx={{
             marginTop: 8,
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
           }}
         >
-           <Box
+          <Box
             component="img"
             sx={{
-              height: 200,
-              mb: 2
+              height: 150,
+              mb: 2,
             }}
             alt="A001 logo"
             src="/static/assets/images/logo.png"
@@ -76,16 +88,21 @@ export default function LoginPage({ setToken }) {
             登入
           </Typography>
           {error && (
-            <Alert severity="error" sx={{ mt: 2, width: '100%' }}>
+            <Alert severity="error" sx={{ mt: 2, width: "100%" }}>
               {error}
             </Alert>
           )}
           {success && (
-            <Alert severity="success" sx={{ mt: 2, width: '100%' }}>
+            <Alert severity="success" sx={{ mt: 2, width: "100%" }}>
               {success}
             </Alert>
           )}
-          <Box component="form" onSubmit={handleSubmit} noValidate sx={{ mt: 1 }}>
+          <Box
+            component="form"
+            onSubmit={handleSubmit}
+            noValidate
+            sx={{ mt: 1 }}
+          >
             <TextField
               margin="normal"
               required
@@ -110,6 +127,18 @@ export default function LoginPage({ setToken }) {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
             />
+
+            <FormControl fullWidth margin="normal">
+              <InputLabel>工程師類型</InputLabel>
+              <Select
+                value={engineerType}
+                onChange={(e) => setEngineerType(e.target.value)}
+              >
+                <MenuItem value="1">前端工程師</MenuItem>
+                <MenuItem value="2">Android 工程師</MenuItem>
+              </Select>
+            </FormControl>
+
             <Button
               type="submit"
               fullWidth
@@ -128,11 +157,15 @@ export default function LoginPage({ setToken }) {
             註冊新帳號
           </Button>
         </Box>
-        <Typography variant="body2" color="text.secondary" align="center" sx={{ mt: 5 }}>
-          版本 1.0.0
+        <Typography
+          variant="body2"
+          color="text.secondary"
+          align="center"
+          sx={{ mt: 5 }}
+        >
+          "版本 :" {version}
         </Typography>
       </Container>
-
 
       <Dialog open={openRegister} onClose={() => setOpenRegister(false)}>
         <DialogTitle>註冊新帳號</DialogTitle>
