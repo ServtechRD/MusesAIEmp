@@ -43,7 +43,8 @@ export default function LoginPage({ setToken, setEngineer, engineer }) {
     try {
       // 替換成您的實際API端點
       const response = await api.get("/employees");
-      setEngineerList(response.data);
+      const empList = Object.values(response.data);
+      setEngineerList(empList);
     } catch (error) {
       console.error("Error fetching options:", error);
     }
@@ -166,8 +167,8 @@ export default function LoginPage({ setToken, setEngineer, engineer }) {
                 id="selectEngType"
                 onChange={handleEngineerChange}
               >
-                {engineerList.map((person) => (
-                  <MenuItem key={person.key} value={person.key}>
+                {engineerList.map((person, index) => (
+                  <MenuItem key={person.EMP_ID} value={person.EMP_ID}>
                     {person.value.EMP_DESC + "(" + person.value.EMP_NAME + ")"}
                   </MenuItem>
                 ))}
