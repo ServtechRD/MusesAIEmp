@@ -446,6 +446,7 @@ def analyze_image(images_b64: [str],
                   conversation_id,
                   db
                   ):
+    global sys_setting,sys_employees,sys_config
     try:
         tasks[task_id] = f"分析圖片中"
         image_desc = []
