@@ -1,3 +1,5 @@
+import os
+import sys
 from logging.config import fileConfig
 
 from sqlalchemy import engine_from_config
@@ -5,9 +7,21 @@ from sqlalchemy import pool
 
 from alembic import context
 
+
+# 這行很重要，它將項目根目錄添加到 Python 路徑
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+# 導入你的 SQLAlchemy 模型
+from database import Base
+import models # 確保這里的路徑正確指向你的模型文件
+
+
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
 config = context.config
+
+# 這行很重要，它告訴 Alembic 使用你的模型的 metadata
+#target_metadata = Base.metadata
 
 # Interpret the config file for Python logging.
 # This line sets up loggers basically.
@@ -18,13 +32,20 @@ if config.config_file_name is not None:
 # for 'autogenerate' support
 # from myapp import mymodel
 # target_metadata = mymodel.Base.metadata
-target_metadata = None
+#target_metadata = None
+
+# 設置 target_metadata
+target_metadata = Base.metadata
 
 # other values from the config, defined by the needs of env.py,
 # can be acquired:
 # my_important_option = config.get_main_option("my_important_option")
 # ... etc.
+# 如果你使用環境變量來設置數據庫 URL，添加以下幾行
+from dotenv import load_dotenv
+load_dotenv()
 
+config.set_main_option('sqlalchemy.url', os.getenv('DATABASE_URL'))
 
 def run_migrations_offline() -> None:
     """Run migrations in 'offline' mode.

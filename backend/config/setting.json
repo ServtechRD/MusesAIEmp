@@ -1,0 +1,6 @@
+{
+    "WORK_PATH": "../../WORK",
+    "TEMP_PATH": "../../TEMP",
+    "TEMPLATE": "../../WORK/template",
+    "DISPLAY_URL": "http://192.168.1.234:35200"
+}
