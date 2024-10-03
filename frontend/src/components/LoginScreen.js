@@ -43,8 +43,7 @@ export default function LoginPage({ setToken, setEngineer, engineer }) {
     try {
       // 替換成您的實際API端點
       const response = await api.get("/employees");
-      const data = await response.json();
-      setEngineerList(data);
+      setEngineerList(response.data);
     } catch (error) {
       console.error("Error fetching options:", error);
     }
