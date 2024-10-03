@@ -152,7 +152,7 @@ def read_root():
 
 @app.get("/info")
 def read_info(current_user: models.User = Depends(auth.get_current_user)):
-    user_config = sys_config['users'][current_user.username]
+    user_config = sys_config[current_user.username]
     return {"name": ASSISTANT_NAME, "setting": sys_setting, "config": user_config}
 
 
