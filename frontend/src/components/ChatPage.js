@@ -333,6 +333,7 @@ function ChatPage({ token, engineer }) {
   const handleApiCall = async (msg, images) => {
     const formData = new FormData();
     formData.append("message", msg);
+    formData.append("conversation_id", currentConversationId);
 
     let api_name = "/message";
     if (images instanceof File) {
