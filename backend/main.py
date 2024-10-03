@@ -623,7 +623,7 @@ def analyze_image(images_b64: [str],
 
         # 保存对话记录到数据库
         new_message = models.Message(
-            converation_id=conversation_id,
+            conversation_id=conversation_id,
             message=in_msg,
             response=assistant_reply,
         )
