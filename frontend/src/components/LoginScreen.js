@@ -162,7 +162,7 @@ export default function LoginPage({ setToken, setEngineer, engineer }) {
               <InputLabel id="selectLabelEngType">工程師</InputLabel>
               <Select
                 labelId="selectLabelEngType"
-                value={engineerType}
+                value={engineer.EMP_ID}
                 label="工程師"
                 id="selectEngType"
                 onChange={handleEngineerChange}
