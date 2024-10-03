@@ -250,9 +250,12 @@ function ChatPage({ token, engineer }) {
 
     const fetchMessages = async () => {
       try {
-        const response = await api.get("/messages", {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+        const response = await api.get(
+          "/conversations/" + currentConversationId + "/messages",
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          },
+        );
         setMessages(response.data);
         scrollToBottom();
       } catch (error) {
@@ -379,9 +382,11 @@ function ChatPage({ token, engineer }) {
 
   const handleNewConversation = async () => {
     try {
+      const employee_id = engineer.EMP_ID;
+      const title = DateTime.now.toString();
       const response = await api.post(
         "/conversations",
-        {},
+        { title, employee_id },
         {
           headers: { Authorization: `Bearer ${token}` },
         },

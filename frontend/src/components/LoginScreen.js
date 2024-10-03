@@ -37,7 +37,7 @@ export default function LoginPage({ setToken, setEngineer, engineer }) {
 
   useEffect(() => {
     fetchEngineerList();
-  }, [engineerList]);
+  }, []);
 
   const fetchEngineerList = async () => {
     try {
