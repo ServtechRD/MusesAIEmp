@@ -450,13 +450,21 @@ def analyze_image(images_b64: [str],
         tasks[task_id] = f"分析圖片中"
         image_desc = []
 
+        log("開始分析圖片中")
         user_config = sys_config[username]
+        log("取得CONFIG")
+        log(user_config)
         employee = sys_employees[user_config[Constant.USER_CFG_EMPLOYEE_KEY]]
+        log("查詢工程師")
+        log(employee)
         llm_mode = employee[Constant.EMP_KEY_LLM_ENGINE]
+        log("查詢模型")
+        log(llm_mode)
         llm_img_prompt = employee[Constant.EMP_KEY_LLM_PROMPT][Constant.EMP_KEY_LLM_PROMPT_IMAGE]
         llm_img_prompt_model = llm_img_prompt[Constant.EMP_KEY_LLM_PROMPT_MODEL]
         llm_img_prompt_messages = llm_img_prompt[Constant.EMP_KEY_LLM_PROMPT_MESSAGES]
 
+        log("開始看圖")
         for idx, encode_image in enumerate(images_b64):
             file_type = images_type[idx]
             try:
@@ -472,6 +480,8 @@ def analyze_image(images_b64: [str],
                 for prompt_message in pass_message:
                     messages.append(prompt_message)
 
+                log("詢問訊息:")
+                log(messages)
                 rep = llm.askllm(llm_mode, llm_img_prompt_model, messages)
                 image_desc.append(rep)
             except Exception as imge:
