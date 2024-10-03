@@ -140,7 +140,7 @@ const Thumbnail = styled("img")(({ theme }) => ({
   borderRadius: theme.shape.borderRadius,
 }));
 
-function ChatPage({ token, engineerType }) {
+function ChatPage({ token, engineer }) {
   const [darkMode, setDarkMode] = useState(false);
   const [code, setCode] = useState("// Your React code here");
   const [codeDialogOpen, setCodeDialogOpen] = useState(false);
@@ -561,7 +561,7 @@ function ChatPage({ token, engineerType }) {
               <MenuIcon fontSize="small" />
             </IconButton>
             <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-              AI Employee - {engineerType == 1 ? "前端工程師" : "Andrid工程師"}
+              {engineer.EMP_DESC + " - " + engineer.name}
             </Typography>
             <IconButton
               color="inherit"
@@ -627,7 +627,7 @@ function ChatPage({ token, engineerType }) {
                       {msg.sender === "assistant" && (
                         <UserInfoContainer>
                           <Avatar
-                            src="/static/assets/images/A001.png"
+                            src={"/static/assets/images/" + engineer.EMP_IMAGE}
                             alt="A001"
                             sx={{ width: 40, height: 40, marginRight: 1 }}
                           />

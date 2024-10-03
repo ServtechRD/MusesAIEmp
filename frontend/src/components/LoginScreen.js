@@ -22,7 +22,7 @@ import api from "../services/api";
 
 const theme = createTheme();
 
-export default function LoginPage({ setToken, setEngineerType, engineerType }) {
+export default function LoginPage({ setToken, setEngineer, engineer }) {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -31,7 +31,24 @@ export default function LoginPage({ setToken, setEngineerType, engineerType }) {
   const [registerUsername, setRegisterUsername] = useState("");
   const [registerPassword, setRegisterPassword] = useState("");
 
+  const [engineerList, setEngineerList] = useState([]);
+
   const [version, setVersion] = useState("0.5.1");
+
+  useEffect(() => {
+    fetchEngineerList();
+  }, [engineerList]);
+
+  const fetchEngineerList = async () => {
+    try {
+      // 替換成您的實際API端點
+      const response = await api.get("/employees");
+      const data = await response.json();
+      setEngineerList(data);
+    } catch (error) {
+      console.error("Error fetching options:", error);
+    }
+  };
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -45,7 +62,12 @@ export default function LoginPage({ setToken, setEngineerType, engineerType }) {
     }*/
 
     try {
-      const response = await api.post("/login", { username, password });
+      let employee = engineer.EMP_ID;
+      const response = await api.post("/login", {
+        username,
+        password,
+        employee,
+      });
       setToken(response.data.access_token);
     } catch (error) {
       setError("代號或密碼錯誤");
@@ -65,6 +87,10 @@ export default function LoginPage({ setToken, setEngineerType, engineerType }) {
     } catch (error) {
       setError("註冊失敗, 使用者代碼可能已存在");
     }
+  };
+
+  const handleEngineerChange = (event) => {
+    setEngineer(engineerList[event.target.value]);
   };
 
   return (
@@ -133,16 +159,19 @@ export default function LoginPage({ setToken, setEngineerType, engineerType }) {
             />
 
             <FormControl fullWidth margin="normal">
-              <InputLabel id="selectLabelEngType">工程師類型</InputLabel>
+              <InputLabel id="selectLabelEngType">工程師</InputLabel>
               <Select
                 labelId="selectLabelEngType"
                 value={engineerType}
-                label="工程師類型"
+                label="工程師"
                 id="selectEngType"
-                onChange={(e) => setEngineerType(e.target.value)}
+                onChange={handleEngineerChange}
               >
-                <MenuItem value="1">前端工程師</MenuItem>
-                <MenuItem value="2">Android 工程師</MenuItem>
+                {engineerList.map((person) => (
+                  <MenuItem key={person.key} value={person.key}>
+                    {person.value.EMP_DESC + "(" + person.value.EMP_NAME + ")"}
+                  </MenuItem>
+                ))}
               </Select>
             </FormControl>
 
