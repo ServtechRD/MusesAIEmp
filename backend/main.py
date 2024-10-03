@@ -538,7 +538,7 @@ def analyze_image(images_b64: [str],
 
             print(WORK_PATH)
 
-            user_config = sys_config['users'][username]
+            user_config = sys_config[username]
 
             print(user_config)
 
