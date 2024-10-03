@@ -383,7 +383,7 @@ function ChatPage({ token, engineer }) {
   const handleNewConversation = async () => {
     try {
       const employee_id = engineer.EMP_ID;
-      const title = DateTime.now.toString();
+      const title = Date.now().toLocaleString();
       const response = await api.post(
         "/conversations",
         { title, employee_id },
