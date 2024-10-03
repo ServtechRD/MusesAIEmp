@@ -446,21 +446,22 @@ def analyze_image(images_b64: [str],
                   conversation_id,
                   db
                   ):
-    global sys_setting,sys_employees,sys_config
+    global sys_setting, sys_employees, sys_config
     try:
         tasks[task_id] = f"分析圖片中"
         image_desc = []
 
         log("開始分析圖片中")
+        #log(sys_config)
         user_config = sys_config[username]
         log("取得CONFIG")
-        log(user_config)
+        #log(user_config)
         employee = sys_employees[user_config[Constant.USER_CFG_EMPLOYEE_KEY]]
         log("查詢工程師")
-        log(employee)
+        #log(employee)
         llm_mode = employee[Constant.EMP_KEY_LLM_ENGINE]
         log("查詢模型")
-        log(llm_mode)
+        #log(llm_mode)
         llm_img_prompt = employee[Constant.EMP_KEY_LLM_PROMPT][Constant.EMP_KEY_LLM_PROMPT_IMAGE]
         llm_img_prompt_model = llm_img_prompt[Constant.EMP_KEY_LLM_PROMPT_MODEL]
         llm_img_prompt_messages = llm_img_prompt[Constant.EMP_KEY_LLM_PROMPT_MESSAGES]
@@ -482,7 +483,7 @@ def analyze_image(images_b64: [str],
                     messages.append(prompt_message)
 
                 log("詢問訊息:")
-                log(messages)
+                #log(messages)
                 rep = llm.askllm(llm_mode, llm_img_prompt_model, messages)
                 image_desc.append(rep)
             except Exception as imge:
@@ -622,7 +623,6 @@ def analyze_image(images_b64: [str],
 
         # 保存对话记录到数据库
         new_message = models.Message(
-            user_id=user_id,
             converation_id=conversation_id,
             message=in_msg,
             response=assistant_reply,
