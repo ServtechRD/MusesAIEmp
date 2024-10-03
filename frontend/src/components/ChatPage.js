@@ -145,7 +145,7 @@ function ChatPage({ token, engineer }) {
   const [code, setCode] = useState("// Your React code here");
   const [codeDialogOpen, setCodeDialogOpen] = useState(false);
   const [conversations, setConversations] = useState([]);
-  const [currentConversationId, setCurrentConversationId] = useState(null);
+  const [currentConversationId, setCurrentConversationId] = useState(1);
   const [showConversationList, setShowConversationList] = useState(true);
 
   // State for dialogs
