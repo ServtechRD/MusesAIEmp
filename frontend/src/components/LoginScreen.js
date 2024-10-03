@@ -90,6 +90,7 @@ export default function LoginPage({ setToken, setEngineer, engineer }) {
   };
 
   const handleEngineerChange = (event) => {
+    console.log(engineerList[event.target.value]);
     setEngineer(engineerList[event.target.value]);
   };
 
@@ -167,9 +168,9 @@ export default function LoginPage({ setToken, setEngineer, engineer }) {
                 id="selectEngType"
                 onChange={handleEngineerChange}
               >
-                {engineerList.map((person) => (
-                  <MenuItem key={person.EMP_ID} value={person.EMP_ID}>
-                    {person.value.EMP_DESC + "(" + person.value.EMP_NAME + ")"}
+                {engineerList.map((person, index) => (
+                  <MenuItem key={person.EMP_ID} value={index}>
+                    {person.EMP_DESC + "(" + person.EMP_NAME + ")"}
                   </MenuItem>
                 ))}
               </Select>
