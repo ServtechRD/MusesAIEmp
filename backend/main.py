@@ -273,7 +273,7 @@ async def send_message(
             return JSONResponse(content={"message": json.dumps(sys_setting)},
                                 status_code=200)
         elif (user_input.startswith("/CONFIG")):
-            user_config = sys_config['users'][current_user.username]
+            user_config = sys_config[current_user.username]
             input_items = user_input.split()
             print("parser items :" + str(len(input_items)))
             if (len(input_items) > 1):
@@ -453,7 +453,7 @@ def analyze_image(images_b64: [str],
         user_config = sys_config[username]
         employee = sys_employees[user_config[Constant.USER_CFG_EMPLOYEE_KEY]]
         llm_mode = employee[Constant.EMP_KEY_LLM_ENGINE]
-        llm_img_prompt = employee[Constant.EMP_KEY_LLM_PROMPT][Constant.EMP_KEY_EMP_IMAGE]
+        llm_img_prompt = employee[Constant.EMP_KEY_LLM_PROMPT][Constant.EMP_KEY_LLM_PROMPT_IMAGE]
         llm_img_prompt_model = llm_img_prompt[Constant.EMP_KEY_LLM_PROMPT_MODEL]
         llm_img_prompt_messages = llm_img_prompt[Constant.EMP_KEY_LLM_PROMPT_MESSAGES]
 
