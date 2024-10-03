@@ -167,7 +167,7 @@ export default function LoginPage({ setToken, setEngineer, engineer }) {
                 id="selectEngType"
                 onChange={handleEngineerChange}
               >
-                {engineerList.map((person, index) => (
+                {engineerList.map((person) => (
                   <MenuItem key={person.EMP_ID} value={person.EMP_ID}>
                     {person.value.EMP_DESC + "(" + person.value.EMP_NAME + ")"}
                   </MenuItem>
