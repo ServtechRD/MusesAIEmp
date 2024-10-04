@@ -45,6 +45,9 @@ export default function LoginPage({ setToken, setEngineer, engineer }) {
       const response = await api.get("/employees");
       const empList = Object.values(response.data);
       setEngineerList(empList);
+      if (empList.length > 0) {
+        setEngineer(0);
+      }
     } catch (error) {
       console.error("Error fetching options:", error);
     }
@@ -135,7 +138,7 @@ export default function LoginPage({ setToken, setEngineer, engineer }) {
             sx={{ mt: 1 }}
           >
             <TextField
-              margin="normal"
+              margin="dense"
               required
               fullWidth
               id="username"
@@ -147,7 +150,7 @@ export default function LoginPage({ setToken, setEngineer, engineer }) {
               onChange={(e) => setUsername(e.target.value)}
             />
             <TextField
-              margin="normal"
+              margin="dense"
               required
               fullWidth
               name="password"
@@ -159,7 +162,7 @@ export default function LoginPage({ setToken, setEngineer, engineer }) {
               onChange={(e) => setPassword(e.target.value)}
             />
 
-            <FormControl fullWidth margin="normal">
+            <FormControl fullWidth margin="dense">
               <InputLabel id="selectLabelEngType">工程師</InputLabel>
               <Select
                 labelId="selectLabelEngType"

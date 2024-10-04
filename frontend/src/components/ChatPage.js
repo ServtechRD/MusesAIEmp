@@ -567,7 +567,7 @@ function ChatPage({ token, engineer }) {
               <MenuIcon fontSize="small" />
             </IconButton>
             <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-              {engineer.EMP_DESC + " - " + engineer.name}
+              {engineer.EMP_DESC + " - " + engineer.EMP_NAME}
             </Typography>
             <IconButton
               color="inherit"
