@@ -218,6 +218,21 @@ function ChatPage({ token, engineer }) {
     fetchConversations();
   }, [currentConversationId, token]);
 
+  const fetchMessages = async () => {
+    try {
+      const response = await api.get(
+        "/conversations/" + currentConversationId + "/messages",
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        },
+      );
+      setMessages(response.data);
+      scrollToBottom();
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
   useEffect(() => {
     if (taskId) {
       const intervalId = setInterval(async () => {
@@ -248,20 +263,6 @@ function ChatPage({ token, engineer }) {
       return () => clearInterval(intervalId);
     }
 
-    const fetchMessages = async () => {
-      try {
-        const response = await api.get(
-          "/conversations/" + currentConversationId + "/messages",
-          {
-            headers: { Authorization: `Bearer ${token}` },
-          },
-        );
-        setMessages(response.data);
-        scrollToBottom();
-      } catch (error) {
-        console.log(error);
-      }
-    };
     fetchMessages();
   }, [token, taskId, prevStatus]);
 
