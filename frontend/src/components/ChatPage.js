@@ -286,6 +286,12 @@ function ChatPage({ token, engineer }) {
       //setAssistantName(response.data.name);
       let config = response.data.config;
       let configStatus = `${config["PROJ_ID"]} | ${config["PROJ_DESC"]} | ${config["APP_DESC"]} | ${config["FUNC_DESC"]} | ${config["FUNC_FILE"]}`;
+
+      setAppName(config["APP_NAME"]);
+      setAppDescription(config["APP_DESC"]);
+      setFuncDescription(config["FUNC_DESC"]);
+      setFuncFileName(config["FUNC_FILE"]);
+
       setConfigStatus(configStatus);
     } catch (error) {
       console.log(error);
@@ -886,7 +892,7 @@ function ChatPage({ token, engineer }) {
           />
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setSwitchFunctionDialogOpenn(false)}>
+          <Button onClick={() => setSwitchFunctionDialogOpen(false)}>
             取消
           </Button>
           <Button onClick={handleSwitchFunction}>建立</Button>
