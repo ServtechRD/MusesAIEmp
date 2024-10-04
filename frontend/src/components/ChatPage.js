@@ -606,7 +606,8 @@ function ChatPage({ token, engineer }) {
                         button
                         onClick={() => {
                           console.log("current =>" + conversation.id);
-                          setCurrentConversationId(conversation.id);
+                          setCurrentConversationId(5); //conversation.id);
+                          console.log("conv id " + currentConversationId);
                           setMessages([]);
                           fetchMessages();
                         }}
