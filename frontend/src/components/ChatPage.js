@@ -216,7 +216,7 @@ function ChatPage({ token, engineer }) {
       }
     };
     fetchConversations();
-  }, [currentConversationId, token]);
+  }, [token]);
 
   const fetchMessages = async () => {
     try {
@@ -606,7 +606,7 @@ function ChatPage({ token, engineer }) {
                         button
                         onClick={() => {
                           console.log("current =>" + conversation.id);
-                          setCurrentConversationId(5); //conversation.id);
+                          setCurrentConversationId(conversation.id);
                           console.log("conv id " + currentConversationId);
                           setMessages([]);
                           fetchMessages();
