@@ -606,6 +606,7 @@ function ChatPage({ token, engineer }) {
                         button
                         onClick={() => {
                           setCurrentConversationId(conversation.id);
+                          setMessages([]);
                           fetchMessages();
                         }}
                         selected={currentConversationId === conversation.id}
