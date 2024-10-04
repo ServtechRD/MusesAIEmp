@@ -278,7 +278,8 @@ function ChatPage({ token, engineer }) {
       const response = await api.get("/info", {
         headers: { Authorization: `Bearer ${token}` },
       });
-      setAssistantName(response.data.name);
+      setAssistantName(engineer.EMP_NAME);
+      //setAssistantName(response.data.name);
       let config = response.data.config;
       let configStatus = `${config["PROJ_ID"]} | ${config["PROJ_DESC"]} | ${config["APP_DESC"]} | ${config["FUNC_DESC"]} | ${config["FUNC_FILE"]}`;
       setConfigStatus(configStatus);
@@ -599,9 +600,10 @@ function ChatPage({ token, engineer }) {
                       <ListItem
                         key={conversation.id}
                         button
-                        onClick={() =>
-                          setCurrentConversationId(conversation.id)
-                        }
+                        onClick={() => {
+                          setCurrentConversationId(conversation.id);
+                          fetchMessages();
+                        }}
                         selected={currentConversationId === conversation.id}
                       >
                         <ListItemText primary={`需求列表 ${conversation.id}`} />
