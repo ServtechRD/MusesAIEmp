@@ -145,7 +145,7 @@ function ChatPage({ token, engineer }) {
   const [code, setCode] = useState("// Your React code here");
   const [codeDialogOpen, setCodeDialogOpen] = useState(false);
   const [conversations, setConversations] = useState([]);
-  const [currentConversationId, setCurrentConversationId] = useState(1);
+  const [currentConversationId, setCurrentConversationId] = useState(0);
   const [showConversationList, setShowConversationList] = useState(true);
 
   // State for dialogs
@@ -220,6 +220,9 @@ function ChatPage({ token, engineer }) {
 
   const fetchMessages = async () => {
     try {
+      if (currentConversationId == 0) {
+        return;
+      }
       const response = await api.get(
         "/conversations/" + currentConversationId + "/messages",
         {
