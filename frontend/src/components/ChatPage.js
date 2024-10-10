@@ -427,13 +427,13 @@ function ChatPage({ token, engineer }) {
         },
       ]);
 
-      const rep1 = handleApiCall(input1, null);
+      const rep1 = await handleApiCall(input1, null);
       console.log("Creating project id:", rep1);
 
-      const rep2 = handleApiCall(input2, null);
+      const rep2 = await handleApiCall(input2, null);
       console.log("Creating project desc:", rep2);
 
-      const rep3 = handleApiCall(input3, null);
+      const rep3 = await handleApiCall(input3, null);
       console.log("Creating project mode:", rep3);
 
       setProjects([...projects, projectId]);
