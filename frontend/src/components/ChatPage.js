@@ -567,7 +567,8 @@ function ChatPage({ token, engineer }) {
       },
     });
 
-    window.open(response, "_blank");
+    console.log(response);
+    window.open(response.data, "_blank");
   };
 
   return (
