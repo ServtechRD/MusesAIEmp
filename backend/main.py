@@ -70,6 +70,14 @@ def log(message):
         print(repr(message))
 
 
+def write_json_file(file_path, json_obj):
+    try:
+        with open(file_path, "w", encoding='utf-8') as file:
+            file.write(json.dumps(json_obj, indent=4))
+    except IOError:
+        print(f"Error reading file {file}")
+
+
 def read_json_file(file_path):
     try:
         # 打開並讀取 JSON 檔案
@@ -197,6 +205,19 @@ def login(form_data: schemas.UserLogin, db: Session = Depends(database.get_db)):
     sys_config[user.username][Constant.USER_CFG_EMPLOYEE_KEY] = form_data.employee
     log(sys_config)
 
+    emp = sys_employees[form_data.employee]
+    idx = emp[Constant.EMP_KEY_WORK_MODE]
+
+    if idx == 0:
+        root_path = sys_setting[Constant.SET_WORK_MODE_PATH][idx]
+        user_path = os.path.join(root_path, "users", form_data.username)
+        if not os.path.exists(user_path):
+            os.makedirs(user_path)
+
+        prj_route_json = os.path.join(user_path, "route.json")
+        if not os.path.exists(prj_route_json):
+            write_json_file(prj_route_json, {})
+
     return {'access_token': access_token, 'token_type': 'bearer'}
 
 
@@ -242,6 +263,27 @@ def get_conversation_message(conversion_id: int, current_user: models.User = Dep
     return result
 
 
+@app.get('/workurl')
+def get_work_url(
+        current_user: models.User = Depends(auth.get_current_user)
+):
+    user_name = current_user.username
+    user_config = sys_config[user_name]
+    mode = user_config[Constant.USER_CFG_PROJ_MODE]
+    prj_id = user_config[Constant.USER_CFG_PROJ_ID]
+    app_name = user_config[Constant.USER_CFG_APP_NAME]
+    func_file = user_config[Constant.USER_CFG_FUNC_FILE]
+
+    work_root_urls = sys_setting[Constant.SET_WORK_MODE_URL]
+    work_root_url = work_root_urls[int(mode)]
+
+    url = f"{work_root_url}"
+    if mode == 0:
+        url = f"{work_root_url}#show@{user_name}@{prj_id}@{app_name}@{func_file}"
+
+    return url
+
+
 @app.get('/messages')
 def get_messages(
         current_user: models.User = Depends(auth.get_current_user),
@@ -264,6 +306,7 @@ async def send_message(
         db: Session = Depends(database.get_db),
 
 ):
+    user_name = current_user.username
     user_id = current_user.id
     user_input = message  # .text
     task_id = str(uuid.uuid4())
@@ -285,6 +328,35 @@ async def send_message(
                         config_value = input_items[3]
                         user_config[config_key] = config_value
                         print(f"update {config_key} = {config_value}")
+
+                        # setting prj_mode, trigger action
+                        if config_key == Constant.USER_CFG_PROJ_ID:
+                            if config_value == "0":  # mode 0
+                                idx = int(config_value)
+                                # get prj path
+                                work_path = sys_setting[Constant.SET_WORK_PATH]
+                                work_mode_path = sys_setting[Constant.SET_WORK_MODE_PATH]
+                                user_root_path = os.path.join(work_path, work_mode_path[idx], "public", "users",
+                                                              user_name)
+
+                                # update proj route json
+                                all_prjs = {}
+                                prj_route_json = os.path.join(user_root_path, "route.json")
+                                if os.path.exists(prj_route_json):
+                                    all_prjs = read_json_file(prj_route_json)
+
+                                all_prjs[user_config[Constant.USER_CFG_PROJ_ID]] = user_config[
+                                    Constant.USER_CFG_PROJ_DESC]
+
+                                write_json_file(prj_route_json, all_prjs)
+
+                                # update app route.json
+                                user_prj_path = os.path.join(user_root_path, user_config[Constant.USER_CFG_PROJ_ID])
+                                app_route_json = os.path.join(user_prj_path, "route.json")
+
+                                if not os.path.exists(user_prj_path):
+                                    os.makedirs(user_prj_path)
+                                    write_json_file(app_route_json, [])
 
             return JSONResponse(content={"message": json.dumps(user_config)},
                                 status_code=200)
@@ -452,16 +524,16 @@ def analyze_image(images_b64: [str],
         image_desc = []
 
         log("開始分析圖片中")
-        #log(sys_config)
+        # log(sys_config)
         user_config = sys_config[username]
         log("取得CONFIG")
-        #log(user_config)
+        # log(user_config)
         employee = sys_employees[user_config[Constant.USER_CFG_EMPLOYEE_KEY]]
         log("查詢工程師")
-        #log(employee)
+        # log(employee)
         llm_mode = employee[Constant.EMP_KEY_LLM_ENGINE]
         log("查詢模型")
-        #log(llm_mode)
+        # log(llm_mode)
         llm_img_prompt = employee[Constant.EMP_KEY_LLM_PROMPT][Constant.EMP_KEY_LLM_PROMPT_IMAGE]
         llm_img_prompt_model = llm_img_prompt[Constant.EMP_KEY_LLM_PROMPT_MODEL]
         llm_img_prompt_messages = llm_img_prompt[Constant.EMP_KEY_LLM_PROMPT_MESSAGES]
@@ -483,7 +555,7 @@ def analyze_image(images_b64: [str],
                     messages.append(prompt_message)
 
                 log("詢問訊息:")
-                #log(messages)
+                # log(messages)
                 rep = llm.askllm(llm_mode, llm_img_prompt_model, messages)
                 image_desc.append(rep)
             except Exception as imge:
@@ -527,32 +599,26 @@ def analyze_image(images_b64: [str],
 
         try:
             tasks[task_id] = "生成程式碼"
-
-            print(str(tasks[task_id]))
-
+            log(tasks[task_id])
             assistant_reply = llm.askllm(llm_mode, llm_code_prompt_model, messages)
-
-            print(assistant_reply)
-
-            WORK_PATH = sys_setting['WORK_PATH']
-
-            print(WORK_PATH)
+            log(assistant_reply)
 
             user_config = sys_config[username]
+            idx = int(user_config[Constant.USER_CFG_PROJ_MODE])
 
-            print(user_config)
+            work_path = sys_setting[Constant.SET_WORK_PATH]
+            work_mode_path = sys_setting[Constant.SET_WORK_MODE_PATH]
+            user_root_path = os.path.join(work_path, work_mode_path[idx], "public", "users", username)
 
-            prj_id = user_config['PROJ_ID']
-            print(prj_id)
+            log(user_root_path)
 
-            app_desc = user_config['APP_DESC']
-            app_name = user_config['APP_NAME']
-            func_desc = user_config['FUNC_DESC']
+            prj_id = user_config[Constant.USER_CFG_PROJ_ID]
+            app_desc = user_config[Constant.USER_CFG_APP_DESC]
+            app_name = user_config[Constant.USER_CFG_APP_NAME]
+            func_desc = user_config[Constant.USER_CFG_FUNC_DESC]
+            func_file = user_config[Constant.USER_CFG_FUNC_FILE]
 
-            func_file = user_config['FUNC_FILE']
-            print(func_file)
-
-            output_folder = f"{WORK_PATH}/{prj_id}/public/{app_name}"
+            output_folder = f"{user_root_path}/{prj_id}/{app_name}"
             if not os.path.exists(output_folder):
                 os.makedirs(output_folder)
 
@@ -574,25 +640,24 @@ def analyze_image(images_b64: [str],
             # 更新路由
             print("開始更新路由")
             tasks[task_id] = "更新路由"
-            route_path = f"{WORK_PATH}/{prj_id}/route.json"
-            with open(route_path, "r") as route_f:
-                original_route = route_f.read()
 
-            route_js = json.loads(original_route)
+            route_path = f"{user_root_path}/{prj_id}/route.json"
 
-            new_route = {"APP_DESC": app_desc, "FUNC_DESC": func_desc, "FUNC_NAME": f"/{app_name}/{func_file}"}
+            route_js = read_json_file(route_path)
+
+            new_route = {Constant.USER_CFG_APP_NAME: app_name, Constant.USER_CFG_APP_DESC: app_desc,
+                         Constant.USER_CFG_FUNC_DESC: func_desc, Constant.USER_CFG_FUNC_FILE: f"{func_file}"}
             found = False
             for route_item in route_js:
-                if (route_item["APP_DESC"] == new_route["APP_DESC"] and
-                        route_item["FUNC_DESC"] == new_route["FUNC_DESC"]):
+                if (route_item[Constant.USER_CFG_APP_DESC] == new_route[Constant.USER_CFG_APP_DESC] and
+                        route_item[Constant.USER_CFG_FUNC_DESC] == new_route[Constant.USER_CFG_FUNC_DESC]):
                     found = True
-                    route_item["FUNC_NAME"] = new_route["FUNC_NAME"]
+                    route_item[Constant.USER_CFG_FUNC_FILE] = new_route[Constant.USER_CFG_FUNC_FILE]
 
             if not found:
                 route_js.append(new_route)
 
-            with open(route_path, "w") as route_f:
-                route_f.write(json.dumps(route_js, indent=4))
+            write_json_file(route_path, route_js)
 
             print("結束更新路由")
             # lines = generated_code.splitlines(True)

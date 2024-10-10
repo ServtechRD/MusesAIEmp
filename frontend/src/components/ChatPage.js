@@ -860,7 +860,7 @@ function ChatPage({ token, engineer }) {
         open={switchFunctionDialogOpen}
         onClose={() => setSwitchFunctionDialogOpen(false)}
       >
-        <DialogTitle>建立功能</DialogTitle>
+        <DialogTitle>切換功能</DialogTitle>
         <DialogContent>
           <TextField
             label="應用代號"
@@ -895,7 +895,7 @@ function ChatPage({ token, engineer }) {
           <Button onClick={() => setSwitchFunctionDialogOpen(false)}>
             取消
           </Button>
-          <Button onClick={handleSwitchFunction}>建立</Button>
+          <Button onClick={handleSwitchFunction}>切換</Button>
         </DialogActions>
       </Dialog>
     </ThemeProvider>
