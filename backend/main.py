@@ -209,13 +209,16 @@ def login(form_data: schemas.UserLogin, db: Session = Depends(database.get_db)):
     idx = emp[Constant.EMP_KEY_WORK_MODE]
 
     if idx == 0:
+        log("emp mode is 0")
         root_path = sys_setting[Constant.SET_WORK_MODE_PATH][idx]
         user_path = os.path.join(root_path, "users", form_data.username)
         if not os.path.exists(user_path):
+            log("create user folder :" + user_path)
             os.makedirs(user_path)
 
         prj_route_json = os.path.join(user_path, "route.json")
         if not os.path.exists(prj_route_json):
+            log("create user route.json :" + prj_route_json)
             write_json_file(prj_route_json, {})
 
     return {'access_token': access_token, 'token_type': 'bearer'}
