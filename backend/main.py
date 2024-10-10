@@ -334,7 +334,7 @@ async def send_message(
                         print(f"update {config_key} = {config_value}")
 
                         # setting prj_mode, trigger action
-                        if config_key == Constant.USER_CFG_PROJ_ID:
+                        if config_key == Constant.USER_CFG_PROJ_MODE:
                             if config_value == "0":  # mode 0
                                 idx = int(config_value)
                                 # get prj path
