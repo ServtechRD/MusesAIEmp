@@ -206,7 +206,7 @@ def login(form_data: schemas.UserLogin, db: Session = Depends(database.get_db)):
     log(sys_config)
 
     emp = sys_employees[form_data.employee]
-    idx = emp[Constant.EMP_KEY_WORK_MODE]
+    idx = int(emp[Constant.EMP_KEY_WORK_MODE])
 
     if idx == 0:
         log("emp mode is 0")
