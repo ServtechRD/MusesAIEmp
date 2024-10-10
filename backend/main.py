@@ -210,8 +210,9 @@ def login(form_data: schemas.UserLogin, db: Session = Depends(database.get_db)):
 
     if idx == 0:
         log("emp mode is 0")
-        root_path = sys_setting[Constant.SET_WORK_MODE_PATH][idx]
-        user_path = os.path.join(root_path, "users", form_data.username)
+        root_path = sys_setting[Constant.SET_WORK_PATH]
+        work_mode_path = sys_setting[Constant.SET_WORK_MODE_PATH][idx]
+        user_path = os.path.join(root_path, work_mode_path, "public", "users", form_data.username)
         if not os.path.exists(user_path):
             log("create user folder :" + user_path)
             os.makedirs(user_path)
