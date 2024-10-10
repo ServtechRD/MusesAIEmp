@@ -273,7 +273,7 @@ def get_work_url(
 ):
     user_name = current_user.username
     user_config = sys_config[user_name]
-    mode = user_config[Constant.USER_CFG_PROJ_MODE]
+    mode = int(user_config[Constant.USER_CFG_PROJ_MODE])
     prj_id = user_config[Constant.USER_CFG_PROJ_ID]
     app_name = user_config[Constant.USER_CFG_APP_NAME]
     func_file = user_config[Constant.USER_CFG_FUNC_FILE]
