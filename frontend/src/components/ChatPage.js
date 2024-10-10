@@ -416,7 +416,7 @@ function ChatPage({ token, engineer }) {
     try {
       const input1 = "/CONFIG SET PROJ_ID " + projectId;
       const input2 = "/CONFIG SET PROJ_DESC " + projectDescription;
-      const input3 = "/CONFIG SET PROJ_MODE " + projectMode;
+      const input3 = "/CONFIG SET PROJ_MODE 0";
 
       setMessages([
         ...messages,
@@ -559,8 +559,15 @@ function ChatPage({ token, engineer }) {
     setCodeDialogOpen(true);
   };
 
-  const handleOpenLink = () => {
-    window.open("https://www.google.com.tw", "_blank");
+  const handleOpenLink = async () => {
+    const response = await api.get("/workurl", {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "multipart/form-data",
+      },
+    });
+
+    window.open(response, "_blank");
   };
 
   return (
@@ -805,20 +812,6 @@ function ChatPage({ token, engineer }) {
             onChange={(e) => setProjectDescription(e.target.value)}
             margin="dense"
           />
-          <FormControl fullWidth margin="dense">
-            <InputLabel id="selectLabelProjMode">專案類型</InputLabel>
-            <Select
-              labelId="selectLabelProjMode"
-              label="專案類型"
-              id="selectProjeMode"
-              value={projectMode}
-              onChange={(e) => setProjectMode(e.target.value)}
-            >
-              <MenuItem value="Basic">Basic</MenuItem>
-              <MenuItem value="React">React</MenuItem>
-              <MenuItem value="SmartAdmin">SmartAdmin</MenuItem>
-            </Select>
-          </FormControl>
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setProjectDialogOpen(false)}>取消</Button>
