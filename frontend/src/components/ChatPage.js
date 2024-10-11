@@ -304,7 +304,7 @@ function ChatPage({ token, engineer }) {
         headers: { Authorization: `Bearer ${token}` },
       });
 
-      let prjs = JSON.parse(response.projects);
+      let prjs = JSON.parse(response.data.projects);
       console.log(prjs);
       setProjects(prjs);
 
