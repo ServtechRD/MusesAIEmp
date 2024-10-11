@@ -974,7 +974,7 @@ function ChatPage({ token, engineer }) {
           Image Viewer
           <IconButton
             aria-label="close"
-            onClick={onClose}
+            onClick={() => setReDoDialogOpen(false)}
             sx={{ position: "absolute", right: 8, top: 8 }}
           >
             <CloseIcon />
