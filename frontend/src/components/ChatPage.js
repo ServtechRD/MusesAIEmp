@@ -44,8 +44,11 @@ import {
 import { Light as SyntaxHighlighter } from "react-syntax-highlighter";
 import { dracula, prism } from "react-syntax-highlighter/dist/esm/styles/prism";
 import docco from "react-syntax-highlighter/dist/esm/styles/hljs/docco";
+
 import jsx from "react-syntax-highlighter/dist/esm/languages/prism/jsx";
 import js from "react-syntax-highlighter/dist/esm/languages/hljs/javascript";
+import html from "react-syntax-highlighter/dist/esm/languages/hljs/xml";
+import css from "react-syntax-highlighter/dist/esm/languages/hljs/css";
 
 import ReactMarkdown from "react-markdown";
 import { jwtDecode } from "jwt-decode";
@@ -55,6 +58,8 @@ import ImageDialog from "./ImageDialog";
 
 SyntaxHighlighter.registerLanguage("jsx", jsx);
 SyntaxHighlighter.registerLanguage("javascript", js);
+SyntaxHighlighter.registerLanguage("html", html);
+SyntaxHighlighter.registerLanguage("css", css);
 
 // 调整 AppBar 高度
 const LowAppBar = styled(AppBar)(({ theme }) => ({
@@ -991,7 +996,7 @@ function ChatPage({ token, engineer }) {
         fullWidth
       >
         <DialogTitle>
-          Image Viewer
+          再做一次
           <IconButton
             aria-label="close"
             onClick={() => setReDoDialogOpen(false)}
@@ -1051,33 +1056,50 @@ function ChatPage({ token, engineer }) {
             </Grid>
             <Grid item xs={9}>
               <Box display="flex" flexDirection="column" height="100%">
-                {selectedImage && (
-                  <Box
-                    mb={2}
-                    display="flex"
-                    justifyContent="center"
-                    alignItems="center"
-                    height="30%"
-                  >
-                    <img
-                      src={`data:image/jpeg;base64,${selectedImage}`}
-                      alt="Selected"
-                      style={{
-                        maxWidth: "100%",
-                        maxHeight: "100%",
-                        objectFit: "contain",
-                      }}
-                    />
-                  </Box>
-                )}
-                <Box mb={2} height="35%" overflow="auto">
+                <Paper elevation={3} sx={{ mb: 2, p: 2 }}>
+                  <Typography variant="h6" gutterBottom>
+                    Selected Image
+                  </Typography>
+                  {selectedImage && (
+                    <Box
+                      mb={2}
+                      display="flex"
+                      justifyContent="center"
+                      alignItems="center"
+                      height="30%"
+                    >
+                      <img
+                        src={`data:image/jpeg;base64,${selectedImage}`}
+                        alt="Selected"
+                        style={{
+                          maxWidth: "100%",
+                          maxHeight: "100%",
+                          objectFit: "contain",
+                        }}
+                      />
+                    </Box>
+                  )}
+                </Paper>
+                <Paper
+                  elevation={3}
+                  sx={{ mb: 2, p: 2, flexGrow: 1, overflow: "auto" }}
+                >
+                  <Typography variant="h6" gutterBottom>
+                    Markdown Content
+                  </Typography>
                   <ReactMarkdown>{markdownText}</ReactMarkdown>
-                </Box>
-                <Box height="35%" overflow="auto">
-                  <SyntaxHighlighter language="javascript" style={docco}>
+                </Paper>
+                <Paper
+                  elevation={3}
+                  sx={{ p: 2, flexGrow: 1, overflow: "auto" }}
+                >
+                  <Typography variant="h6" gutterBottom>
+                    Code
+                  </Typography>
+                  <SyntaxHighlighter language="html" style={docco}>
                     {codeText}
                   </SyntaxHighlighter>
-                </Box>
+                </Paper>
               </Box>
             </Grid>
           </Grid>
