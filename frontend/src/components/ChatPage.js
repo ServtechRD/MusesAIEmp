@@ -293,6 +293,12 @@ function ChatPage({ token, engineer }) {
     scrollToBottom();
   }, [messages]);
 
+  useEffect(() => {
+    if (reDoDialogOpen) {
+      fetchThumbnails();
+    }
+  }, [reDoDialogOpen]);
+
   const getInfo = async () => {
     try {
       const response = await api.get("/info", {
