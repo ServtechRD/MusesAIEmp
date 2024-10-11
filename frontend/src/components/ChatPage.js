@@ -1060,7 +1060,7 @@ function ChatPage({ token, engineer }) {
                     height="30%"
                   >
                     <img
-                      src={selectedImage}
+                      src={`data:image/jpeg;base64,${selectedImage}`}
                       alt="Selected"
                       style={{
                         maxWidth: "100%",
