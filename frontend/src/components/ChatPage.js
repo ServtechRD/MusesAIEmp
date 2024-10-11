@@ -49,9 +49,14 @@ import ReactMarkdown from "react-markdown";
 import { jwtDecode } from "jwt-decode";
 import api from "../services/api";
 
+import { Light as SyntaxHighlighter } from "react-syntax-highlighter";
+import js from "react-syntax-highlighter/dist/esm/languages/hljs/javascript";
+import docco from "react-syntax-highlighter/dist/esm/styles/hljs/docco";
+
 import ImageDialog from "./ImageDialog";
 
 SyntaxHighlighter.registerLanguage("jsx", jsx);
+SyntaxHighlighter.registerLanguage("javascript", js);
 
 // 调整 AppBar 高度
 const LowAppBar = styled(AppBar)(({ theme }) => ({
@@ -164,6 +169,7 @@ function ChatPage({ token, engineer }) {
   const [selectedImage, setSelectedImage] = useState(null);
   const [markdownText, setMarkdownText] = useState("");
   const [codeText, setCodeText] = useState("");
+  const [selectedFilename, setSelectedFilename] = useState(null);
 
   // Project data
   const [projectId, setProjectId] = useState("");
@@ -635,6 +641,7 @@ function ChatPage({ token, engineer }) {
 
   const handleImageSelect = async (filename) => {
     try {
+      setSelectedFilename(filename);
       console.log(filename);
       //const response = await fetch(`/api/image/${filename}`);
       const formData = new FormData();
@@ -999,47 +1006,81 @@ function ChatPage({ token, engineer }) {
           <Grid container spacing={2}>
             <Grid item xs={3}>
               {thumbnails.map((thumb) => (
-                <img
+                <div
                   key={thumb.filename}
-                  src={`data:image/jpeg;base64,${thumb.thumbnail}`}
-                  alt={thumb.filename}
                   style={{
-                    width: "100%",
+                    position: "relative",
                     marginBottom: "10px",
                     cursor: "pointer",
                   }}
                   onClick={() => handleImageSelect(thumb.filename)}
-                />
+                >
+                  <img
+                    src={`data:image/jpeg;base64,${thumb.thumbnail}`}
+                    alt={thumb.filename}
+                    style={{
+                      width: "100%",
+                      border:
+                        selectedFilename === thumb.filename
+                          ? "3px solid #1976d2"
+                          : "none",
+                      borderRadius: "4px",
+                      transition: "border 0.3s ease",
+                    }}
+                  />
+                  {selectedFilename === thumb.filename && (
+                    <div
+                      style={{
+                        position: "absolute",
+                        top: "5px",
+                        right: "5px",
+                        background: "#1976d2",
+                        color: "white",
+                        borderRadius: "50%",
+                        width: "20px",
+                        height: "20px",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        fontSize: "12px",
+                      }}
+                    >
+                      ✓
+                    </div>
+                  )}
+                </div>
               ))}
             </Grid>
             <Grid item xs={9}>
-              {selectedImage && (
-                <img
-                  src={`data:image/jpeg;base64,${selectedImage}`}
-                  alt="Selected"
-                  style={{ width: "100%" }}
-                />
-              )}
-              <TextField
-                label="Markdown Text"
-                multiline
-                rows={4}
-                value={markdownText}
-                fullWidth
-                variant="outlined"
-                margin="normal"
-                InputProps={{ readOnly: true }}
-              />
-              <TextField
-                label="Code Text"
-                multiline
-                rows={4}
-                value={codeText}
-                fullWidth
-                variant="outlined"
-                margin="normal"
-                InputProps={{ readOnly: true }}
-              />
+              <Box display="flex" flexDirection="column" height="100%">
+                {selectedImage && (
+                  <Box
+                    mb={2}
+                    display="flex"
+                    justifyContent="center"
+                    alignItems="center"
+                    height="30%"
+                  >
+                    <img
+                      src={selectedImage}
+                      alt="Selected"
+                      style={{
+                        maxWidth: "100%",
+                        maxHeight: "100%",
+                        objectFit: "contain",
+                      }}
+                    />
+                  </Box>
+                )}
+                <Box mb={2} height="35%" overflow="auto">
+                  <ReactMarkdown>{markdownText}</ReactMarkdown>
+                </Box>
+                <Box height="35%" overflow="auto">
+                  <SyntaxHighlighter language="javascript" style={docco}>
+                    {codeText}
+                  </SyntaxHighlighter>
+                </Box>
+              </Box>
             </Grid>
           </Grid>
         </DialogContent>
