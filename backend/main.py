@@ -275,7 +275,11 @@ def get_projects(
     user_config = sys_config[user_name]
     mode = int(user_config[Constant.USER_CFG_PROJ_MODE])
 
+    log(f"get projects by mode = {mode}")
+
     allprjs, _, _ = read_projects_by_user(mode, user_name)
+
+    log(allprjs)
 
     result_prjs = []
     for prjid in allprjs.keys():
@@ -396,6 +400,10 @@ def read_projects_by_user(prj_mode, user_name):
     # update proj route json
     all_prjs = {}
     prj_route_json = os.path.join(user_root_path, "route.json")
+
+    log(f"user_root_path :{user_root_path}")
+    log(f"prj_route_path :{prj_route_json}")
+
     if os.path.exists(prj_route_json):
         all_prjs = read_json_file(prj_route_json)
     return all_prjs, prj_route_json, user_root_path
