@@ -267,6 +267,24 @@ def get_conversation_message(conversion_id: int, current_user: models.User = Dep
     return result
 
 
+@app.get('/projects')
+def get_projects(
+        current_user: models.User = Depends(auth.get_current_user)
+):
+    user_name = current_user.username
+    user_config = sys_config[user_name]
+    mode = int(user_config[Constant.USER_CFG_PROJ_MODE])
+
+    allprjs, _, _ = read_projects_by_user(mode, user_name)
+
+    result_prjs = []
+    for prjid in allprjs.keys():
+        result_prjs.append(prjid + '|' + allprjs[prjid])
+
+    return JSONResponse(content={"projects": json.dumps(result_prjs)},
+                        status_code=200)
+
+
 @app.get('/workurl')
 def get_work_url(
         current_user: models.User = Depends(auth.get_current_user)
@@ -338,16 +356,7 @@ async def send_message(
                             if config_value == "0":  # mode 0
                                 idx = int(config_value)
                                 # get prj path
-                                work_path = sys_setting[Constant.SET_WORK_PATH]
-                                work_mode_path = sys_setting[Constant.SET_WORK_MODE_PATH]
-                                user_root_path = os.path.join(work_path, work_mode_path[idx], "public", "users",
-                                                              user_name)
-
-                                # update proj route json
-                                all_prjs = {}
-                                prj_route_json = os.path.join(user_root_path, "route.json")
-                                if os.path.exists(prj_route_json):
-                                    all_prjs = read_json_file(prj_route_json)
+                                all_prjs, prj_route_json, user_root_path = read_projects_by_user(idx, user_name)
 
                                 all_prjs[user_config[Constant.USER_CFG_PROJ_ID]] = user_config[
                                     Constant.USER_CFG_PROJ_DESC]
@@ -377,6 +386,19 @@ async def send_message(
     else:
         return JSONResponse(content={"message": "無輸入"},
                             status_code=200)
+
+
+def read_projects_by_user(prj_mode, user_name):
+    work_path = sys_setting[Constant.SET_WORK_PATH]
+    work_mode_path = sys_setting[Constant.SET_WORK_MODE_PATH]
+    user_root_path = os.path.join(work_path, work_mode_path[prj_mode], "public", "users",
+                                  user_name)
+    # update proj route json
+    all_prjs = {}
+    prj_route_json = os.path.join(user_root_path, "route.json")
+    if os.path.exists(prj_route_json):
+        all_prjs = read_json_file(prj_route_json)
+    return all_prjs, prj_route_json, user_root_path
 
 
 @app.post('/message_images')

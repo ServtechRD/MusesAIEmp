@@ -298,6 +298,20 @@ function ChatPage({ token, engineer }) {
     }
   };
 
+  const openSwitchDialog = async () => {
+    try {
+      const response = await api.get("/projects", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      setProjects(response.projects);
+
+      setSwitchProjectDialogOpen(true);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
   const handleImageChange = (e) => {
     const files = Array.from(e.target.files).slice(0, 5);
     setImageFiles(files[0]);
@@ -436,7 +450,7 @@ function ChatPage({ token, engineer }) {
       const rep3 = await handleApiCall(input3, null);
       console.log("Creating project mode:", rep3);
 
-      setProjects([...projects, projectId]);
+      setProjects([...projects, projectId + "|" + projectDescription]);
       setMessages((prevMessages) => [
         ...prevMessages,
         { sender: "assistant", text: "建立成功" },
@@ -453,9 +467,14 @@ function ChatPage({ token, engineer }) {
   // Function to handle switching projects
   const handleSwitchProject = async () => {
     try {
+      let items = currentProject.split("|");
+
+      setProjectId(items[0]);
+      setProjectDescription(items[1]);
+
       const input1 = "/CONFIG SET PROJ_ID " + projectId;
       const input2 = "/CONFIG SET PROJ_DESC " + projectDescription;
-      const input3 = "/CONFIG SET PROJ_MODE " + projectMode;
+      //const input3 = "/CONFIG SET PROJ_MODE " + projectMode;
 
       setMessages([
         ...messages,
@@ -472,8 +491,8 @@ function ChatPage({ token, engineer }) {
       const rep2 = handleApiCall(input2, null);
       console.log("Creating project desc:", rep2);
 
-      const rep3 = handleApiCall(input3, null);
-      console.log("Creating project mode:", rep3);
+      //  const rep3 = handleApiCall(input3, null);
+      //  console.log("Creating project mode:", rep3);
 
       setProjects([...projects, projectId]);
       setMessages((prevMessages) => [
@@ -706,7 +725,7 @@ function ChatPage({ token, engineer }) {
                       </Button>
                       <Button
                         variant="contained"
-                        onClick={() => setSwitchProjectDialogOpen(true)}
+                        onClick={() => openSwitchDialog()}
                       >
                         切換專案
                       </Button>
