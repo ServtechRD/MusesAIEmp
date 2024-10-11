@@ -1058,7 +1058,7 @@ function ChatPage({ token, engineer }) {
               <Box display="flex" flexDirection="column" height="100%">
                 <Paper elevation={3} sx={{ mb: 2, p: 2 }}>
                   <Typography variant="h6" gutterBottom>
-                    Selected Image
+                    選擇圖片
                   </Typography>
                   {selectedImage && (
                     <Box
@@ -1066,7 +1066,7 @@ function ChatPage({ token, engineer }) {
                       display="flex"
                       justifyContent="center"
                       alignItems="center"
-                      height="30%"
+                      height="90%"
                     >
                       <img
                         src={`data:image/jpeg;base64,${selectedImage}`}
@@ -1085,7 +1085,7 @@ function ChatPage({ token, engineer }) {
                   sx={{ mb: 2, p: 2, flexGrow: 1, overflow: "auto" }}
                 >
                   <Typography variant="h6" gutterBottom>
-                    Markdown Content
+                    對應說明
                   </Typography>
                   <ReactMarkdown>{markdownText}</ReactMarkdown>
                 </Paper>
@@ -1094,7 +1094,7 @@ function ChatPage({ token, engineer }) {
                   sx={{ p: 2, flexGrow: 1, overflow: "auto" }}
                 >
                   <Typography variant="h6" gutterBottom>
-                    Code
+                    對應程式碼
                   </Typography>
                   <SyntaxHighlighter language="html" style={docco}>
                     {codeText}
