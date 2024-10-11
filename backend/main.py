@@ -1,6 +1,7 @@
 import glob
 import json
 from datetime import datetime
+from io import BytesIO
 
 from fastapi import FastAPI, Depends, HTTPException, status, UploadFile, File, Form, BackgroundTasks
 from fastapi.responses import JSONResponse
@@ -19,6 +20,8 @@ from jose import jwt, JWTError
 
 from constant import *
 from llmengine import LLMEngine
+
+from PIL import Image
 
 load_dotenv()
 
@@ -120,6 +123,23 @@ def load_employees():
                 log(f'載入 {subdir} Employee 失敗: ')
 
     log(f"總共載入 {str(len(sys_employees))} AI 員工")
+
+
+def read_projects_by_user(prj_mode, user_name):
+    work_path = sys_setting[Constant.SET_WORK_PATH]
+    work_mode_path = sys_setting[Constant.SET_WORK_MODE_PATH]
+    user_root_path = os.path.join(work_path, work_mode_path[prj_mode], "public", "users",
+                                  user_name)
+    # update proj route json
+    all_prjs = {}
+    prj_route_json = os.path.join(user_root_path, "route.json")
+
+    log(f"user_root_path :{user_root_path}")
+    log(f"prj_route_path :{prj_route_json}")
+
+    if os.path.exists(prj_route_json):
+        all_prjs = read_json_file(prj_route_json)
+    return all_prjs, prj_route_json, user_root_path
 
 
 # 讀取設定檔
@@ -313,6 +333,47 @@ def get_work_url(
     return url
 
 
+# 获取目录下所有图片文件的名字
+def get_image_files(directory):
+    return [f for f in os.listdir(directory) if f.lower().endswith(('.png', '.jpg', '.jpeg', '.gif'))]
+
+
+# 生成缩略图并返回 Base64 编码
+def generate_thumbnail_base64(image_path, size=(100, 100)):
+    with Image.open(image_path) as img:
+        img.thumbnail(size)
+        buffer = BytesIO()
+        img.save(buffer, format="JPEG")
+        buffer.seek(0)
+        # 将图像内容编码为 Base64
+        thumbnail_base64 = base64.b64encode(buffer.getvalue()).decode('utf-8')
+        return thumbnail_base64
+
+
+@app.get("/thumbnails/")
+async def get_all_thumbnails(current_user: models.User = Depends(auth.get_current_user)):
+
+    UPLOAD_DIR = sys_setting['TEMP_PATH'] + "/uploads/" + current_user.username
+
+    # 获取图片文件名列表
+    files = get_image_files(UPLOAD_DIR)
+
+    if not files:
+        raise HTTPException(status_code=404, detail="No images found")
+
+    thumbnails = []
+    for file_name in files:
+        image_path = os.path.join(UPLOAD_DIR, file_name)
+        # 生成缩略图并编码为 Base64
+        thumbnail_base64 = generate_thumbnail_base64(image_path)
+        thumbnails.append({
+            "filename": file_name,
+            "thumbnail": thumbnail_base64
+        })
+
+    return JSONResponse(content=thumbnails)
+
+
 @app.get('/messages')
 def get_messages(
         current_user: models.User = Depends(auth.get_current_user),
@@ -393,23 +454,6 @@ async def send_message(
     else:
         return JSONResponse(content={"message": "無輸入"},
                             status_code=200)
-
-
-def read_projects_by_user(prj_mode, user_name):
-    work_path = sys_setting[Constant.SET_WORK_PATH]
-    work_mode_path = sys_setting[Constant.SET_WORK_MODE_PATH]
-    user_root_path = os.path.join(work_path, work_mode_path[prj_mode], "public", "users",
-                                  user_name)
-    # update proj route json
-    all_prjs = {}
-    prj_route_json = os.path.join(user_root_path, "route.json")
-
-    log(f"user_root_path :{user_root_path}")
-    log(f"prj_route_path :{prj_route_json}")
-
-    if os.path.exists(prj_route_json):
-        all_prjs = read_json_file(prj_route_json)
-    return all_prjs, prj_route_json, user_root_path
 
 
 @app.post('/message_images')

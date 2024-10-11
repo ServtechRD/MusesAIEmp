@@ -23,6 +23,7 @@ import {
   FormControl,
 } from "@mui/material";
 import { ThemeProvider, createTheme, styled } from "@mui/material/styles";
+
 //import SendIcon from '@mui/icons-material/Send';
 //import DeleteIcon from '@mui/icons-material/Delete';
 
@@ -46,6 +47,8 @@ import jsx from "react-syntax-highlighter/dist/esm/languages/prism/jsx";
 import ReactMarkdown from "react-markdown";
 import { jwtDecode } from "jwt-decode";
 import api from "../services/api";
+
+import ImageDialog from "./ImageDialog";
 
 SyntaxHighlighter.registerLanguage("jsx", jsx);
 
@@ -153,6 +156,8 @@ function ChatPage({ token, engineer }) {
   const [switchProjectDialogOpen, setSwitchProjectDialogOpen] = useState(false);
   const [switchFunctionDialogOpen, setSwitchFunctionDialogOpen] =
     useState(false);
+
+  const [reDoDialogOpen, setReDoDialogOpen] = useState(false);
 
   // Project data
   const [projectId, setProjectId] = useState("");
@@ -748,6 +753,12 @@ function ChatPage({ token, engineer }) {
                       >
                         切換功能
                       </Button>
+                      <Button
+                        variant="contained"
+                        onClick={() => setReDoDialogOpen(true)}
+                      >
+                        再做一次
+                      </Button>
                     </Box>
                   </Grid>
                 </Grid>
@@ -924,6 +935,12 @@ function ChatPage({ token, engineer }) {
           <Button onClick={handleSwitchFunction}>切換</Button>
         </DialogActions>
       </Dialog>
+
+      <ImageDialog
+        token={token}
+        open={reDoDialogOpen}
+        onClose={setReDoDialogOpen(false)}
+      />
     </ThemeProvider>
   );
 }
