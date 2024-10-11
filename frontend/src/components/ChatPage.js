@@ -478,6 +478,9 @@ function ChatPage({ token, engineer }) {
       const input2 = "/CONFIG SET PROJ_DESC " + projectDescription;
       //const input3 = "/CONFIG SET PROJ_MODE " + projectMode;
 
+      console.log(input1);
+      console.log(input2);
+
       setMessages([
         ...messages,
         {
@@ -487,11 +490,11 @@ function ChatPage({ token, engineer }) {
         },
       ]);
 
-      const rep1 = handleApiCall(input1, null);
-      console.log("Creating project id:", rep1);
+      const rep1 = await handleApiCall(input1, null);
+      console.log("Swtich project id:", rep1);
 
-      const rep2 = handleApiCall(input2, null);
-      console.log("Creating project desc:", rep2);
+      const rep2 = await handleApiCall(input2, null);
+      console.log("Swtich project desc:", rep2);
 
       //  const rep3 = handleApiCall(input3, null);
       //  console.log("Creating project mode:", rep3);
