@@ -471,6 +471,8 @@ function ChatPage({ token, engineer }) {
     try {
       let items = currentProject.split("|");
 
+      console.log(currentProject);
+
       setProjectId(items[0]);
       setProjectDescription(items[1]);
 
