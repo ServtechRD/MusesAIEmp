@@ -445,6 +445,7 @@ async def send_message(
         os.makedirs(os.path.dirname(file_location), exist_ok=True)
         img_content = await image.read()
         with open(file_location, "wb+") as file_object:
+            image.file.seek(0)  # restore point for copy
             shutil.copyfileobj(image.file, file_object)
             try:
                 # img_content = await image.read()
@@ -472,7 +473,7 @@ async def send_message(
         db.refresh(new_image)
         image_paths.append(file_location)
 
-    background_tasks.add_task(analyze_image, image_b64s, image_types, user_input, user_id,
+    background_tasks.add_task(analyze_image, image_b64s, image_types, user_input, file_location,
                               current_user.username, task_id, conversation_id, database.SessionLocal())
     return JSONResponse(content={"task_id": task_id, "message": "資料已上傳,進行分析中"},
                         status_code=200)
@@ -549,7 +550,7 @@ def general_rep(user_input, user_id, task_id,
 def analyze_image(images_b64: [str],
                   images_type: [str],
                   user_input,
-                  user_id,
+                  file_location,
                   username,
                   task_id,
                   conversation_id,
@@ -595,6 +596,11 @@ def analyze_image(images_b64: [str],
                 # log(messages)
                 rep = llm.askllm(llm_mode, llm_img_prompt_model, messages)
                 image_desc.append(rep)
+
+                desc_loc = file_location + "_desc.txt"
+                with open(desc_loc, "w", encoding="UTF-8") as f:
+                    f.write(rep)
+
             except Exception as imge:
                 print(str(imge))
                 tasks[task_id] = f"圖片分析錯誤:{str(idx) + ' => ' + str(imge)}"
@@ -669,10 +675,17 @@ def analyze_image(images_b64: [str],
                 code_blocks = extract_code_blocks(assistant_reply)
                 with open(output_path, "w") as out_f:
                     out_f.writelines(code_blocks)
+                code_loc = file_location + "_code.txt"
+                with open(code_loc, "w") as out_f:
+                    out_f.writelines(code_blocks)
+
             else:
                 print("write program")
                 with open(output_path, "w") as out_f:
                     out_f.write(assistant_reply)
+                code_loc = file_location + "_code.txt"
+                with open(code_loc, "w") as out_f:
+                    out_f.writelines(assistant_reply)
 
             # 更新路由
             print("開始更新路由")

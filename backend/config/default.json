@@ -5,5 +5,5 @@
   "APP_NAME": "01_Report",
   "FUNC_DESC": "預設子報表",
   "FUNC_FILE": "sub_report1.html",
-  "PROJ_MODE": 1
+  "PROJ_MODE": 0
 }
