@@ -304,7 +304,9 @@ function ChatPage({ token, engineer }) {
         headers: { Authorization: `Bearer ${token}` },
       });
 
-      setProjects(response.projects);
+      let prjs = JSON.parse(response.projects);
+      console.log(prjs);
+      setProjects(prjs);
 
       setSwitchProjectDialogOpen(true);
     } catch (error) {
