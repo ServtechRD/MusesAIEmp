@@ -21,7 +21,13 @@ from jose import jwt, JWTError
 from constant import *
 from llmengine import LLMEngine
 
+from helper import *
+from routers import bases
+from utils import log
+
 from PIL import Image
+
+import globals
 
 load_dotenv()
 
@@ -39,129 +45,6 @@ print("KEY:" + SECRET_KEY)
 
 # 数据
 data = {"sub": "user_id"}
-
-sys_default_config = {}
-
-sys_setting = {
-    "ASSISTANT_NAME": "Adam",
-    "WORK_PATH": "../../WORK",
-    "TEMP_PATH": "../../TEMP",
-    "prj01": "http://192.168.1.234:35200",
-    "prj02": "http://192.168.1.234:35300",
-    "prj03": "http://192.168.1.234:35400",
-}
-sys_config = {}
-
-sys_employees = {}
-
-tasks: dict[str, str] = {}
-
-# 假设我们有一个会话或数据库来存储对话历史
-user_conversations = {}
-
-
-def log(message):
-    # 獲取當前日期和時間
-    current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-
-    # 如果訊息是字串，直接打印
-    if isinstance(message, str):
-        print(f"{current_time}\t{message}")
-    else:
-        # 如果不是字串，使用 repr() 來轉換對象為字串
-        print(f"{current_time}")
-        print(repr(message))
-
-
-def write_json_file(file_path, json_obj):
-    try:
-        with open(file_path, "w", encoding='utf-8') as file:
-            file.write(json.dumps(json_obj, indent=4))
-    except IOError:
-        print(f"Error reading file {file}")
-
-
-def read_json_file(file_path):
-    try:
-        # 打開並讀取 JSON 檔案
-        with open(file_path, 'r', encoding='utf-8') as file:
-            # 解析 JSON 內容為 Python 字典
-            data = json.load(file)
-
-        log(f"成功讀取和載入 {file_path}")
-        return data
-
-    except json.JSONDecodeError:
-        print(f"Error decoding JSON in file {file_path}")
-    except IOError:
-        print(f"Error reading file {file_path}")
-
-    return None
-
-
-def load_setting():
-    global sys_setting
-    sys_setting = read_json_file(Constant.CONFIG_SETTING_FILE)
-
-
-def load_default_config():
-    global sys_default_config
-    sys_default_config = read_json_file(Constant.CONFIG_DEFAULT_CONFIG_FILE)
-
-
-def load_employees():
-    root_dir = Constant.CONFIG_EMPLOYEE_PATH
-    subdirs = [d for d in os.listdir(root_dir) if os.path.isdir(os.path.join(root_dir, d))]
-    for subdir in subdirs:
-        sub_dir_path = os.path.join(root_dir, subdir)
-        prompt_file_path = os.path.join(sub_dir_path, Constant.EMPLOYEE_FILE)
-        if os.path.exists(prompt_file_path):
-            prompt_data = read_json_file(prompt_file_path)
-            if prompt_data:
-                sys_employees[subdir] = prompt_data
-            else:
-                log(f'載入 {subdir} Employee 失敗: ')
-
-    log(f"總共載入 {str(len(sys_employees))} AI 員工")
-
-
-def read_projects_by_user(prj_mode, user_name):
-    work_path = sys_setting[Constant.SET_WORK_PATH]
-    work_mode_path = sys_setting[Constant.SET_WORK_MODE_PATH]
-    user_root_path = os.path.join(work_path, work_mode_path[prj_mode], "public", "users",
-                                  user_name)
-    # update proj route json
-    all_prjs = {}
-    prj_route_json = os.path.join(user_root_path, "route.json")
-
-    log(f"user_root_path :{user_root_path}")
-    log(f"prj_route_path :{prj_route_json}")
-
-    if os.path.exists(prj_route_json):
-        all_prjs = read_json_file(prj_route_json)
-    return all_prjs, prj_route_json, user_root_path
-
-
-# 生成 Base64 编码的图片数据
-def get_image_base64(image_path):
-    try:
-        with Image.open(image_path) as img:
-            buffer = BytesIO()
-            img.save(buffer, format="JPEG")
-            buffer.seek(0)
-            return base64.b64encode(buffer.getvalue()).decode('utf-8')
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error processing image: {str(e)}")
-
-
-# 读取文本文件的内容
-def read_text_file(file_path):
-    try:
-        with open(file_path, "r", encoding="utf-8") as f:
-            return f.read()
-    except Exception as e:
-        raise HTTPException(status_code=404, detail=f"File not found or error reading file: {str(e)}")
-
 
 # 讀取設定檔
 load_setting()
@@ -193,28 +76,13 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# 将不同模块的路由器包含到主应用中
+app.include_router(bases.router)
+
 
 @app.get("/")
 def read_root():
     return {"message": "Hello API Server ! Cross-Domain is enabled"}
-
-
-@app.get("/info")
-def read_info(current_user: models.User = Depends(auth.get_current_user)):
-    user_config = sys_config[current_user.username]
-    return {"name": ASSISTANT_NAME, "setting": sys_setting, "config": user_config}
-
-
-@app.get('/employees')
-def employees():
-    return JSONResponse(content=sys_employees)
-
-
-@app.get("/employees/{employee_id}")
-def get_employee(employee_id: str):
-    if employee_id in sys_employees:
-        return JSONResponse(content=sys_employees[employee_id])
-    return JSONResponse(content={"error": "Employee not found"}, status_code=404)
 
 
 @app.post('/register', response_model=schemas.Token)
@@ -240,8 +108,8 @@ def login(form_data: schemas.UserLogin, db: Session = Depends(database.get_db)):
     log('sys_config keys')
     log(sys_config.keys())
     log('user name :' + user.username)
-    if (user.username not in sys_config.keys()):
-        sys_config[user.username] = sys_default_config.copy()
+    if (user.username not in globals.sys_config.keys()):
+        sys_config[user.username] = globals.sys_default_config.copy()
 
     sys_config[user.username][Constant.USER_CFG_EMPLOYEE_KEY] = form_data.employee
     log(sys_config)
@@ -264,167 +132,6 @@ def login(form_data: schemas.UserLogin, db: Session = Depends(database.get_db)):
             write_json_file(prj_route_json, {})
 
     return {'access_token': access_token, 'token_type': 'bearer'}
-
-
-@app.post("/conversations")
-def create_conversation(conversation: schemas.ConversationCreate,
-                        current_user: models.User = Depends(auth.get_current_user),
-                        db: Session = Depends(database.get_db)):
-    db_conversation = models.Conversation(**conversation.dict())
-    db_conversation.user_id = current_user.id
-    db_conversation.employee_id = conversation.employee_id
-    db_conversation.title = conversation.title
-    db.add(db_conversation)
-    db.commit()
-    db.refresh(db_conversation)
-    return db_conversation
-
-
-@app.get("/conversations", response_model=List[schemas.ConversationResponse])
-def get_conversation(current_user: models.User = Depends(auth.get_current_user),
-                     db: Session = Depends(database.get_db)):
-    user_config = sys_config[current_user.username]
-    log(user_config)
-    emp_id = user_config[Constant.USER_CFG_EMPLOYEE_KEY]
-    log(emp_id)
-    employee = sys_employees[emp_id]
-    employee_id = employee[Constant.EMP_KEY_EMP_ID]
-    conversations = (db.query(models.Conversation).
-                     filter(models.Conversation.user_id == current_user.id,
-                            models.Conversation.employee_id == employee_id).all())
-    return conversations
-
-
-@app.get("/conversations/{conversion_id}/messages")
-def get_conversation_message(conversion_id: int, current_user: models.User = Depends(auth.get_current_user),
-                             db: Session = Depends(database.get_db)):
-    messages = db.query(models.Message).filter(models.Message.conversation_id == conversion_id).all()
-    result = []
-    user_config = sys_config[current_user.username]
-    employee = sys_employees[user_config[Constant.USER_CFG_EMPLOYEE_KEY]]
-    for msg in messages:
-        result.append({'sender': 'user', 'text': msg.message, 'name': current_user.username})
-        result.append({'sender': 'assistant', 'text': msg.response, 'name': employee[Constant.EMP_KEY_EMP_NAME]})
-    return result
-
-
-@app.get('/projects')
-def get_projects(
-        current_user: models.User = Depends(auth.get_current_user)
-):
-    user_name = current_user.username
-    user_config = sys_config[user_name]
-
-    employee = sys_employees[user_config[Constant.USER_CFG_EMPLOYEE_KEY]]
-
-    mode = int(employee[Constant.EMP_KEY_WORK_MODE])
-
-    log(f"get projects by mode = {mode}")
-
-    allprjs, _, _ = read_projects_by_user(mode, user_name)
-
-    log(allprjs)
-
-    result_prjs = []
-    for prjid in allprjs.keys():
-        result_prjs.append(prjid + '|' + allprjs[prjid])
-
-    return JSONResponse(content={"projects": json.dumps(result_prjs)},
-                        status_code=200)
-
-
-@app.get('/workurl')
-def get_work_url(
-        current_user: models.User = Depends(auth.get_current_user)
-):
-    user_name = current_user.username
-    user_config = sys_config[user_name]
-    mode = int(user_config[Constant.USER_CFG_PROJ_MODE])
-    prj_id = user_config[Constant.USER_CFG_PROJ_ID]
-    app_name = user_config[Constant.USER_CFG_APP_NAME]
-    func_file = user_config[Constant.USER_CFG_FUNC_FILE]
-
-    work_root_urls = sys_setting[Constant.SET_WORK_MODE_URL]
-    work_root_url = work_root_urls[int(mode)]
-
-    url = f"{work_root_url}"
-    if mode == 0:
-        url = f"{work_root_url}#show@{user_name}@{prj_id}@{app_name}@{func_file}"
-
-    return url
-
-
-# 获取目录下所有图片文件的名字
-def get_image_files(directory):
-    return [f for f in os.listdir(directory) if f.lower().endswith(('.png', '.jpg', '.jpeg', '.gif'))]
-
-
-# 生成缩略图并返回 Base64 编码
-def generate_thumbnail_base64(image_path, size=(100, 100)):
-    with Image.open(image_path) as img:
-        img.thumbnail(size)
-        buffer = BytesIO()
-        img.save(buffer, format="JPEG")
-        buffer.seek(0)
-        # 将图像内容编码为 Base64
-        thumbnail_base64 = base64.b64encode(buffer.getvalue()).decode('utf-8')
-        return thumbnail_base64
-
-
-@app.get("/thumbnails/")
-async def get_all_thumbnails(current_user: models.User = Depends(auth.get_current_user)):
-    UPLOAD_DIR = sys_setting['TEMP_PATH'] + "/uploads/" + current_user.username
-
-    # 获取图片文件名列表
-    files = get_image_files(UPLOAD_DIR)
-
-    if not files:
-        raise HTTPException(status_code=404, detail="No images found")
-
-    thumbnails = []
-    for file_name in files:
-        image_path = os.path.join(UPLOAD_DIR, file_name)
-        # 生成缩略图并编码为 Base64
-        thumbnail_base64 = generate_thumbnail_base64(image_path)
-        thumbnails.append({
-            "filename": file_name,
-            "thumbnail": thumbnail_base64
-        })
-
-    return JSONResponse(content=thumbnails)
-
-
-@app.post("/history")
-async def read_history_file(filename: str = Form(...),
-                            current_user: models.User = Depends(auth.get_current_user)):
-    UPLOAD_DIR = sys_setting['TEMP_PATH'] + "/uploads/" + current_user.username
-
-    # 构造文件路径
-    image_path = os.path.join(UPLOAD_DIR, f"{filename}")
-    desc_path = os.path.join(UPLOAD_DIR, f"{filename}_desc.txt")
-    code_path = os.path.join(UPLOAD_DIR, f"{filename}_code.txt")
-
-    # 检查文件是否存在
-    if not os.path.exists(image_path):
-        raise HTTPException(status_code=404, detail="Image file not found")
-    if not os.path.exists(desc_path):
-        raise HTTPException(status_code=404, detail="Description file not found")
-    if not os.path.exists(code_path):
-        raise HTTPException(status_code=404, detail="Code file not found")
-
-    # 获取图片的 Base64 编码
-    image_base64 = get_image_base64(image_path)
-
-    # 读取描述文件和代码文件的内容
-    markdown_text = read_text_file(desc_path)
-    code_text = read_text_file(code_path)
-
-    # 返回 JSON 响应
-    return JSONResponse(content={
-        "image": image_base64,
-        "markdownText": markdown_text,
-        "codeText": code_text
-    })
 
 
 @app.get('/messages')
@@ -498,7 +205,7 @@ async def send_message(
             return JSONResponse(content={"message": "命令結果"},
                                 status_code=200)
         else:
-            tasks[task_id] = "分析中"
+            globals.tasks[task_id] = "分析中"
             background_tasks.add_task(general_rep, user_input, user_id, task_id, current_user.username,
                                       conversation_id,
                                       database.SessionLocal())
@@ -547,7 +254,7 @@ async def copy_code(
     # 保存对话记录到数据库
     new_message = models.Message(
         conversation_id=conversation_id,
-        message="複製程式碼:"+filename,
+        message="複製程式碼:" + filename,
         response="複製成功",
     )
     db.add(new_message)
@@ -563,14 +270,13 @@ async def rewrite_code(
         conversation_id: int = Form(...),
         background_tasks: BackgroundTasks = BackgroundTasks(),
         current_user: models.User = Depends(auth.get_current_user),
-        db: Session = Depends(database.get_db),
 ):
-
     task_id = str(uuid.uuid4())
     background_tasks.add_task(do_rewrite_code, filename,
                               current_user.username, task_id, conversation_id, database.SessionLocal())
     return JSONResponse(content={"task_id": task_id, "message": "重新生成程式中"},
                         status_code=200)
+
 
 def do_rewrite_code(
         filename,
@@ -579,7 +285,6 @@ def do_rewrite_code(
         conversation_id,
         db
 ):
-
     UPLOAD_DIR = sys_setting['TEMP_PATH'] + "/uploads/" + username
     desc_file = f"{UPLOAD_DIR}/{filename}_desc.txt"
     file_location = f"{UPLOAD_DIR}/{filename}"
@@ -601,7 +306,7 @@ def do_rewrite_code(
 
     messages = []
 
-    tasks[task_id] = f"重新生成程式中"
+    globals.tasks[task_id] = f"重新生成程式中"
 
     json_str = json.dumps(llm_code_prompt_messages)
     modify_json_str = json_str.replace(Constant.LLM_MSG_USER_INPUT, "")
@@ -618,7 +323,7 @@ def do_rewrite_code(
     assistant_reply = generate_program(file_location, llm_code_prompt_model, llm_mode, messages, sys_config,
                                        sys_setting, task_id, username)
 
-    tasks[task_id] = assistant_reply
+    globals.tasks[task_id] = assistant_reply
 
     # 保存对话记录到数据库
     new_message = models.Message(
@@ -629,7 +334,33 @@ def do_rewrite_code(
     db.add(new_message)
     db.commit()
 
-    tasks[task_id] = "@@END@@處理完畢"
+    globals.tasks[task_id] = "@@END@@處理完畢"
+
+
+@app.post('/redo/reseeandwrite')
+async def re_see_and_write(filename: str = Form(...),
+                           conversation_id: int = Form(...),
+                           background_tasks: BackgroundTasks = BackgroundTasks(),
+                           current_user: models.User = Depends(auth.get_current_user)):
+    username = current_user.username
+    UPLOAD_DIR = sys_setting['TEMP_PATH'] + "/uploads/" + username
+    file_location = f"{UPLOAD_DIR}/{filename}"
+
+    task_id = str(uuid.uuid4())
+    image_b64s =[]
+    image_types =[]
+
+    img_b64 = image_to_base64(file_location)
+    image_b64s.append(img_b64)
+
+    _, file_extension = os.path.splitext(filename)
+    image_types.append( file_extension[1:])
+
+    background_tasks.add_task(analyze_image, image_b64s, image_types, "", file_location,
+                              current_user.username, task_id, conversation_id, database.SessionLocal())
+    return JSONResponse(content={"task_id": task_id, "message": "已取得圖片,重新進行分析中"},
+                        status_code=200)
+
 
 @app.post('/message_images')
 async def send_message(
@@ -744,7 +475,7 @@ def general_rep(user_input, user_id, task_id,
         assistant_reply = '與LLM 交互失败 ::[' + str(e) + ']'
 
     print(assistant_reply)
-    tasks[task_id] = "@@END@@" + assistant_reply
+    globals.tasks[task_id] = "@@END@@" + assistant_reply
     # 将助手的回复添加到对话历史
     conversation.append({'role': 'assistant', 'content': assistant_reply})
 
@@ -777,7 +508,7 @@ def analyze_image(images_b64: [str],
                   ):
     global sys_setting, sys_employees, sys_config
     try:
-        tasks[task_id] = f"分析圖片中"
+        globals.tasks[task_id] = f"分析圖片中"
         image_desc = []
 
         log("開始分析圖片中")
@@ -822,11 +553,11 @@ def analyze_image(images_b64: [str],
 
             except Exception as imge:
                 print(str(imge))
-                tasks[task_id] = f"圖片分析錯誤:{str(idx) + ' => ' + str(imge)}"
+                globals.tasks[task_id] = f"圖片分析錯誤:{str(idx) + ' => ' + str(imge)}"
 
-        tasks[task_id] = "解析完成"
+        globals.tasks[task_id] = "解析完成"
 
-        print(str(tasks[task_id]))
+        print(str(globals.tasks[task_id]))
 
         # 获取用户的对话历史，如果没有则初始化
         # conversation = user_conversations.get(user_id, [])
@@ -862,7 +593,7 @@ def analyze_image(images_b64: [str],
         assistant_reply = generate_program(file_location, llm_code_prompt_model, llm_mode, messages, sys_config,
                                            sys_setting, task_id, username)
 
-        tasks[task_id] = assistant_reply
+        globals.tasks[task_id] = assistant_reply
 
         # 将助手的回复添加到对话历史
         # conversation.append({'role': 'assistant', 'content': assistant_reply})
@@ -884,19 +615,19 @@ def analyze_image(images_b64: [str],
         db.add(new_message)
         db.commit()
 
-        tasks[task_id] = "@@END@@處理完畢"
+        globals.tasks[task_id] = "@@END@@處理完畢"
 
-        print(str(tasks[task_id]))
+        print(str(globals.tasks[task_id]))
 
     except Exception as e:
-        tasks[task_id] = f"錯誤發生: {str(e)}"
+        globals.tasks[task_id] = f"錯誤發生: {str(e)}"
 
 
 def generate_program(file_location, llm_code_prompt_model, llm_mode, messages, sys_config, sys_setting, task_id,
                      username):
     try:
-        tasks[task_id] = "生成程式碼"
-        log(tasks[task_id])
+        globals.tasks[task_id] = "生成程式碼"
+        log(globals.tasks[task_id])
         assistant_reply = llm.askllm(llm_mode, llm_code_prompt_model, messages)
         log(assistant_reply)
 
@@ -943,7 +674,7 @@ def generate_program(file_location, llm_code_prompt_model, llm_mode, messages, s
 
         # 更新路由
         print("開始更新路由")
-        tasks[task_id] = "更新路由"
+        globals.tasks[task_id] = "更新路由"
 
         route_path = f"{user_root_path}/{prj_id}/route.json"
 
@@ -968,14 +699,14 @@ def generate_program(file_location, llm_code_prompt_model, llm_mode, messages, s
         # with open(output_path,"w") as out_f:
         #    out_f.writelines(lines[1:-1])
 
-        tasks[task_id] = "完成程式碼寫入"
+        globals.tasks[task_id] = "完成程式碼寫入"
 
-        log(str(tasks[task_id]))
+        log(str(globals.tasks[task_id]))
 
     except Exception as gee:
         # raise HTTPException(status_code=500, detail='与 OpenAI GPT 交互失败 ['+str(e)+']')
-        tasks[task_id] = "生成程式碼失敗-[" + str(gee) + "]"
-        log(str(tasks[task_id]))
+        globals.tasks[task_id] = "生成程式碼失敗-[" + str(gee) + "]"
+        log(str(globals.tasks[task_id]))
     return assistant_reply
 
 
@@ -1004,5 +735,5 @@ def extract_code_blocks(text):
 # 5. 查詢工作狀態
 @app.get("/task_status/{task_id}")
 async def get_task_status(task_id: str):
-    status = tasks.get(task_id, "Task not found")
+    status = globals.tasks.get(task_id, "Task not found")
     return JSONResponse(content={"task_id": task_id, "status": status}, status_code=200)
