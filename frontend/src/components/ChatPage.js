@@ -935,12 +935,6 @@ function ChatPage({ token, engineer }) {
           <Button onClick={handleSwitchFunction}>切換</Button>
         </DialogActions>
       </Dialog>
-
-      <ImageDialog
-        token={"12345"}
-        open={reDoDialogOpen}
-        onClose={setReDoDialogOpen(false)}
-      />
     </ThemeProvider>
   );
 }
