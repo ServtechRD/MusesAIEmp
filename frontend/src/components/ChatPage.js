@@ -473,8 +473,12 @@ function ChatPage({ token, engineer }) {
 
       console.log(currentProject);
 
-      setProjectId(items[0]);
-      setProjectDescription(items[1]);
+      setProjectId((prev) => {
+        return items[0];
+      });
+      setProjectDescription((prev) => {
+        return items[1];
+      });
 
       const input1 = "/CONFIG SET PROJ_ID " + projectId;
       const input2 = "/CONFIG SET PROJ_DESC " + projectDescription;
