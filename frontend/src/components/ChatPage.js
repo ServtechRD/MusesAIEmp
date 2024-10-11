@@ -635,11 +635,14 @@ function ChatPage({ token, engineer }) {
 
   const handleImageSelect = async (filename) => {
     try {
+      console.log(filename);
       //const response = await fetch(`/api/image/${filename}`);
-      const response = await api.get("/history", {
+      const formData = new FormData();
+      formData.append("filename", filename);
+      const response = await api.get("/history", formData, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      const data = await response.json();
+      const data = await response.data;
       setSelectedImage(data.image);
       setMarkdownText(data.markdownText);
       setCodeText(data.codeText);

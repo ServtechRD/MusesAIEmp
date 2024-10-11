@@ -142,6 +142,27 @@ def read_projects_by_user(prj_mode, user_name):
     return all_prjs, prj_route_json, user_root_path
 
 
+# 生成 Base64 编码的图片数据
+def get_image_base64(image_path):
+    try:
+        with Image.open(image_path) as img:
+            buffer = BytesIO()
+            img.save(buffer, format="JPEG")
+            buffer.seek(0)
+            return base64.b64encode(buffer.getvalue()).decode('utf-8')
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error processing image: {str(e)}")
+
+
+# 读取文本文件的内容
+def read_text_file(file_path):
+    try:
+        with open(file_path, "r", encoding="utf-8") as f:
+            return f.read()
+    except Exception as e:
+        raise HTTPException(status_code=404, detail=f"File not found or error reading file: {str(e)}")
+
+
 # 讀取設定檔
 load_setting()
 # 讀取預設值
@@ -352,7 +373,6 @@ def generate_thumbnail_base64(image_path, size=(100, 100)):
 
 @app.get("/thumbnails/")
 async def get_all_thumbnails(current_user: models.User = Depends(auth.get_current_user)):
-
     UPLOAD_DIR = sys_setting['TEMP_PATH'] + "/uploads/" + current_user.username
 
     # 获取图片文件名列表
@@ -372,6 +392,39 @@ async def get_all_thumbnails(current_user: models.User = Depends(auth.get_curren
         })
 
     return JSONResponse(content=thumbnails)
+
+
+@app.post("/history")
+async def get_history_file(filename: str = Form(...),
+                           current_user: models.User = Depends(auth.get_current_user)):
+    UPLOAD_DIR = sys_setting['TEMP_PATH'] + "/uploads/" + current_user.username
+
+    # 构造文件路径
+    image_path = os.path.join(UPLOAD_DIR, f"{filename}")
+    desc_path = os.path.join(UPLOAD_DIR, f"{filename}_desc.txt")
+    code_path = os.path.join(UPLOAD_DIR, f"{filename}_code.txt")
+
+    # 检查文件是否存在
+    if not os.path.exists(image_path):
+        raise HTTPException(status_code=404, detail="Image file not found")
+    if not os.path.exists(desc_path):
+        raise HTTPException(status_code=404, detail="Description file not found")
+    if not os.path.exists(code_path):
+        raise HTTPException(status_code=404, detail="Code file not found")
+
+    # 获取图片的 Base64 编码
+    image_base64 = get_image_base64(image_path)
+
+    # 读取描述文件和代码文件的内容
+    markdown_text = read_text_file(desc_path)
+    code_text = read_text_file(code_path)
+
+    # 返回 JSON 响应
+    return JSONResponse(content={
+        "image": image_base64,
+        "markdownText": markdown_text,
+        "codeText": code_text
+    })
 
 
 @app.get('/messages')
