@@ -273,7 +273,10 @@ def get_projects(
 ):
     user_name = current_user.username
     user_config = sys_config[user_name]
-    mode = int(user_config[Constant.USER_CFG_PROJ_MODE])
+
+    employee = sys_employees[user_config[Constant.USER_CFG_EMPLOYEE_KEY]]
+
+    mode = int(employee[Constant.EMP_KEY_WORK_MODE])
 
     log(f"get projects by mode = {mode}")
 
