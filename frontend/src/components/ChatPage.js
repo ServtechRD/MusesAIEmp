@@ -1015,7 +1015,7 @@ function ChatPage({ token, engineer }) {
             <Grid item xs={9}>
               {selectedImage && (
                 <img
-                  src={selectedImage}
+                  src={`data:image/jpeg;base64,${selectedImage}`}
                   alt="Selected"
                   style={{ width: "100%" }}
                 />
