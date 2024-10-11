@@ -626,7 +626,7 @@ function ChatPage({ token, engineer }) {
       const response = await api.get("/thumbnails", {
         headers: { Authorization: `Bearer ${token}` },
       });
-      const data = await response.json();
+      const data = await response.data;
       setThumbnails(data);
     } catch (error) {
       console.error("Error fetching thumbnails:", error);
