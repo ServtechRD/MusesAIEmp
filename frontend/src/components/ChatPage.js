@@ -937,7 +937,7 @@ function ChatPage({ token, engineer }) {
       </Dialog>
 
       <ImageDialog
-        token={token}
+        token={"12345"}
         open={reDoDialogOpen}
         onClose={setReDoDialogOpen(false)}
       />
