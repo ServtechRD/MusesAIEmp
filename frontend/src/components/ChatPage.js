@@ -218,6 +218,11 @@ function ChatPage({ token, engineer }) {
     fetchConversations();
   }, [token]);
 
+  // if update id , fetch messages()
+  useEffect(() => {
+    fetchMessages();
+  }, [currentConversationId]);
+
   const fetchMessages = async () => {
     try {
       if (currentConversationId == 0) {
@@ -473,15 +478,12 @@ function ChatPage({ token, engineer }) {
 
       console.log(currentProject);
 
-      setProjectId((prev) => {
-        return items[0];
-      });
-      setProjectDescription((prev) => {
-        return items[1];
-      });
+      setProjectId(items[0]);
+      setProjectDescription(items[1]);
+      // 因為不會馬上同步,所以用items
 
-      const input1 = "/CONFIG SET PROJ_ID " + projectId;
-      const input2 = "/CONFIG SET PROJ_DESC " + projectDescription;
+      const input1 = "/CONFIG SET PROJ_ID " + items[0];
+      const input2 = "/CONFIG SET PROJ_DESC " + items[1];
       //const input3 = "/CONFIG SET PROJ_MODE " + projectMode;
 
       console.log(input1);
@@ -491,7 +493,7 @@ function ChatPage({ token, engineer }) {
         ...messages,
         {
           sender: "user",
-          text: "切換專案 :" + projectDescription,
+          text: "切換專案 :" + items[1],
           name: userName,
         },
       ]);
@@ -505,7 +507,7 @@ function ChatPage({ token, engineer }) {
       //  const rep3 = handleApiCall(input3, null);
       //  console.log("Creating project mode:", rep3);
 
-      setProjects([...projects, projectId]);
+      setProjects([...projects, currentProject]);
       setMessages((prevMessages) => [
         ...prevMessages,
         { sender: "assistant", text: "切換成功" },
@@ -653,7 +655,7 @@ function ChatPage({ token, engineer }) {
                           setCurrentConversationId(conversation.id);
                           console.log("conv id " + currentConversationId);
                           setMessages([]);
-                          fetchMessages();
+                          //fetchMessages(); // didn't call direct , update when render
                         }}
                         selected={currentConversationId === conversation.id}
                       >
