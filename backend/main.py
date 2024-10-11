@@ -394,8 +394,8 @@ async def get_all_thumbnails(current_user: models.User = Depends(auth.get_curren
     return JSONResponse(content=thumbnails)
 
 
-@app.get("/history")
-async def get_history_file(filename: str = Form(...),
+@app.post("/history")
+async def read_history_file(filename: str = Form(...),
                            current_user: models.User = Depends(auth.get_current_user)):
     UPLOAD_DIR = sys_setting['TEMP_PATH'] + "/uploads/" + current_user.username
 

@@ -639,7 +639,7 @@ function ChatPage({ token, engineer }) {
       //const response = await fetch(`/api/image/${filename}`);
       const formData = new FormData();
       formData.append("filename", filename);
-      const response = await api.get("/history", formData, {
+      const response = await api.post("/history", formData, {
         headers: { Authorization: `Bearer ${token}` },
       });
       const data = await response.data;
