@@ -160,6 +160,11 @@ function ChatPage({ token, engineer }) {
 
   const [reDoDialogOpen, setReDoDialogOpen] = useState(false);
 
+  const [thumbnails, setThumbnails] = useState([]);
+  const [selectedImage, setSelectedImage] = useState(null);
+  const [markdownText, setMarkdownText] = useState("");
+  const [codeText, setCodeText] = useState("");
+
   // Project data
   const [projectId, setProjectId] = useState("");
   const [projectDescription, setProjectDescription] = useState("");
