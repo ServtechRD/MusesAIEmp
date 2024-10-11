@@ -608,6 +608,34 @@ function ChatPage({ token, engineer }) {
     window.open(response.data, "_blank");
   };
 
+  const fetchThumbnails = async () => {
+    try {
+      //const response = await fetch("/api/thumbnails");
+      const response = await api.get("/thumbnails", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const data = await response.json();
+      setThumbnails(data);
+    } catch (error) {
+      console.error("Error fetching thumbnails:", error);
+    }
+  };
+
+  const handleImageSelect = async (filename) => {
+    try {
+      //const response = await fetch(`/api/image/${filename}`);
+      const response = await api.get("/history", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const data = await response.json();
+      setSelectedImage(data.image);
+      setMarkdownText(data.markdownText);
+      setCodeText(data.codeText);
+    } catch (error) {
+      console.error("Error fetching image details:", error);
+    }
+  };
+
   return (
     <ThemeProvider theme={theme}>
       <Box sx={{ flexGrow: 1 }}>
@@ -933,6 +961,84 @@ function ChatPage({ token, engineer }) {
             取消
           </Button>
           <Button onClick={handleSwitchFunction}>切換</Button>
+        </DialogActions>
+      </Dialog>
+      {/* Image Dialog */}
+      <Dialog
+        open={reDoDialogOpen}
+        onClose={() => setReDoDialogOpen(false)}
+        maxWidth="lg"
+        fullWidth
+      >
+        <DialogTitle>
+          Image Viewer
+          <IconButton
+            aria-label="close"
+            onClick={onClose}
+            sx={{ position: "absolute", right: 8, top: 8 }}
+          >
+            <CloseIcon />
+          </IconButton>
+        </DialogTitle>
+        <DialogContent>
+          <Grid container spacing={2}>
+            <Grid item xs={3}>
+              {thumbnails.map((thumb) => (
+                <img
+                  key={thumb.filename}
+                  src={`data:image/jpeg;base64,${thumb.thumbnail}`}
+                  alt={thumb.filename}
+                  style={{
+                    width: "100%",
+                    marginBottom: "10px",
+                    cursor: "pointer",
+                  }}
+                  onClick={() => handleImageSelect(thumb.filename)}
+                />
+              ))}
+            </Grid>
+            <Grid item xs={9}>
+              {selectedImage && (
+                <img
+                  src={selectedImage}
+                  alt="Selected"
+                  style={{ width: "100%" }}
+                />
+              )}
+              <TextField
+                label="Markdown Text"
+                multiline
+                rows={4}
+                value={markdownText}
+                fullWidth
+                variant="outlined"
+                margin="normal"
+                InputProps={{ readOnly: true }}
+              />
+              <TextField
+                label="Code Text"
+                multiline
+                rows={4}
+                value={codeText}
+                fullWidth
+                variant="outlined"
+                margin="normal"
+                InputProps={{ readOnly: true }}
+              />
+            </Grid>
+          </Grid>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => handleApiCall("reseeandwrite")}>
+            再識別寫生成程式
+          </Button>
+          <Button onClick={() => handleApiCall("rewrite")}>
+            再生成一次程式
+          </Button>
+          <Button onClick={() => handleApiCall("copycode")}>
+            複製目前程式
+          </Button>
+          <Button onClick={() => setReDoDialogOpen(false)}>關閉</Button>
         </DialogActions>
       </Dialog>
     </ThemeProvider>
