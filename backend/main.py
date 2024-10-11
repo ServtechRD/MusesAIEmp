@@ -396,7 +396,7 @@ async def get_all_thumbnails(current_user: models.User = Depends(auth.get_curren
 
 @app.post("/history")
 async def read_history_file(filename: str = Form(...),
-                           current_user: models.User = Depends(auth.get_current_user)):
+                            current_user: models.User = Depends(auth.get_current_user)):
     UPLOAD_DIR = sys_setting['TEMP_PATH'] + "/uploads/" + current_user.username
 
     # 构造文件路径
@@ -508,6 +508,128 @@ async def send_message(
         return JSONResponse(content={"message": "無輸入"},
                             status_code=200)
 
+
+@app.post('/redo/copycode')
+async def copy_code(
+        filename: str = Form(...),
+        conversation_id: int = Form(...),
+        current_user: models.User = Depends(auth.get_current_user),
+        db: Session = Depends(database.get_db),
+):
+    username = current_user.username
+    UPLOAD_DIR = sys_setting['TEMP_PATH'] + "/uploads/" + current_user.username
+    src_file = f"{UPLOAD_DIR}/{filename}_code.txt"
+    user_config = sys_config[username]
+    idx = int(user_config[Constant.USER_CFG_PROJ_MODE])
+
+    work_path = sys_setting[Constant.SET_WORK_PATH]
+    work_mode_path = sys_setting[Constant.SET_WORK_MODE_PATH]
+    user_root_path = os.path.join(work_path, work_mode_path[idx], "public", "users", username)
+
+    log(user_root_path)
+
+    prj_id = user_config[Constant.USER_CFG_PROJ_ID]
+    app_desc = user_config[Constant.USER_CFG_APP_DESC]
+    app_name = user_config[Constant.USER_CFG_APP_NAME]
+    func_desc = user_config[Constant.USER_CFG_FUNC_DESC]
+    func_file = user_config[Constant.USER_CFG_FUNC_FILE]
+
+    output_folder = f"{user_root_path}/{prj_id}/{app_name}"
+    if not os.path.exists(output_folder):
+        os.makedirs(output_folder)
+
+    output_path = f"{output_folder}/{func_file}"
+
+    print("prog path :" + output_path)
+    with open(output_path, "w") as out_f:
+        shutil.copyfileobj(src_file, out_f)
+
+    # 保存对话记录到数据库
+    new_message = models.Message(
+        conversation_id=conversation_id,
+        message="複製程式碼:"+filename,
+        response="複製成功",
+    )
+    db.add(new_message)
+    db.commit()
+
+    return JSONResponse(content={"message": "程式已複製完成"},
+                        status_code=200)
+
+
+@app.post('/redo/rewrite')
+async def rewrite_code(
+        filename: str = Form(...),
+        conversation_id: int = Form(...),
+        background_tasks: BackgroundTasks = BackgroundTasks(),
+        current_user: models.User = Depends(auth.get_current_user),
+        db: Session = Depends(database.get_db),
+):
+
+    task_id = str(uuid.uuid4())
+    background_tasks.add_task(do_rewrite_code, filename,
+                              current_user.username, task_id, conversation_id, database.SessionLocal())
+    return JSONResponse(content={"task_id": task_id, "message": "重新生成程式中"},
+                        status_code=200)
+
+def do_rewrite_code(
+        filename,
+        username,
+        task_id,
+        conversation_id,
+        db
+):
+
+    UPLOAD_DIR = sys_setting['TEMP_PATH'] + "/uploads/" + username
+    desc_file = f"{UPLOAD_DIR}/{filename}_desc.txt"
+    file_location = f"{UPLOAD_DIR}/{filename}"
+
+    img_desc = read_text_file(desc_file)
+
+    user_config = sys_config[username]
+    log("取得CONFIG")
+    # log(user_config)
+    employee = sys_employees[user_config[Constant.USER_CFG_EMPLOYEE_KEY]]
+    log("查詢工程師")
+    # log(employee)
+    llm_mode = employee[Constant.EMP_KEY_LLM_ENGINE]
+    log("查詢模型")
+
+    llm_code_prompt = employee[Constant.EMP_KEY_LLM_PROMPT][Constant.EMP_KEY_LLM_PROMPT_CODE]
+    llm_code_prompt_model = llm_code_prompt[Constant.EMP_KEY_LLM_PROMPT_MODEL]
+    llm_code_prompt_messages = llm_code_prompt[Constant.EMP_KEY_LLM_PROMPT_MESSAGES]
+
+    messages = []
+
+    tasks[task_id] = f"重新生成程式中"
+
+    json_str = json.dumps(llm_code_prompt_messages)
+    modify_json_str = json_str.replace(Constant.LLM_MSG_USER_INPUT, "")
+    pass_message = json.loads(modify_json_str)
+    for prompt_message in pass_message:
+        messages.append(prompt_message)
+
+    for idx, description in enumerate([img_desc]):
+        messages.append({
+            'role': 'user',
+            'content': f'图片{idx + 1}的描述：{description}',
+        })
+
+    assistant_reply = generate_program(file_location, llm_code_prompt_model, llm_mode, messages, sys_config,
+                                       sys_setting, task_id, username)
+
+    tasks[task_id] = assistant_reply
+
+    # 保存对话记录到数据库
+    new_message = models.Message(
+        conversation_id=conversation_id,
+        message="重新寫一次程式",
+        response=assistant_reply,
+    )
+    db.add(new_message)
+    db.commit()
+
+    tasks[task_id] = "@@END@@處理完畢"
 
 @app.post('/message_images')
 async def send_message(
@@ -737,88 +859,8 @@ def analyze_image(images_b64: [str],
                 'content': f'图片{idx + 1}的描述：{description}',
             })
 
-        try:
-            tasks[task_id] = "生成程式碼"
-            log(tasks[task_id])
-            assistant_reply = llm.askllm(llm_mode, llm_code_prompt_model, messages)
-            log(assistant_reply)
-
-            user_config = sys_config[username]
-            idx = int(user_config[Constant.USER_CFG_PROJ_MODE])
-
-            work_path = sys_setting[Constant.SET_WORK_PATH]
-            work_mode_path = sys_setting[Constant.SET_WORK_MODE_PATH]
-            user_root_path = os.path.join(work_path, work_mode_path[idx], "public", "users", username)
-
-            log(user_root_path)
-
-            prj_id = user_config[Constant.USER_CFG_PROJ_ID]
-            app_desc = user_config[Constant.USER_CFG_APP_DESC]
-            app_name = user_config[Constant.USER_CFG_APP_NAME]
-            func_desc = user_config[Constant.USER_CFG_FUNC_DESC]
-            func_file = user_config[Constant.USER_CFG_FUNC_FILE]
-
-            output_folder = f"{user_root_path}/{prj_id}/{app_name}"
-            if not os.path.exists(output_folder):
-                os.makedirs(output_folder)
-
-            output_path = f"{output_folder}/{func_file}"
-
-            print("prog path :" + output_path)
-
-            # 3. 分析結果包含程式碼時，進行檔案寫入
-            if "```" in assistant_reply:
-                print("remove markdown and write")
-                code_blocks = extract_code_blocks(assistant_reply)
-                with open(output_path, "w") as out_f:
-                    out_f.writelines(code_blocks)
-                code_loc = file_location + "_code.txt"
-                with open(code_loc, "w") as out_f:
-                    out_f.writelines(code_blocks)
-
-            else:
-                print("write program")
-                with open(output_path, "w") as out_f:
-                    out_f.write(assistant_reply)
-                code_loc = file_location + "_code.txt"
-                with open(code_loc, "w") as out_f:
-                    out_f.writelines(assistant_reply)
-
-            # 更新路由
-            print("開始更新路由")
-            tasks[task_id] = "更新路由"
-
-            route_path = f"{user_root_path}/{prj_id}/route.json"
-
-            route_js = read_json_file(route_path)
-
-            new_route = {Constant.USER_CFG_APP_NAME: app_name, Constant.USER_CFG_APP_DESC: app_desc,
-                         Constant.USER_CFG_FUNC_DESC: func_desc, Constant.USER_CFG_FUNC_FILE: f"{func_file}"}
-            found = False
-            for route_item in route_js:
-                if (route_item[Constant.USER_CFG_APP_DESC] == new_route[Constant.USER_CFG_APP_DESC] and
-                        route_item[Constant.USER_CFG_FUNC_DESC] == new_route[Constant.USER_CFG_FUNC_DESC]):
-                    found = True
-                    route_item[Constant.USER_CFG_FUNC_FILE] = new_route[Constant.USER_CFG_FUNC_FILE]
-
-            if not found:
-                route_js.append(new_route)
-
-            write_json_file(route_path, route_js)
-
-            print("結束更新路由")
-            # lines = generated_code.splitlines(True)
-            # with open(output_path,"w") as out_f:
-            #    out_f.writelines(lines[1:-1])
-
-            tasks[task_id] = "完成程式碼寫入"
-
-            print(str(tasks[task_id]))
-
-        except Exception as gee:
-            # raise HTTPException(status_code=500, detail='与 OpenAI GPT 交互失败 ['+str(e)+']')
-            tasks[task_id] = "生成程式碼失敗-[" + str(gee) + "]"
-            print(str(tasks[task_id]))
+        assistant_reply = generate_program(file_location, llm_code_prompt_model, llm_mode, messages, sys_config,
+                                           sys_setting, task_id, username)
 
         tasks[task_id] = assistant_reply
 
@@ -848,6 +890,93 @@ def analyze_image(images_b64: [str],
 
     except Exception as e:
         tasks[task_id] = f"錯誤發生: {str(e)}"
+
+
+def generate_program(file_location, llm_code_prompt_model, llm_mode, messages, sys_config, sys_setting, task_id,
+                     username):
+    try:
+        tasks[task_id] = "生成程式碼"
+        log(tasks[task_id])
+        assistant_reply = llm.askllm(llm_mode, llm_code_prompt_model, messages)
+        log(assistant_reply)
+
+        user_config = sys_config[username]
+        idx = int(user_config[Constant.USER_CFG_PROJ_MODE])
+
+        work_path = sys_setting[Constant.SET_WORK_PATH]
+        work_mode_path = sys_setting[Constant.SET_WORK_MODE_PATH]
+        user_root_path = os.path.join(work_path, work_mode_path[idx], "public", "users", username)
+
+        log(user_root_path)
+
+        prj_id = user_config[Constant.USER_CFG_PROJ_ID]
+        app_desc = user_config[Constant.USER_CFG_APP_DESC]
+        app_name = user_config[Constant.USER_CFG_APP_NAME]
+        func_desc = user_config[Constant.USER_CFG_FUNC_DESC]
+        func_file = user_config[Constant.USER_CFG_FUNC_FILE]
+
+        output_folder = f"{user_root_path}/{prj_id}/{app_name}"
+        if not os.path.exists(output_folder):
+            os.makedirs(output_folder)
+
+        output_path = f"{output_folder}/{func_file}"
+
+        print("prog path :" + output_path)
+
+        # 3. 分析結果包含程式碼時，進行檔案寫入
+        if "```" in assistant_reply:
+            print("remove markdown and write")
+            code_blocks = extract_code_blocks(assistant_reply)
+            with open(output_path, "w") as out_f:
+                out_f.writelines(code_blocks)
+            code_loc = file_location + "_code.txt"
+            with open(code_loc, "w") as out_f:
+                out_f.writelines(code_blocks)
+
+        else:
+            print("write program")
+            with open(output_path, "w") as out_f:
+                out_f.write(assistant_reply)
+            code_loc = file_location + "_code.txt"
+            with open(code_loc, "w") as out_f:
+                out_f.writelines(assistant_reply)
+
+        # 更新路由
+        print("開始更新路由")
+        tasks[task_id] = "更新路由"
+
+        route_path = f"{user_root_path}/{prj_id}/route.json"
+
+        route_js = read_json_file(route_path)
+
+        new_route = {Constant.USER_CFG_APP_NAME: app_name, Constant.USER_CFG_APP_DESC: app_desc,
+                     Constant.USER_CFG_FUNC_DESC: func_desc, Constant.USER_CFG_FUNC_FILE: f"{func_file}"}
+        found = False
+        for route_item in route_js:
+            if (route_item[Constant.USER_CFG_APP_DESC] == new_route[Constant.USER_CFG_APP_DESC] and
+                    route_item[Constant.USER_CFG_FUNC_DESC] == new_route[Constant.USER_CFG_FUNC_DESC]):
+                found = True
+                route_item[Constant.USER_CFG_FUNC_FILE] = new_route[Constant.USER_CFG_FUNC_FILE]
+
+        if not found:
+            route_js.append(new_route)
+
+        write_json_file(route_path, route_js)
+
+        log("結束更新路由")
+        # lines = generated_code.splitlines(True)
+        # with open(output_path,"w") as out_f:
+        #    out_f.writelines(lines[1:-1])
+
+        tasks[task_id] = "完成程式碼寫入"
+
+        log(str(tasks[task_id]))
+
+    except Exception as gee:
+        # raise HTTPException(status_code=500, detail='与 OpenAI GPT 交互失败 ['+str(e)+']')
+        tasks[task_id] = "生成程式碼失敗-[" + str(gee) + "]"
+        log(str(tasks[task_id]))
+    return assistant_reply
 
 
 # 擷取程式碼區塊

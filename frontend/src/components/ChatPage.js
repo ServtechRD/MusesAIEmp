@@ -388,6 +388,30 @@ function ChatPage({ token, engineer }) {
     setFileInputKey(Date.now());
   };
 
+  const handRedoApi = async (mode) => {
+    const formData = new FormData();
+    formData.append("filename", filename);
+    formData.append("conversation_id", currentConversationId);
+
+    let api_name = "/redo/copycode";
+    if (mode == 1) {
+      api_name = "/redo/rewrite";
+    } else if (mode == 2) {
+      api_name = "/redo/reseeandwrite";
+    }
+
+    const response = await api.post(api_name, formData, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    if (response.data.task_id) {
+      setTaskId(response.data.task_id);
+    }
+    return response;
+  };
+
   const handleApiCall = async (msg, images) => {
     const formData = new FormData();
     formData.append("message", msg);
@@ -1105,15 +1129,9 @@ function ChatPage({ token, engineer }) {
           </Grid>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => handleApiCall("reseeandwrite")}>
-            再識別寫生成程式
-          </Button>
-          <Button onClick={() => handleApiCall("rewrite")}>
-            再生成一次程式
-          </Button>
-          <Button onClick={() => handleApiCall("copycode")}>
-            複製目前程式
-          </Button>
+          <Button onClick={() => handRedoApi(2)}>再識別及生成程式</Button>
+          <Button onClick={() => handRedoApi(1)}>再生成一次程式</Button>
+          <Button onClick={() => handRedoApi(0)}>複製目前程式</Button>
           <Button onClick={() => setReDoDialogOpen(false)}>關閉</Button>
         </DialogActions>
       </Dialog>
