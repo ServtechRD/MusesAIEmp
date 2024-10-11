@@ -38,6 +38,7 @@ import {
   Menu as MenuIcon,
   Image as ImageIcon,
   Link as LinkIcon,
+  Close as CloseIcon,
 } from "@mui/icons-material";
 
 import { PrismLight as SyntaxHighlighter } from "react-syntax-highlighter";
