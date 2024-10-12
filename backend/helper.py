@@ -5,7 +5,7 @@ from datetime import datetime
 from http.client import HTTPException
 from io import BytesIO
 
-from PIL.Image import Image
+from PIL import Image
 
 import globals
 from constant import Constant
