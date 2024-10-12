@@ -627,9 +627,11 @@ function ChatPage({ token, engineer }) {
         },
       ]);
 
-      const rep = "<html> <body>b1</body> </html>";
+      const response = await api.get("/getcode", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
 
-      setCode(rep);
+      setCode(response.data.codeText);
 
       setMessages((prevMessages) => [
         ...prevMessages,
@@ -654,6 +656,45 @@ function ChatPage({ token, engineer }) {
 
     console.log(response);
     window.open(response.data, "_blank");
+  };
+
+  const handleCodeDownload = async () => {
+    try {
+      const response = await api.get("/download_code", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      if (!response.ok) throw new Error("Download failed");
+
+      // Get the filename from the Content-Disposition header
+      const contentDisposition = response.headers.get("Content-Disposition");
+      let filename = "download";
+      if (contentDisposition) {
+        const filenameMatch = contentDisposition.match(/filename="?(.+)"?/i);
+        if (filenameMatch.length === 2) filename = filenameMatch[1];
+      }
+
+      // Convert the response to a blob
+      const blob = await response.blob();
+
+      // Create a temporary URL for the blob
+      const url = window.URL.createObjectURL(blob);
+
+      // Create a temporary anchor element and trigger the download
+      const a = document.createElement("a");
+      a.style.display = "none";
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+
+      // Clean up
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+    } catch (error) {
+      console.log("down code error :");
+      console.log(error);
+    }
   };
 
   const fetchThumbnails = async () => {
@@ -910,7 +951,7 @@ function ChatPage({ token, engineer }) {
           </SyntaxHighlighter>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setCodeDialogOpen(false)}>下載</Button>
+          <Button onClick={() => handleCodeDownload()}>下載</Button>
           <Button onClick={() => setCodeDialogOpen(false)}>關閉</Button>
         </DialogActions>
       </Dialog>
