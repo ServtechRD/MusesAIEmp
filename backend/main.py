@@ -106,7 +106,7 @@ def login(form_data: schemas.UserLogin, db: Session = Depends(database.get_db)):
         raise HTTPException(status_code=400, detail='用户名或密码错误')
     access_token = auth.create_access_token(data={'sub': user.username})
     log('sys_config keys')
-    log(sys_config.keys())
+    log(globals.sys_config.keys())
     log('user name :' + user.username)
     if (user.username not in globals.sys_config.keys()):
         sys_config[user.username] = globals.sys_default_config.copy()
