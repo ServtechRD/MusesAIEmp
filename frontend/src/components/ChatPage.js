@@ -823,7 +823,7 @@ function ChatPage({ token, engineer }) {
             <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
               {engineer.EMP_DESC + " - " + engineer.EMP_NAME}
             </Typography>
-            <IconButton color="inherit" onClick={{ handleReload }} size="small">
+            <IconButton color="inherit" onClick={handleReload()} size="small">
               <SyncIcon fontSize="small" />
             </IconButton>
             <IconButton
