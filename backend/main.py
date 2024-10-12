@@ -27,7 +27,7 @@ from utils import log
 
 from PIL import Image
 
-import globals
+from globals import *
 
 load_dotenv()
 
@@ -109,18 +109,18 @@ def login(form_data: schemas.UserLogin, db: Session = Depends(database.get_db)):
     log(globals.sys_config.keys())
     log('user name :' + user.username)
     if (user.username not in globals.sys_config.keys()):
-        sys_config[user.username] = globals.sys_default_config.copy()
+        globals.sys_config[user.username] = globals.sys_default_config.copy()
 
-    sys_config[user.username][Constant.USER_CFG_EMPLOYEE_KEY] = form_data.employee
-    log(sys_config)
+    globals.sys_config[user.username][Constant.USER_CFG_EMPLOYEE_KEY] = form_data.employee
+    log(globals.sys_config)
 
-    emp = sys_employees[form_data.employee]
+    emp = globals.sys_employees[form_data.employee]
     idx = int(emp[Constant.EMP_KEY_WORK_MODE])
 
     if idx == 0:
         log("emp mode is 0")
-        root_path = sys_setting[Constant.SET_WORK_PATH]
-        work_mode_path = sys_setting[Constant.SET_WORK_MODE_PATH][idx]
+        root_path = globals.sys_setting[Constant.SET_WORK_PATH]
+        work_mode_path = globals.sys_setting[Constant.SET_WORK_MODE_PATH][idx]
         user_path = os.path.join(root_path, work_mode_path, "public", "users", form_data.username)
         if not os.path.exists(user_path):
             log("create user folder :" + user_path)
@@ -163,10 +163,10 @@ async def send_message(
 
     if len(user_input) > 0:
         if (user_input.startswith("/SETTING")):
-            return JSONResponse(content={"message": json.dumps(sys_setting)},
+            return JSONResponse(content={"message": json.dumps(globals.sys_setting)},
                                 status_code=200)
         elif (user_input.startswith("/CONFIG")):
-            user_config = sys_config[current_user.username]
+            user_config = globals.sys_config[current_user.username]
             input_items = user_input.split()
             print("parser items :" + str(len(input_items)))
             if (len(input_items) > 1):
@@ -224,13 +224,13 @@ async def copy_code(
         db: Session = Depends(database.get_db),
 ):
     username = current_user.username
-    UPLOAD_DIR = sys_setting['TEMP_PATH'] + "/uploads/" + current_user.username
+    UPLOAD_DIR = globals.sys_setting['TEMP_PATH'] + "/uploads/" + current_user.username
     src_file = f"{UPLOAD_DIR}/{filename}_code.txt"
-    user_config = sys_config[username]
+    user_config = globals.sys_config[username]
     idx = int(user_config[Constant.USER_CFG_PROJ_MODE])
 
-    work_path = sys_setting[Constant.SET_WORK_PATH]
-    work_mode_path = sys_setting[Constant.SET_WORK_MODE_PATH]
+    work_path = globals.sys_setting[Constant.SET_WORK_PATH]
+    work_mode_path = globals.sys_setting[Constant.SET_WORK_MODE_PATH]
     user_root_path = os.path.join(work_path, work_mode_path[idx], "public", "users", username)
 
     log(user_root_path)
@@ -285,16 +285,16 @@ def do_rewrite_code(
         conversation_id,
         db
 ):
-    UPLOAD_DIR = sys_setting['TEMP_PATH'] + "/uploads/" + username
+    UPLOAD_DIR = globals.sys_setting['TEMP_PATH'] + "/uploads/" + username
     desc_file = f"{UPLOAD_DIR}/{filename}_desc.txt"
     file_location = f"{UPLOAD_DIR}/{filename}"
 
     img_desc = read_text_file(desc_file)
 
-    user_config = sys_config[username]
+    user_config = globals.sys_config[username]
     log("取得CONFIG")
     # log(user_config)
-    employee = sys_employees[user_config[Constant.USER_CFG_EMPLOYEE_KEY]]
+    employee = globals.sys_employees[user_config[Constant.USER_CFG_EMPLOYEE_KEY]]
     log("查詢工程師")
     # log(employee)
     llm_mode = employee[Constant.EMP_KEY_LLM_ENGINE]
@@ -320,7 +320,7 @@ def do_rewrite_code(
             'content': f'图片{idx + 1}的描述：{description}',
         })
 
-    assistant_reply = generate_program(file_location, llm_code_prompt_model, llm_mode, messages, sys_config,
+    assistant_reply = generate_program(file_location, llm_code_prompt_model, llm_mode, messages, globals.sys_config,
                                        sys_setting, task_id, username)
 
     globals.tasks[task_id] = assistant_reply
@@ -343,18 +343,18 @@ async def re_see_and_write(filename: str = Form(...),
                            background_tasks: BackgroundTasks = BackgroundTasks(),
                            current_user: models.User = Depends(auth.get_current_user)):
     username = current_user.username
-    UPLOAD_DIR = sys_setting['TEMP_PATH'] + "/uploads/" + username
+    UPLOAD_DIR = globals.sys_setting['TEMP_PATH'] + "/uploads/" + username
     file_location = f"{UPLOAD_DIR}/{filename}"
 
     task_id = str(uuid.uuid4())
-    image_b64s =[]
-    image_types =[]
+    image_b64s = []
+    image_types = []
 
     img_b64 = image_to_base64(file_location)
     image_b64s.append(img_b64)
 
     _, file_extension = os.path.splitext(filename)
-    image_types.append( file_extension[1:])
+    image_types.append(file_extension[1:])
 
     background_tasks.add_task(analyze_image, image_b64s, image_types, "", file_location,
                               current_user.username, task_id, conversation_id, database.SessionLocal())
@@ -377,7 +377,7 @@ async def send_message(
 
     task_id = str(uuid.uuid4())
 
-    UPLOAD_DIR = sys_setting['TEMP_PATH'] + "/uploads/" + current_user.username
+    UPLOAD_DIR = globals.sys_setting['TEMP_PATH'] + "/uploads/" + current_user.username
 
     if not os.path.exists(UPLOAD_DIR):
         os.makedirs(UPLOAD_DIR)
@@ -434,8 +434,8 @@ async def send_message(
 def general_rep(user_input, user_id, task_id,
                 user_name, conversation_id, db
                 ):
-    user_config = sys_config[user_name]
-    employee = sys_employees[user_config[Constant.USER_CFG_EMPLOYEE_KEY]]
+    user_config = globals.sys_config[user_name]
+    employee = globals.sys_employees[user_config[Constant.USER_CFG_EMPLOYEE_KEY]]
     llm_mode = employee[Constant.EMP_KEY_LLM_ENGINE]
     llm_prompt = employee[Constant.EMP_KEY_LLM_PROMPT][Constant.EMP_KEY_LLM_PROMPT_GENERAL]
     llm_prompt_model = llm_prompt[Constant.EMP_KEY_LLM_PROMPT_MODEL]
@@ -506,17 +506,17 @@ def analyze_image(images_b64: [str],
                   conversation_id,
                   db
                   ):
-    global sys_setting, sys_employees, sys_config
+    # global sys_setting, sys_employees, sys_config
     try:
         globals.tasks[task_id] = f"分析圖片中"
         image_desc = []
 
         log("開始分析圖片中")
         # log(sys_config)
-        user_config = sys_config[username]
+        user_config = globals.sys_config[username]
         log("取得CONFIG")
         # log(user_config)
-        employee = sys_employees[user_config[Constant.USER_CFG_EMPLOYEE_KEY]]
+        employee = globals.sys_employees[user_config[Constant.USER_CFG_EMPLOYEE_KEY]]
         log("查詢工程師")
         # log(employee)
         llm_mode = employee[Constant.EMP_KEY_LLM_ENGINE]
@@ -590,7 +590,7 @@ def analyze_image(images_b64: [str],
                 'content': f'图片{idx + 1}的描述：{description}',
             })
 
-        assistant_reply = generate_program(file_location, llm_code_prompt_model, llm_mode, messages, sys_config,
+        assistant_reply = generate_program(file_location, llm_code_prompt_model, llm_mode, messages, globals.sys_config,
                                            sys_setting, task_id, username)
 
         globals.tasks[task_id] = assistant_reply
@@ -634,8 +634,8 @@ def generate_program(file_location, llm_code_prompt_model, llm_mode, messages, s
         user_config = sys_config[username]
         idx = int(user_config[Constant.USER_CFG_PROJ_MODE])
 
-        work_path = sys_setting[Constant.SET_WORK_PATH]
-        work_mode_path = sys_setting[Constant.SET_WORK_MODE_PATH]
+        work_path = globals.sys_setting[Constant.SET_WORK_PATH]
+        work_mode_path = globals.sys_setting[Constant.SET_WORK_MODE_PATH]
         user_root_path = os.path.join(work_path, work_mode_path[idx], "public", "users", username)
 
         log(user_root_path)
