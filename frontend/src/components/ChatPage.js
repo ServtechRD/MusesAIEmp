@@ -727,9 +727,9 @@ function ChatPage({ token, engineer }) {
   };
 
   const handleSnackbarClose = (event, reason) => {
-    if (reason === "clickaway") {
+    /* if (reason === "clickaway") {
       return;
-    }
+    }*/
     setSnackbarOpen(false);
   };
 
