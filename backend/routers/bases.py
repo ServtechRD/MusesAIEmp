@@ -1,6 +1,7 @@
 from typing import List
 
-from fastapi import APIRouter, HTTPException, Depends, Form
+from fastapi import APIRouter, HTTPException, Depends
+from fastapi.responses import FileResponse
 from sqlalchemy.orm import Session
 from starlette.responses import JSONResponse
 import models, schemas, database, auth, utils
@@ -55,6 +56,50 @@ def get_projects(
 
     return JSONResponse(content={"projects": json.dumps(result_prjs)},
                         status_code=200)
+
+
+@router.get('/getcode')
+def get_code(current_user: models.User = Depends(auth.get_current_user)
+             ):
+    user_name = current_user.username
+    user_config = globals.sys_config[user_name]
+    code_file_path = get_code_file_path(user_config, user_name)
+
+    if not os.path.exists(code_file_path):
+        raise HTTPException(status_code=404, detail="Code file not found")
+
+    code_text = read_text_file(code_file_path)
+
+    # 返回 JSON 响应
+    return JSONResponse(content={
+        "codeText": code_text
+    })
+
+
+def get_code_file_path(user_config, user_name):
+    mode = int(user_config[Constant.USER_CFG_PROJ_MODE])
+    prj_id = user_config[Constant.USER_CFG_PROJ_ID]
+    app_name = user_config[Constant.USER_CFG_APP_NAME]
+    func_file = user_config[Constant.USER_CFG_FUNC_FILE]
+    work_root_path = globals.sys_setting[Constant.SET_WORK_PATH]
+    work_mode_paths = globals.sys_setting[Constant.SET_WORK_MODE_PATH]
+    work_mode_path = work_mode_paths[int(mode)]
+    code_root_path = os.path.join(work_root_path, work_mode_path, "public", "users", user_name)
+    code_file_path = os.path.join(code_root_path, prj_id, app_name, func_file)
+    return code_file_path
+
+
+@router.get('/download_code')
+def download_code(current_user: models.User = Depends(auth.get_current_user)
+                  ):
+    user_name = current_user.username
+    user_config = globals.sys_config[user_name]
+    code_file_path = get_code_file_path(user_config, user_name)
+    filename = user_config[Constant.USER_CFG_FUNC_FILE]
+    if not os.path.exists(code_file_path):
+        raise HTTPException(status_code=404, detail="Code file not found")
+
+    return FileResponse(code_file_path, media_type='application/octet-stream', filename=filename)
 
 
 @router.get('/workurl')
