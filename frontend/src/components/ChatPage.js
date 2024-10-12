@@ -54,7 +54,7 @@ import ReactMarkdown from "react-markdown";
 import { jwtDecode } from "jwt-decode";
 import api from "../services/api";
 
-import ImageDialog from "./ImageDialog";
+//import ImageDialog from "./ImageDialog";
 
 SyntaxHighlighter.registerLanguage("jsx", jsx);
 SyntaxHighlighter.registerLanguage("javascript", js);
