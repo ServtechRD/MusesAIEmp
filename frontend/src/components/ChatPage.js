@@ -675,7 +675,7 @@ function ChatPage({ token, engineer }) {
       //if (!response.ok) throw new Error("Download failed");
 
       // Get the filename from the Content-Disposition header
-      const contentDisposition = response.headers.get("Content-Disposition");
+      const contentDisposition = response.headers["content-disposition"];
       let filename = "download";
       if (contentDisposition) {
         const filenameMatch = contentDisposition.match(/filename="?(.+)"?/i);
