@@ -678,6 +678,9 @@ def generate_program(file_location, llm_code_prompt_model, llm_mode, messages, s
 
         route_path = f"{user_root_path}/{prj_id}/route.json"
 
+        if not os.path.exists(route_path):
+            write_json_file(route_path, [])
+
         route_js = read_json_file(route_path)
 
         new_route = {Constant.USER_CFG_APP_NAME: app_name, Constant.USER_CFG_APP_DESC: app_desc,
