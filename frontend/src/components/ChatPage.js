@@ -669,9 +669,10 @@ function ChatPage({ token, engineer }) {
     try {
       const response = await api.get("/download_code", {
         headers: { Authorization: `Bearer ${token}` },
+        responseType: "blob", // 指定響應類型為 blob
       });
 
-      if (!response.ok) throw new Error("Download failed");
+      //if (!response.ok) throw new Error("Download failed");
 
       // Get the filename from the Content-Disposition header
       const contentDisposition = response.headers.get("Content-Disposition");
@@ -681,23 +682,24 @@ function ChatPage({ token, engineer }) {
         if (filenameMatch.length === 2) filename = filenameMatch[1];
       }
 
-      // Convert the response to a blob
-      const blob = await response.blob();
+      // 創建 Blob 對象
+      const blob = new Blob([response.data], {
+        type: "application/octet-stream",
+      });
 
-      // Create a temporary URL for the blob
+      // 創建臨時 URL
       const url = window.URL.createObjectURL(blob);
 
-      // Create a temporary anchor element and trigger the download
-      const a = document.createElement("a");
-      a.style.display = "none";
-      a.href = url;
-      a.download = filename;
-      document.body.appendChild(a);
-      a.click();
+      // 創建一個臨時的 <a> 元素來觸發下載
+      const link = document.createElement("a");
+      link.href = url;
+      link.setAttribute("download", filename);
+      document.body.appendChild(link);
+      link.click();
 
-      // Clean up
+      // 清理
+      document.body.removeChild(link);
       window.URL.revokeObjectURL(url);
-      document.body.removeChild(a);
     } catch (error) {
       console.log("down code error :");
       console.log(error);
