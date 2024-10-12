@@ -390,7 +390,7 @@ function ChatPage({ token, engineer }) {
 
   const handRedoApi = async (mode) => {
     const formData = new FormData();
-    formData.append("filename", filename);
+    formData.append("filename", selectedFilename);
     formData.append("conversation_id", currentConversationId);
 
     let api_name = "/redo/copycode";
