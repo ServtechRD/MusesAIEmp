@@ -23,7 +23,7 @@ import {
   FormControl,
 } from "@mui/material";
 import { ThemeProvider, createTheme, styled } from "@mui/material/styles";
-
+import { Snackbar } from "@mui/material";
 //import SendIcon from '@mui/icons-material/Send';
 //import DeleteIcon from '@mui/icons-material/Delete';
 
@@ -165,6 +165,8 @@ function ChatPage({ token, engineer }) {
   const [conversations, setConversations] = useState([]);
   const [currentConversationId, setCurrentConversationId] = useState(0);
   const [showConversationList, setShowConversationList] = useState(true);
+
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
 
   // State for dialogs
   const [projectDialogOpen, setProjectDialogOpen] = useState(false);
@@ -665,6 +667,37 @@ function ChatPage({ token, engineer }) {
     window.open(response.data, "_blank");
   };
 
+  const handleCodeCopy = async () => {
+    if (navigator.clipboard && window.isSecureContext) {
+      // 使用新的非同步 Clipboard API
+      navigator.clipboard.writeText(code).then(() => {
+        setSnackbarOpen(true);
+      });
+    } else {
+      // 使用傳統方法
+      let textArea = document.createElement("textarea");
+      textArea.value = code;
+      textArea.style.position = "fixed"; // 避免滾動到底部
+      document.body.appendChild(textArea);
+      textArea.focus();
+      textArea.select();
+      try {
+        document.execCommand("copy");
+        setSnackbarOpen(true);
+      } catch (err) {
+        console.error("無法複製文本: ", err);
+      }
+      document.body.removeChild(textArea);
+    }
+  };
+
+  const handleSnackbarClose = (event, reason) => {
+    if (reason === "clickaway") {
+      return;
+    }
+    setSnackbarOpen(false);
+  };
+
   const handleCodeDownload = async () => {
     try {
       const response = await api.get("/download_code", {
@@ -960,6 +993,7 @@ function ChatPage({ token, engineer }) {
           </SyntaxHighlighter>
         </DialogContent>
         <DialogActions>
+          <Button onClick={() => handleCodeCopy()}>複製</Button>
           <Button onClick={() => handleCodeDownload()}>下載</Button>
           <Button onClick={() => setCodeDialogOpen(false)}>關閉</Button>
         </DialogActions>
@@ -1189,6 +1223,16 @@ function ChatPage({ token, engineer }) {
           <Button onClick={() => setReDoDialogOpen(false)}>關閉</Button>
         </DialogActions>
       </Dialog>
+      <Snackbar
+        anchorOrigin={{
+          vertical: "bottom",
+          horizontal: "center",
+        }}
+        open={snackbarOpen}
+        autoHideDuration={2000}
+        onClose={handleSnackbarClose}
+        message="程式碼已複製到剪貼板"
+      />
     </ThemeProvider>
   );
 }
