@@ -23,7 +23,7 @@ import {
   FormControl,
 } from "@mui/material";
 import { ThemeProvider, createTheme, styled } from "@mui/material/styles";
-import { Snackbar } from "@mui/material";
+import { Snackbar, Alert } from "@mui/material";
 //import SendIcon from '@mui/icons-material/Send';
 //import DeleteIcon from '@mui/icons-material/Delete';
 
@@ -39,6 +39,7 @@ import {
   Image as ImageIcon,
   Link as LinkIcon,
   Close as CloseIcon,
+  Sync as SyncIcon,
 } from "@mui/icons-material";
 
 import { Light as SyntaxHighlighter } from "react-syntax-highlighter";
@@ -167,6 +168,8 @@ function ChatPage({ token, engineer }) {
   const [showConversationList, setShowConversationList] = useState(true);
 
   const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState("");
+  const [snackbarSeverity, setSnackbarSeverity] = useState("success");
 
   // State for dialogs
   const [projectDialogOpen, setProjectDialogOpen] = useState(false);
@@ -667,12 +670,39 @@ function ChatPage({ token, engineer }) {
     window.open(response.data, "_blank");
   };
 
+  const showMsg = (success, msg) => {
+    setSnackbarMessage(msg);
+    if (success) {
+      setSnackbarSeverity("success");
+    } else {
+      setSnackbarSeverity("error");
+    }
+    setSnackbarOpen(true);
+  };
+
+  const handleReload = async () => {
+    try {
+      const response = await api.post("/reload_employees", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      console.log(response.data);
+      showMsg(true, "重新載入AI員工成功");
+    } catch (error) {
+      showMsg(false, "重新載入AI員工失敗");
+    }
+  };
+
   const handleCodeCopy = async () => {
     if (navigator.clipboard && window.isSecureContext) {
       // 使用新的非同步 Clipboard API
-      navigator.clipboard.writeText(code).then(() => {
-        setSnackbarOpen(true);
-      });
+      navigator.clipboard
+        .writeText(code)
+        .then(() => {
+          showMsg(true, "程式碼已成功複製到剪貼板");
+        })
+        .catch((err) => {
+          showMsg(false, "複製失敗：" + err.message);
+        });
     } else {
       // 使用傳統方法
       let textArea = document.createElement("textarea");
@@ -682,10 +712,15 @@ function ChatPage({ token, engineer }) {
       textArea.focus();
       textArea.select();
       try {
-        document.execCommand("copy");
+        const successful = document.execCommand("copy");
+        if (successful) {
+          showMsg(true, "程式碼已成功複製到剪貼板");
+        } else {
+          showMsg(false, "複製失敗，請手動複製");
+        }
         setSnackbarOpen(true);
       } catch (err) {
-        console.error("無法複製文本: ", err);
+        showMsg(false, "複製失敗：" + err.message);
       }
       document.body.removeChild(textArea);
     }
@@ -788,6 +823,9 @@ function ChatPage({ token, engineer }) {
             <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
               {engineer.EMP_DESC + " - " + engineer.EMP_NAME}
             </Typography>
+            <IconButton color="inherit" onClick={{ handleReload }} size="small">
+              <SyncIcon fontSize="small" />
+            </IconButton>
             <IconButton
               color="inherit"
               onClick={() => setCodeDialogOpen(true)}
@@ -1231,8 +1269,15 @@ function ChatPage({ token, engineer }) {
         open={snackbarOpen}
         autoHideDuration={2000}
         onClose={handleSnackbarClose}
-        message="程式碼已複製到剪貼板"
-      />
+      >
+        <Alert
+          onClose={handleSnackbarClose}
+          severity={snackbarSeverity}
+          sx={{ width: "100%" }}
+        >
+          {snackbarMessage}
+        </Alert>
+      </Snackbar>
     </ThemeProvider>
   );
 }

@@ -13,7 +13,6 @@ from constant import Constant
 from utils import log
 
 
-
 def write_json_file(file_path, json_obj):
     try:
         with open(file_path, "w", encoding='utf-8') as file:
@@ -49,6 +48,7 @@ def load_default_config():
 
 
 def load_employees():
+    globals.sys_employees = {}
     root_dir = Constant.CONFIG_EMPLOYEE_PATH
     subdirs = [d for d in os.listdir(root_dir) if os.path.isdir(os.path.join(root_dir, d))]
     for subdir in subdirs:
@@ -95,6 +95,7 @@ def image_to_base64(file_location: str) -> str:
     except FileNotFoundError:
         raise Exception(f"File {file_location} not found")
 
+
 # 生成 Base64 编码的图片数据
 def get_image_base64(image_path):
     try:
@@ -116,7 +117,6 @@ def read_text_file(file_path):
         raise HTTPException(status_code=404, detail=f"File not found or error reading file: {str(e)}")
 
 
-
 # 获取目录下所有图片文件的名字
 def get_image_files(directory):
     return [f for f in os.listdir(directory) if f.lower().endswith(('.png', '.jpg', '.jpeg', '.gif'))]
@@ -132,4 +132,3 @@ def generate_thumbnail_base64(image_path, size=(100, 100)):
         # 将图像内容编码为 Base64
         thumbnail_base64 = base64.b64encode(buffer.getvalue()).decode('utf-8')
         return thumbnail_base64
-
