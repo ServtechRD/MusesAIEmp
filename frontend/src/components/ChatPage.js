@@ -682,9 +682,13 @@ function ChatPage({ token, engineer }) {
 
   const handleReload = async () => {
     try {
-      const response = await api.post("/reload_employees", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const response = await api.post(
+        "/reload_employees",
+        {},
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        },
+      );
       console.log(response.data);
       showMsg(true, "重新載入AI員工成功");
     } catch (error) {
@@ -823,7 +827,7 @@ function ChatPage({ token, engineer }) {
             <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
               {engineer.EMP_DESC + " - " + engineer.EMP_NAME}
             </Typography>
-            <IconButton color="inherit" size="small">
+            <IconButton color="inherit" onClick={handleReload} size="small">
               <SyncIcon fontSize="small" />
             </IconButton>
             <IconButton
