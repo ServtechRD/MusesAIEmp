@@ -99,6 +99,8 @@ def download_code(current_user: models.User = Depends(auth.get_current_user)
     if not os.path.exists(code_file_path):
         raise HTTPException(status_code=404, detail="Code file not found")
 
+    log("down code :"+filename)
+
     return FileResponse(code_file_path, media_type='application/octet-stream', filename=filename)
 
 

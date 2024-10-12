@@ -95,7 +95,9 @@ const MessagesContainer = styled(Box)(({ theme }) => ({
   overflowY: "auto",
 }));
 
-const MessageBubble = styled(Box)(({ theme, isUser }) => ({
+const MessageBubble = styled(Box, {
+  shouldForwardProp: (prop) => prop !== "isUser",
+})(({ theme, isUser }) => ({
   maxWidth: "80%",
   marginBottom: theme.spacing(2),
   alignSelf: isUser ? "flex-end" : "flex-start",
@@ -110,7 +112,9 @@ const UserInfoContainer = styled(Box)(({ theme }) => ({
   marginBottom: theme.spacing(0.5),
 }));
 
-const BubbleContent = styled(Paper)(({ theme, isUser }) => ({
+const BubbleContent = styled(Paper, {
+  shouldForwardProp: (prop) => prop !== "isUser",
+})(({ theme, isUser }) => ({
   padding: theme.spacing(1.5, 2.5),
   borderRadius: 20,
   borderBottomRightRadius: isUser ? 0 : 20,
@@ -130,7 +134,9 @@ const InputContainer = styled(Box)(({ theme }) => ({
   borderTop: `1px solid ${theme.palette.divider}`,
 }));
 
-const UserName = styled(Typography)(({ theme, isUser }) => ({
+const UserName = styled(Typography, {
+  shouldForwardProp: (prop) => prop !== "isUser",
+})(({ theme, isUser }) => ({
   fontSize: 14,
   fontWeight: "bold",
   color: isUser ? theme.palette.info.main : theme.palette.success.main,
@@ -318,10 +324,10 @@ function ChatPage({ token, engineer }) {
       let config = response.data.config;
       let configStatus = `${config["PROJ_ID"]} | ${config["PROJ_DESC"]} | ${config["APP_DESC"]} | ${config["FUNC_DESC"]} | ${config["FUNC_FILE"]}`;
 
-      setAppName(config["APP_NAME"]);
-      setAppDescription(config["APP_DESC"]);
-      setFuncDescription(config["FUNC_DESC"]);
-      setFuncFileName(config["FUNC_FILE"]);
+      setAppName(config["APP_NAME"] || "");
+      setAppDescription(config["APP_DESC"] || "");
+      setFuncDescription(config["FUNC_DESC"] || "");
+      setFuncFileName(config["FUNC_FILE"] || "");
 
       setConfigStatus(configStatus);
     } catch (error) {
@@ -338,6 +344,7 @@ function ChatPage({ token, engineer }) {
       let prjs = JSON.parse(response.data.projects);
       console.log(prjs);
       setProjects(prjs);
+      setCurrentProject("");
 
       setSwitchProjectDialogOpen(true);
     } catch (error) {
@@ -943,7 +950,7 @@ function ChatPage({ token, engineer }) {
         <DialogTitle>程式碼</DialogTitle>
         <DialogContent>
           <SyntaxHighlighter
-            language="jsx"
+            language="html"
             style={darkMode ? dracula : prism}
             customStyle={{ height: "400px", margin: 0 }}
           >
@@ -996,6 +1003,7 @@ function ChatPage({ token, engineer }) {
             <Select
               value={currentProject}
               onChange={(e) => setCurrentProject(e.target.value)}
+              displayEmpty
             >
               {projects.map((project) => (
                 <MenuItem key={project} value={project}>
