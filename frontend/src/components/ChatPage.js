@@ -409,6 +409,9 @@ function ChatPage({ token, engineer }) {
     if (response.data.task_id) {
       setTaskId(response.data.task_id);
     }
+
+    setReDoDialogOpen(false);
+
     return response;
   };
 
