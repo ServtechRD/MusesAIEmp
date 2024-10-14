@@ -24,7 +24,7 @@ function App() {
         </div>
       ) : (
         <div>
-          <ChatPage token={token} engineer={engineer} />
+          <ChatPage token={token} engineer={engineer} setToken={setToken} />
 
           {/* 
           <ImageUpload token={token} />
