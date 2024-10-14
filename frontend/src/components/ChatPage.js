@@ -40,6 +40,7 @@ import {
   Link as LinkIcon,
   Close as CloseIcon,
   Sync as SyncIcon,
+  ExitToApp as ExitToAppIcon,
 } from "@mui/icons-material";
 
 import { Light as SyntaxHighlighter } from "react-syntax-highlighter";
@@ -243,7 +244,8 @@ function ChatPage({ token, engineer }) {
           setCurrentConversationId(response.data[0].id);
         }
       } catch (error) {
-        console.log(error);
+        //console.log(error);
+        handleApiError(error);
       }
     };
     fetchConversations();
@@ -268,7 +270,8 @@ function ChatPage({ token, engineer }) {
       setMessages(response.data);
       scrollToBottom();
     } catch (error) {
-      console.log(error);
+      //console.log(error);
+      handleApiError(error);
     }
   };
 
@@ -319,6 +322,23 @@ function ChatPage({ token, engineer }) {
     }
   }, [reDoDialogOpen]);
 
+  const handleLogout = () => {
+    setToken(null);
+    // 不需要使用 navigate，因為 App.js 會根據 token 的值來渲染不同的組件
+  };
+
+  const handleApiError = (error) => {
+    if (error.response && error.response.status === 401) {
+      showMsg(false, "您的會話已過期，請重新登錄");
+      setTimeout(() => {
+        handleLogout();
+      }, 3000);
+    } else {
+      console.error("API error:", error);
+      showMsg(false, "發生錯誤，請稍後再試");
+    }
+  };
+
   const getInfo = async () => {
     try {
       const response = await api.get("/info", {
@@ -336,7 +356,8 @@ function ChatPage({ token, engineer }) {
 
       setConfigStatus(configStatus);
     } catch (error) {
-      console.log(error);
+      handleApiError(error);
+      //console.log(error);
     }
   };
 
@@ -353,7 +374,8 @@ function ChatPage({ token, engineer }) {
 
       setSwitchProjectDialogOpen(true);
     } catch (error) {
-      console.log(error);
+      handleApiError(error);
+      //console.log(error);
     }
   };
 
@@ -401,56 +423,66 @@ function ChatPage({ token, engineer }) {
   };
 
   const handRedoApi = async (mode) => {
-    const formData = new FormData();
-    formData.append("filename", selectedFilename);
-    formData.append("conversation_id", currentConversationId);
+    try {
+      const formData = new FormData();
+      formData.append("filename", selectedFilename);
+      formData.append("conversation_id", currentConversationId);
 
-    let api_name = "/redo/copycode";
-    if (mode == 1) {
-      api_name = "/redo/rewrite";
-    } else if (mode == 2) {
-      api_name = "/redo/reseeandwrite";
+      let api_name = "/redo/copycode";
+      if (mode == 1) {
+        api_name = "/redo/rewrite";
+      } else if (mode == 2) {
+        api_name = "/redo/reseeandwrite";
+      }
+
+      const response = await api.post(api_name, formData, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (response.data.task_id) {
+        setTaskId(response.data.task_id);
+      }
+
+      setReDoDialogOpen(false);
+
+      return response;
+    } catch (error) {
+      handleApiError(error);
+      throw error;
     }
-
-    const response = await api.post(api_name, formData, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
-
-    if (response.data.task_id) {
-      setTaskId(response.data.task_id);
-    }
-
-    setReDoDialogOpen(false);
-
-    return response;
   };
 
   const handleApiCall = async (msg, images) => {
-    const formData = new FormData();
-    formData.append("message", msg);
-    formData.append("conversation_id", currentConversationId);
+    try {
+      const formData = new FormData();
+      formData.append("message", msg);
+      formData.append("conversation_id", currentConversationId);
 
-    let api_name = "/message";
-    if (images instanceof File) {
-      api_name = "/message_images";
-      formData.append("images", images);
+      let api_name = "/message";
+      if (images instanceof File) {
+        api_name = "/message_images";
+        formData.append("images", images);
+      }
+
+      const response = await api.post(api_name, formData, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "multipart/form-data",
+        },
+      });
+
+      if (response.data.task_id) {
+        setTaskId(response.data.task_id);
+      } else if (msg.includes("/CONFIG") && msg.includes("SET")) {
+        await getInfo();
+      }
+      return response;
+    } catch (error) {
+      handleApiError(error);
+      throw error;
     }
-
-    const response = await api.post(api_name, formData, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-        "Content-Type": "multipart/form-data",
-      },
-    });
-
-    if (response.data.task_id) {
-      setTaskId(response.data.task_id);
-    } else if (msg.includes("/CONFIG") && msg.includes("SET")) {
-      await getInfo();
-    }
-    return response;
   };
 
   const handleSend = async () => {
@@ -475,6 +507,7 @@ function ChatPage({ token, engineer }) {
         ...prevMessages,
         { sender: "assistant", text: error.toString() },
       ]);
+      handleApiError(error);
     }
   };
 
@@ -493,7 +526,8 @@ function ChatPage({ token, engineer }) {
       setCurrentConversationId(response.data.id);
       setMessages([]);
     } catch (error) {
-      console.log(error);
+      //console.log(error);
+      handleApiError(error);
     }
   };
 
@@ -532,6 +566,7 @@ function ChatPage({ token, engineer }) {
         ...prevMessages,
         { sender: "assistant", text: "建立失敗-" + error.toString() },
       ]);
+      handleApiError(error);
     }
     setProjectDialogOpen(false);
   };
@@ -582,6 +617,7 @@ function ChatPage({ token, engineer }) {
         ...prevMessages,
         { sender: "assistant", text: "切換失敗-" + error.toString() },
       ]);
+      handleApiError(error);
     }
     setSwitchProjectDialogOpen(false);
   };
@@ -624,6 +660,7 @@ function ChatPage({ token, engineer }) {
         ...prevMessages,
         { sender: "assistant", text: "切換失敗-" + error.toString() },
       ]);
+      handleApiError(error);
     }
     setSwitchFunctionDialogOpen(false);
   };
@@ -654,6 +691,7 @@ function ChatPage({ token, engineer }) {
         ...prevMessages,
         { sender: "assistant", text: "讀取程式碼失敗-" + error.toString() },
       ]);
+      handleApiError(error);
     }
     setCodeDialogOpen(true);
   };
@@ -773,8 +811,9 @@ function ChatPage({ token, engineer }) {
       document.body.removeChild(link);
       window.URL.revokeObjectURL(url);
     } catch (error) {
-      console.log("down code error :");
-      console.log(error);
+      //console.log("down code error :");
+      //console.log(error);
+      handleApiError(error);
     }
   };
 
@@ -787,7 +826,8 @@ function ChatPage({ token, engineer }) {
       const data = await response.data;
       setThumbnails(data);
     } catch (error) {
-      console.error("Error fetching thumbnails:", error);
+      //console.error("Error fetching thumbnails:", error);
+      handleApiError(error);
     }
   };
 
@@ -806,7 +846,8 @@ function ChatPage({ token, engineer }) {
       setMarkdownText(data.markdownText);
       setCodeText(data.codeText);
     } catch (error) {
-      console.error("Error fetching image details:", error);
+      //console.error("Error fetching image details:", error);
+      handleApiError(error);
     }
   };
 
@@ -840,6 +881,10 @@ function ChatPage({ token, engineer }) {
 
             <IconButton color="inherit" onClick={() => setDarkMode(!darkMode)}>
               {darkMode ? <Brightness7Icon /> : <Brightness4Icon />}
+            </IconButton>
+
+            <IconButton color="inherit" onClick={handleLogout} size="small">
+              <ExitToAppIcon fontSize="small" />
             </IconButton>
           </Toolbar>
         </AppBar>
