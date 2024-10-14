@@ -160,7 +160,7 @@ const Thumbnail = styled("img")(({ theme }) => ({
   borderRadius: theme.shape.borderRadius,
 }));
 
-function ChatPage({ token, engineer }) {
+function ChatPage({ token, engineer, setToken }) {
   const [darkMode, setDarkMode] = useState(false);
   const [code, setCode] = useState("// Your React code here");
   const [codeDialogOpen, setCodeDialogOpen] = useState(false);
