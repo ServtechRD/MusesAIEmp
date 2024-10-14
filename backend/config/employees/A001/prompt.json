@@ -36,7 +36,7 @@
           "content": [
             {
               "type": "text",
-              "text": "Please analyze this image, include content, color and size"
+              "text": "Please analyze the Web system UI image I have uploaded. This interface contains all input fields and query results. Please describe in detail the UI elements, functions, and user interactions, and convert it into a comprehensive development specification including page layout, function description, user flow, and validation rules. Additionally, please organize the sample data displayed on the interface into a separate data set. All field display names and input names are presented in Traditional Chinese"
             },
             {
               "type": "text",
@@ -61,7 +61,7 @@
         },
         {
           "role": "user",
-          "content": "write only program,no any description or explain, no markdown tag , output full html code embedd css and javascript"
+          "content": "write the HTML code for the web interface. Requirements:\n\nHTML Code:\nUse semantic HTML tags to build the page structure.\nAll CSS and JavaScript code should be embedded within the same HTML file, do not use external files.\nEvery DOM element must have a unique id attribute.\nAll display names and input field names should be in Traditional Chinese.\nIf there are dropdown input fields, provide sample data options within them.\nIf there are date input fields, include a date picker dialog.\nFunctionality Implementation:\nUse embedded <style> tags to write CSS styles, defining the page layout and element styles.\nUse embedded <script> tags to write JavaScript code, implementing user interactions, input validation, and other functionalities.\nGenerate mock query results based on the data provided in the development specification, and display them in the interface.\nEnsure all input validation rules are implemented, with appropriate error messages.\nIf there are dropdown input fields, provide sample data options.\nIf there are date input fields, include a date picker dialog.\nOther Requirements:\nDo not include additional comments or explanations in the code.\nProvide the complete HTML code with all content in a single file, so it can be directly run and tested in a browser.\nPlease output only the complete HTML code file that includes all CSS and JavaScript, without any additional comments or explanations."
         }
       ]
     }
