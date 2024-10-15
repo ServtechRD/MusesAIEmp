@@ -32,6 +32,7 @@ export default function LoginPage({ setToken, setEngineer, engineer }) {
   const [registerPassword, setRegisterPassword] = useState("");
 
   const [engineerList, setEngineerList] = useState([]);
+  const [selectedEngineerIndex, setSelectedEngineerIndex] = useState("");
 
   const [version, setVersion] = useState("0.5.2");
 
@@ -170,7 +171,7 @@ export default function LoginPage({ setToken, setEngineer, engineer }) {
               <InputLabel id="selectLabelEngType">工程師</InputLabel>
               <Select
                 labelId="selectLabelEngType"
-                value={engineer.EMP_ID}
+                value={selectedEngineerIndex}
                 label="工程師"
                 id="selectEngType"
                 onChange={handleEngineerChange}
