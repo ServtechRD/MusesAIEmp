@@ -214,8 +214,25 @@ function ChatPage({ token, engineer, setToken }) {
   ]); // Placeholder project list
 
   const [clips, setClips] = useState([
-    { id: 1, label: "Clip 1", content: "This is the content of Clip 1" },
-    { id: 2, label: "Clip 2", content: "This is the content of Clip 2" },
+    {
+      id: 1,
+      label: "Image Clip",
+      type: 0,
+      content:
+        "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAACklEQVR4nGMAAQAABQABDQottAAAAABJRU5ErkJggg==",
+    },
+    {
+      id: 2,
+      label: "Markdown Clip",
+      type: 1,
+      content: "# Markdown Title\n\nThis is a **bold** text in markdown.",
+    },
+    {
+      id: 3,
+      label: "Code Clip",
+      type: 2,
+      content: 'function helloWorld() {\n  console.log("Hello, World!");\n}',
+    },
     // 可以添加更多初始 clip
   ]);
   const [selectedClip, setSelectedClip] = useState(null);
@@ -882,6 +899,52 @@ function ChatPage({ token, engineer, setToken }) {
     }
   };
 
+  const renderClipContent = (clip) => {
+    switch (clip.type) {
+      case 0: // Image
+        return (
+          <Box
+            display="flex"
+            justifyContent="center"
+            alignItems="center"
+            height="100%"
+          >
+            <img
+              src={clip.content}
+              alt="Clip content"
+              style={{
+                maxWidth: "100%",
+                maxHeight: "100%",
+                objectFit: "contain",
+              }}
+            />
+          </Box>
+        );
+      case 1: // Markdown
+        return (
+          <Paper
+            elevation={3}
+            sx={{ p: 2, maxHeight: "60vh", overflow: "auto" }}
+          >
+            <ReactMarkdown>{clip.content}</ReactMarkdown>
+          </Paper>
+        );
+      case 2: // Code
+        return (
+          <Paper
+            elevation={3}
+            sx={{ p: 2, maxHeight: "60vh", overflow: "auto" }}
+          >
+            <SyntaxHighlighter language="javascript" style={docco}>
+              {clip.content}
+            </SyntaxHighlighter>
+          </Paper>
+        );
+      default:
+        return <Typography>Unsupported clip type</Typography>;
+    }
+  };
+
   return (
     <ThemeProvider theme={theme}>
       <Box sx={{ flexGrow: 1 }}>
@@ -1352,6 +1415,29 @@ function ChatPage({ token, engineer, setToken }) {
           <Button onClick={() => handRedoApi(0)}>複製目前程式</Button>
           <Button onClick={() => setReDoDialogOpen(false)}>關閉</Button>
         </DialogActions>
+      </Dialog>
+      {/* Clip Content Dialog */}
+      <Dialog
+        open={clipDialogOpen}
+        onClose={handleClipDialogClose}
+        maxWidth="md"
+        fullWidth
+      >
+        <DialogTitle>
+          {selectedClip?.label}
+          <IconButton
+            aria-label="close"
+            onClick={handleClipDialogClose}
+            sx={{ position: "absolute", right: 8, top: 8 }}
+          >
+            <CloseIcon />
+          </IconButton>
+        </DialogTitle>
+        <DialogContent>
+          <Box sx={{ mt: 2 }}>
+            {selectedClip && renderClipContent(selectedClip)}
+          </Box>
+        </DialogContent>
       </Dialog>
       <Snackbar
         anchorOrigin={{
