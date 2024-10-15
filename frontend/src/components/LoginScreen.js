@@ -45,6 +45,13 @@ export default function LoginPage({ setToken, setEngineer, engineer }) {
       // 替換成您的實際API端點
       const response = await api.get("/employees");
       const empList = Object.values(response.data);
+
+      // 對 empList 進行排序，以 EMP_ID 為排序依據
+      const sortedEmpList = empList.sort((a, b) => {
+        // 假設 EMP_ID 是字符串，我們將其轉換為數字進行比較
+        return parseInt(a.EMP_ID) - parseInt(b.EMP_ID);
+      });
+
       setEngineerList(empList);
       if (empList.length > 0) {
         setSelectedEngineerIndex(0);
