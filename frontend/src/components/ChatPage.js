@@ -1034,7 +1034,7 @@ function ChatPage({ token, engineer, setToken }) {
                   }}
                 >
                   <List sx={{ flexGrow: 1, overflowY: "auto" }}>
-                    {conversations.map((conversation) => (
+                    {conversations.map((conversation, idx) => (
                       <ListItem
                         key={conversation.id}
                         button
@@ -1047,7 +1047,7 @@ function ChatPage({ token, engineer, setToken }) {
                         }}
                         selected={currentConversationId === conversation.id}
                       >
-                        <ListItemText primary={`需求: ${conversation.title}`} />
+                        <ListItemText primary={`需求: ${idx + 1}`} />
                       </ListItem>
                     ))}
                   </List>
