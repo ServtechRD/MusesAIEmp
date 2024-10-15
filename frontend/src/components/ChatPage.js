@@ -1047,7 +1047,7 @@ function ChatPage({ token, engineer, setToken }) {
                         }}
                         selected={currentConversationId === conversation.id}
                       >
-                        <ListItemText primary={`需求列表 ${conversation.id}`} />
+                        <ListItemText primary={`需求: ${conversation.title}`} />
                       </ListItem>
                     ))}
                   </List>
