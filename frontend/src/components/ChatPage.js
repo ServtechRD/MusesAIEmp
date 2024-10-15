@@ -557,7 +557,7 @@ function ChatPage({ token, engineer, setToken }) {
       if (clips.length > 0) {
         formData.append("filename", selectedFilename);
 
-        mode = checkClipsMode();
+        let mode = checkClipsMode();
 
         let api_name = "/redo/copycode";
         if (mode == 1) {
