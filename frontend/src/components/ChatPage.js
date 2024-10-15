@@ -554,19 +554,21 @@ function ChatPage({ token, engineer, setToken }) {
       formData.append("message", msg);
       formData.append("conversation_id", currentConversationId);
 
+      let api_name = "/redo/copycode";
+
       if (clips.length > 0) {
         formData.append("filename", selectedFilename);
 
         let mode = checkClipsMode();
+        api_name = "/redo/copycode";
 
-        let api_name = "/redo/copycode";
         if (mode == 1) {
           api_name = "/redo/rewrite";
         } else if (mode == 2) {
           api_name = "/redo/reseeandwrite";
         }
       } else {
-        let api_name = "/message";
+        api_name = "/message";
         if (images instanceof File) {
           api_name = "/message_images";
           formData.append("images", images);
