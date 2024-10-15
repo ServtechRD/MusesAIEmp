@@ -474,29 +474,29 @@ function ChatPage({ token, engineer, setToken }) {
     try {
       setClips([]);
 
-      let clips = [];
+      let items = [];
       if (mode == 2) {
-        clips.append({
+        items.append({
           id: 1,
           label: "圖片",
           type: 0,
           content: `data:image/jpeg;base64,${selectedImage}`,
         });
       } else if (mode == 1) {
-        clips.append({
+        items.append({
           id: 2,
           label: "描述",
           type: 1,
           content: markdownText,
         });
       } else {
-        clips.append({
+        items.append({
           id: 2,
           label: "描述",
           type: 1,
           content: markdownText,
         });
-        clips.append({
+        items.append({
           id: 3,
           label: "程式",
           type: 2,
@@ -504,6 +504,7 @@ function ChatPage({ token, engineer, setToken }) {
         });
       }
 
+      setClips(items);
       /*
 
       const formData = new FormData();
@@ -536,6 +537,17 @@ function ChatPage({ token, engineer, setToken }) {
     }
   };
 
+  // 新增的函數
+  const checkClipsMode = () => {
+    if (clips.some((clip) => clip.type === 2)) {
+      return 0;
+    } else if (clips.some((clip) => clip.type === 1)) {
+      return 2;
+    } else {
+      return 1;
+    }
+  };
+
   const handleApiCall = async (msg, images) => {
     try {
       const formData = new FormData();
@@ -544,7 +556,8 @@ function ChatPage({ token, engineer, setToken }) {
 
       if (clips.length > 0) {
         formData.append("filename", selectedFilename);
-        formData.append("conversation_id", currentConversationId);
+
+        mode = checkClipsMode();
 
         let api_name = "/redo/copycode";
         if (mode == 1) {
