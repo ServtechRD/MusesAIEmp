@@ -530,7 +530,7 @@ function ChatPage({ token, engineer, setToken }) {
 
       setReDoDialogOpen(false);
 
-      return response;
+      //return response;
     } catch (error) {
       handleApiError(error);
       throw error;
