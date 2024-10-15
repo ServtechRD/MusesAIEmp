@@ -248,6 +248,9 @@ def do_modify_code(
     img_desc = read_text_file(desc_file)
     code_base = read_text_file(code_file)
 
+    if code_base is None:
+        code_base = ""
+
     user_config = globals.sys_config[username]
     log("取得CONFIG")
     # log(user_config)
@@ -279,7 +282,7 @@ def do_modify_code(
 
     messages.append({
         'role': 'user',
-        'codente': f'請以下面程式為基礎進行修改:{code_base}'
+        'content': f'請以下面程式為基礎進行修改:{code_base}'
     })
 
     assistant_reply = generate_program(file_location, llm_code_prompt_model, llm_mode, messages, globals.sys_config,
