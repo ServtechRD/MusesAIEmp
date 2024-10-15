@@ -33,7 +33,7 @@ export default function LoginPage({ setToken, setEngineer, engineer }) {
 
   const [engineerList, setEngineerList] = useState([]);
 
-  const [version, setVersion] = useState("0.5.1");
+  const [version, setVersion] = useState("0.5.2");
 
   useEffect(() => {
     fetchEngineerList();
@@ -203,7 +203,7 @@ export default function LoginPage({ setToken, setEngineer, engineer }) {
           align="center"
           sx={{ mt: 5 }}
         >
-          "版本 :" {version}
+          版本 : {version}
         </Typography>
       </Container>
 
