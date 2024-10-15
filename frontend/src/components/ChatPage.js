@@ -48,7 +48,7 @@ import { Light as SyntaxHighlighter } from "react-syntax-highlighter";
 import { dracula, prism } from "react-syntax-highlighter/dist/esm/styles/prism";
 import docco from "react-syntax-highlighter/dist/esm/styles/hljs/docco";
 
-import jsx from "react-syntax-highlighter/dist/esm/languages/prism/jsx";
+//import jsx from "react-syntax-highlighter/dist/esm/languages/prism/jsx";
 import js from "react-syntax-highlighter/dist/esm/languages/hljs/javascript";
 import html from "react-syntax-highlighter/dist/esm/languages/hljs/xml";
 import css from "react-syntax-highlighter/dist/esm/languages/hljs/css";
@@ -214,25 +214,6 @@ function ChatPage({ token, engineer, setToken }) {
   ]); // Placeholder project list
 
   const [clips, setClips] = useState([
-    {
-      id: 1,
-      label: "Image Clip",
-      type: 0,
-      content:
-        "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAACklEQVR4nGMAAQAABQABDQottAAAAABJRU5ErkJggg==",
-    },
-    {
-      id: 2,
-      label: "Markdown Clip",
-      type: 1,
-      content: "# Markdown Title\n\nThis is a **bold** text in markdown.",
-    },
-    {
-      id: 3,
-      label: "Code Clip",
-      type: 2,
-      content: 'function helloWorld() {\n  console.log("Hello, World!");\n}',
-    },
     // 可以添加更多初始 clip
   ]);
   const [selectedClip, setSelectedClip] = useState(null);
@@ -1000,7 +981,7 @@ function ChatPage({ token, engineer, setToken }) {
             elevation={3}
             sx={{ p: 2, maxHeight: "60vh", overflow: "auto" }}
           >
-            <SyntaxHighlighter language="javascript" style={docco}>
+            <SyntaxHighlighter language="html" style={docco}>
               {clip.content}
             </SyntaxHighlighter>
           </Paper>
@@ -1029,13 +1010,6 @@ function ChatPage({ token, engineer, setToken }) {
             </Typography>
             <IconButton color="inherit" onClick={handleReload} size="small">
               <SyncIcon fontSize="small" />
-            </IconButton>
-            <IconButton
-              color="inherit"
-              onClick={() => setCodeDialogOpen(true)}
-              size="small"
-            >
-              <CodeIcon fontSize="small" />
             </IconButton>
 
             <IconButton color="inherit" onClick={() => setDarkMode(!darkMode)}>

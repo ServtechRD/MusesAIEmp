@@ -4,7 +4,7 @@
   "EMP_IMAGE": "A002.png",
   "EMP_SKILL": "javascript,css,html,react@17,material-ui@v5",
   "EMP_DESC": "資深的前端工程師",
-  "EMP_HELLO": "你好,我是前端工程師-Admin, 有什麼可以協助?",
+  "EMP_HELLO": "你好,我是前端工程師-ada, 有什麼可以協助?",
   "EMP_HELP": "提供Web UI 畫面, 我可以撰寫對應的相關程式碼",
   "WORK_MODE": "0",
   "LLM_ENGINE": "openai",
