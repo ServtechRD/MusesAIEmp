@@ -46,7 +46,8 @@ export default function LoginPage({ setToken, setEngineer, engineer }) {
       const empList = Object.values(response.data);
       setEngineerList(empList);
       if (empList.length > 0) {
-        setEngineer(0);
+        setSelectedEngineerIndex(0);
+        setEngineer(empList[0]);
       }
     } catch (error) {
       console.error("Error fetching options:", error);
@@ -94,7 +95,10 @@ export default function LoginPage({ setToken, setEngineer, engineer }) {
 
   const handleEngineerChange = (event) => {
     console.log(engineerList[event.target.value]);
-    setEngineer(engineerList[event.target.value]);
+    //setEngineer(engineerList[event.target.value]);
+    const index = event.target.value;
+    setSelectedEngineerIndex(index);
+    setEngineer(engineerList[index]);
   };
 
   return (
