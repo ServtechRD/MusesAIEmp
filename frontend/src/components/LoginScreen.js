@@ -48,14 +48,29 @@ export default function LoginPage({ setToken, setEngineer, engineer }) {
 
       // 對 empList 進行排序，以 EMP_ID 為排序依據
       const sortedEmpList = empList.sort((a, b) => {
-        // 假設 EMP_ID 是字符串，我們將其轉換為數字進行比較
-        return parseInt(a.EMP_ID) - parseInt(b.EMP_ID);
+        // 分離字母和數字部分
+        const [letterA, numberA] = [
+          a.EMP_ID.charAt(0),
+          parseInt(a.EMP_ID.slice(1)),
+        ];
+        const [letterB, numberB] = [
+          b.EMP_ID.charAt(0),
+          parseInt(b.EMP_ID.slice(1)),
+        ];
+
+        // 首先比較字母
+        if (letterA !== letterB) {
+          return letterA.localeCompare(letterB);
+        }
+
+        // 如果字母相同，則比較數字
+        return numberA - numberB;
       });
 
-      setEngineerList(empList);
-      if (empList.length > 0) {
+      setEngineerList(sortedEmpList);
+      if (sortedEmpList.length > 0) {
         setSelectedEngineerIndex(0);
-        setEngineer(empList[0]);
+        setEngineer(sortedEmpList[0]);
       }
     } catch (error) {
       console.error("Error fetching options:", error);
