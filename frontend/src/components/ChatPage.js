@@ -470,8 +470,42 @@ function ChatPage({ token, engineer, setToken }) {
     setFileInputKey(Date.now());
   };
 
-  const handRedoApi = async (mode) => {
+  const handleRedoAction = async (mode) => {
     try {
+      setClips([]);
+
+      let clips = [];
+      if (mode == 2) {
+        clips.append({
+          id: 1,
+          label: "圖片",
+          type: 0,
+          content: `data:image/jpeg;base64,${selectedImage}`,
+        });
+      } else if (mode == 1) {
+        clips.append({
+          id: 2,
+          label: "描述",
+          type: 1,
+          content: markdownText,
+        });
+      } else {
+        clips.append({
+          id: 2,
+          label: "描述",
+          type: 1,
+          content: markdownText,
+        });
+        clips.append({
+          id: 3,
+          label: "程式",
+          type: 2,
+          content: codeText,
+        });
+      }
+
+      /*
+
       const formData = new FormData();
       formData.append("filename", selectedFilename);
       formData.append("conversation_id", currentConversationId);
@@ -491,7 +525,7 @@ function ChatPage({ token, engineer, setToken }) {
 
       if (response.data.task_id) {
         setTaskId(response.data.task_id);
-      }
+      } */
 
       setReDoDialogOpen(false);
 
@@ -508,10 +542,22 @@ function ChatPage({ token, engineer, setToken }) {
       formData.append("message", msg);
       formData.append("conversation_id", currentConversationId);
 
-      let api_name = "/message";
-      if (images instanceof File) {
-        api_name = "/message_images";
-        formData.append("images", images);
+      if (clips.length > 0) {
+        formData.append("filename", selectedFilename);
+        formData.append("conversation_id", currentConversationId);
+
+        let api_name = "/redo/copycode";
+        if (mode == 1) {
+          api_name = "/redo/rewrite";
+        } else if (mode == 2) {
+          api_name = "/redo/reseeandwrite";
+        }
+      } else {
+        let api_name = "/message";
+        if (images instanceof File) {
+          api_name = "/message_images";
+          formData.append("images", images);
+        }
       }
 
       const response = await api.post(api_name, formData, {
@@ -1410,9 +1456,9 @@ function ChatPage({ token, engineer, setToken }) {
           </Grid>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => handRedoApi(2)}>再識別及生成程式</Button>
-          <Button onClick={() => handRedoApi(1)}>再生成一次程式</Button>
-          <Button onClick={() => handRedoApi(0)}>複製目前程式</Button>
+          <Button onClick={() => handleRedoAction(2)}>再識別及生成程式</Button>
+          <Button onClick={() => handleRedoAction(1)}>再生成一次程式</Button>
+          <Button onClick={() => handleRedoAction(0)}>複製目前程式</Button>
           <Button onClick={() => setReDoDialogOpen(false)}>關閉</Button>
         </DialogActions>
       </Dialog>
