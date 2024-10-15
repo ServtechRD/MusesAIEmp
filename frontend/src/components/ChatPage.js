@@ -21,6 +21,7 @@ import {
   Select,
   InputLabel,
   FormControl,
+  Chip,
 } from "@mui/material";
 import { ThemeProvider, createTheme, styled } from "@mui/material/styles";
 import { Snackbar, Alert } from "@mui/material";
@@ -160,6 +161,14 @@ const Thumbnail = styled("img")(({ theme }) => ({
   borderRadius: theme.shape.borderRadius,
 }));
 
+const ClipArea = styled(Box)(({ theme }) => ({
+  display: "flex",
+  flexWrap: "wrap",
+  padding: theme.spacing(1),
+  gap: theme.spacing(1),
+  borderBottom: `1px solid ${theme.palette.divider}`,
+}));
+
 function ChatPage({ token, engineer, setToken }) {
   const [darkMode, setDarkMode] = useState(false);
   const [code, setCode] = useState("// Your React code here");
@@ -203,6 +212,14 @@ function ChatPage({ token, engineer, setToken }) {
     "Project B",
     "Project C",
   ]); // Placeholder project list
+
+  const [clips, setClips] = useState([
+    { id: 1, label: "Clip 1", content: "This is the content of Clip 1" },
+    { id: 2, label: "Clip 2", content: "This is the content of Clip 2" },
+    // 可以添加更多初始 clip
+  ]);
+  const [selectedClip, setSelectedClip] = useState(null);
+  const [clipDialogOpen, setClipDialogOpen] = useState(false);
 
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
@@ -321,6 +338,20 @@ function ChatPage({ token, engineer, setToken }) {
       fetchThumbnails();
     }
   }, [reDoDialogOpen]);
+
+  const handleClipClick = (clip) => {
+    setSelectedClip(clip);
+    setClipDialogOpen(true);
+  };
+
+  const handleClipDelete = (clipToDelete) => {
+    setClips(clips.filter((clip) => clip.id !== clipToDelete.id));
+  };
+
+  const handleClipDialogClose = () => {
+    setClipDialogOpen(false);
+    setSelectedClip(null);
+  };
 
   const handleLogout = () => {
     setToken(null);
@@ -1012,6 +1043,18 @@ function ChatPage({ token, engineer, setToken }) {
                     </Box>
                   </Grid>
                 </Grid>
+
+                <ClipArea>
+                  {clips.map((clip) => (
+                    <Chip
+                      key={clip.id}
+                      label={clip.label}
+                      onClick={() => handleClipClick(clip)}
+                      onDelete={() => handleClipDelete(clip)}
+                      sx={{ margin: 0.5 }}
+                    />
+                  ))}
+                </ClipArea>
 
                 <InputContainer>
                   {uploadedImages.length > 0 && (
