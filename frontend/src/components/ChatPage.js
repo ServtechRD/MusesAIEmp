@@ -59,7 +59,7 @@ import api from "../services/api";
 
 //import ImageDialog from "./ImageDialog";
 
-SyntaxHighlighter.registerLanguage("jsx", jsx);
+//SyntaxHighlighter.registerLanguage("jsx", jsx);
 SyntaxHighlighter.registerLanguage("javascript", js);
 SyntaxHighlighter.registerLanguage("html", html);
 SyntaxHighlighter.registerLanguage("css", css);
