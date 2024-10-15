@@ -464,10 +464,7 @@ function ChatPage({ token, engineer, setToken }) {
   };
 
   const handleReset = async () => {
-    setInput("");
-    setImageFiles([]);
-    setUploadedImages([]);
-    setFileInputKey(Date.now());
+    cleanSend();
   };
 
   const handleRedoAction = async (mode) => {
@@ -596,6 +593,14 @@ function ChatPage({ token, engineer, setToken }) {
     }
   };
 
+  const cleanSend = async () => {
+    setInput("");
+    setImageFiles([]);
+    setUploadedImages([]);
+    setFileInputKey(Date.now());
+    setClips([]);
+  };
+
   const handleSend = async () => {
     if (!input.trim()) return;
 
@@ -604,10 +609,7 @@ function ChatPage({ token, engineer, setToken }) {
     try {
       const response = await handleApiCall(input, imageFiles);
 
-      setInput("");
-      setImageFiles([]);
-      setUploadedImages([]);
-      setFileInputKey(Date.now());
+      cleanSend();
 
       setMessages((prevMessages) => [
         ...prevMessages,
@@ -1475,7 +1477,7 @@ function ChatPage({ token, engineer, setToken }) {
         <DialogActions>
           <Button onClick={() => handleRedoAction(2)}>再識別及生成程式</Button>
           <Button onClick={() => handleRedoAction(1)}>再生成一次程式</Button>
-          <Button onClick={() => handleRedoAction(0)}>複製目前程式</Button>
+          <Button onClick={() => handleRedoAction(0)}>修改目前程式</Button>
           <Button onClick={() => setReDoDialogOpen(false)}>關閉</Button>
         </DialogActions>
       </Dialog>
