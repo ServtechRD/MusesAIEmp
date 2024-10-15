@@ -476,27 +476,27 @@ function ChatPage({ token, engineer, setToken }) {
 
       let items = [];
       if (mode == 2) {
-        items.append({
+        items.push({
           id: 1,
           label: "圖片",
           type: 0,
           content: `data:image/jpeg;base64,${selectedImage}`,
         });
       } else if (mode == 1) {
-        items.append({
+        items.push({
           id: 2,
           label: "描述",
           type: 1,
           content: markdownText,
         });
       } else {
-        items.append({
+        items.push({
           id: 2,
           label: "描述",
           type: 1,
           content: markdownText,
         });
-        items.append({
+        items.push({
           id: 3,
           label: "程式",
           type: 2,
