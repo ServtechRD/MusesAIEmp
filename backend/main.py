@@ -217,10 +217,93 @@ async def send_message(
                             status_code=200)
 
 
+@app.post('/redo/modifycode')
+async def modify_code(
+        filename: str = Form(...),
+        conversation_id: int = Form(...),
+        message: str = Form(...),
+        background_tasks: BackgroundTasks = BackgroundTasks(),
+        current_user: models.User = Depends(auth.get_current_user),
+):
+    task_id = str(uuid.uuid4())
+    background_tasks.add_task(do_modify_code, filename,
+                              current_user.username, task_id, conversation_id, message, database.SessionLocal())
+    return JSONResponse(content={"task_id": task_id, "message": "修改程式中"},
+                        status_code=200)
+
+
+def do_modify_code(
+        filename,
+        username,
+        task_id,
+        conversation_id,
+        user_input,
+        db
+):
+    UPLOAD_DIR = globals.sys_setting['TEMP_PATH'] + "/uploads/" + username
+    desc_file = f"{UPLOAD_DIR}/{filename}_desc.txt"
+    code_file = f"{UPLOAD_DIR}/{filename}_code.txt"
+    file_location = f"{UPLOAD_DIR}/{filename}"
+
+    img_desc = read_text_file(desc_file)
+    code_base = read_text_file(code_file)
+
+    user_config = globals.sys_config[username]
+    log("取得CONFIG")
+    # log(user_config)
+    employee = globals.sys_employees[user_config[Constant.USER_CFG_EMPLOYEE_KEY]]
+    log("查詢工程師")
+    # log(employee)
+    llm_mode = employee[Constant.EMP_KEY_LLM_ENGINE]
+    log("查詢模型")
+
+    llm_code_prompt = employee[Constant.EMP_KEY_LLM_PROMPT][Constant.EMP_KEY_LLM_PROMPT_CODE]
+    llm_code_prompt_model = llm_code_prompt[Constant.EMP_KEY_LLM_PROMPT_MODEL]
+    llm_code_prompt_messages = llm_code_prompt[Constant.EMP_KEY_LLM_PROMPT_MESSAGES]
+
+    messages = []
+
+    globals.tasks[task_id] = f"修改程式中"
+
+    json_str = json.dumps(llm_code_prompt_messages)
+    modify_json_str = json_str.replace(Constant.LLM_MSG_USER_INPUT, user_input)
+    pass_message = json.loads(modify_json_str)
+    for prompt_message in pass_message:
+        messages.append(prompt_message)
+
+    for idx, description in enumerate([img_desc]):
+        messages.append({
+            'role': 'user',
+            'content': f'图片{idx + 1}的描述：{description}',
+        })
+
+    messages.append({
+        'role': 'user',
+        'codente': f'請以下面程式為基礎進行修改:{code_base}'
+    })
+
+    assistant_reply = generate_program(file_location, llm_code_prompt_model, llm_mode, messages, globals.sys_config,
+                                       sys_setting, task_id, username)
+
+    globals.tasks[task_id] = assistant_reply
+
+    # 保存对话记录到数据库
+    new_message = models.Message(
+        conversation_id=conversation_id,
+        message="修改程式:" + filename,
+        response=assistant_reply,
+    )
+    db.add(new_message)
+    db.commit()
+
+    globals.tasks[task_id] = "@@END@@處理完畢"
+
+
 @app.post('/redo/copycode')
 async def copy_code(
         filename: str = Form(...),
         conversation_id: int = Form(...),
+        message: str = Form(...),
         current_user: models.User = Depends(auth.get_current_user),
         db: Session = Depends(database.get_db),
 ):
@@ -269,12 +352,13 @@ async def copy_code(
 async def rewrite_code(
         filename: str = Form(...),
         conversation_id: int = Form(...),
+        message: str = Form(...),
         background_tasks: BackgroundTasks = BackgroundTasks(),
         current_user: models.User = Depends(auth.get_current_user),
 ):
     task_id = str(uuid.uuid4())
     background_tasks.add_task(do_rewrite_code, filename,
-                              current_user.username, task_id, conversation_id, database.SessionLocal())
+                              current_user.username, task_id, conversation_id, message, database.SessionLocal())
     return JSONResponse(content={"task_id": task_id, "message": "重新生成程式中"},
                         status_code=200)
 
@@ -284,6 +368,7 @@ def do_rewrite_code(
         username,
         task_id,
         conversation_id,
+        user_input,
         db
 ):
     UPLOAD_DIR = globals.sys_setting['TEMP_PATH'] + "/uploads/" + username
@@ -310,7 +395,7 @@ def do_rewrite_code(
     globals.tasks[task_id] = f"重新生成程式中"
 
     json_str = json.dumps(llm_code_prompt_messages)
-    modify_json_str = json_str.replace(Constant.LLM_MSG_USER_INPUT, "")
+    modify_json_str = json_str.replace(Constant.LLM_MSG_USER_INPUT, user_input)
     pass_message = json.loads(modify_json_str)
     for prompt_message in pass_message:
         messages.append(prompt_message)
@@ -329,7 +414,7 @@ def do_rewrite_code(
     # 保存对话记录到数据库
     new_message = models.Message(
         conversation_id=conversation_id,
-        message="重新寫一次程式",
+        message="重新寫一次程式:" + filename,
         response=assistant_reply,
     )
     db.add(new_message)

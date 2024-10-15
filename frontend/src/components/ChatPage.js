@@ -540,8 +540,10 @@ function ChatPage({ token, engineer, setToken }) {
   // 新增的函數
   const checkClipsMode = () => {
     if (clips.some((clip) => clip.type === 2)) {
+      // code
       return 0;
-    } else if (clips.some((clip) => clip.type === 1)) {
+    } else if (clips.some((clip) => clip.type === 0)) {
+      // image
       return 2;
     } else {
       return 1;
@@ -554,13 +556,13 @@ function ChatPage({ token, engineer, setToken }) {
       formData.append("message", msg);
       formData.append("conversation_id", currentConversationId);
 
-      let api_name = "/redo/copycode";
+      let api_name = "/redo/modifycode";
 
       if (clips.length > 0) {
         formData.append("filename", selectedFilename);
 
         let mode = checkClipsMode();
-        api_name = "/redo/copycode";
+        api_name = "/redo/modifycode";
 
         if (mode == 1) {
           api_name = "/redo/rewrite";
