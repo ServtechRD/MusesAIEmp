@@ -126,7 +126,6 @@ async def get_version_func(
     return JSONResponse(content={"versions": json.dumps(versions)}, status_code=200)
 
 
-
 @app.post("/version/image/switch")
 async def switch_version_image(
         version: int = Form(...),
@@ -139,9 +138,11 @@ async def switch_version_image(
     code_file = f"{UPLOAD_DIR}/{filename}_code.txt"
     code_file_ver = f"{UPLOAD_DIR}/{filename}_code.txt.{version}"
 
+    shutil.copy2(code_file_ver, code_file)
+
     # copy file
-    with open(code_file, "w") as out_f:
-        shutil.copyfileobj(code_file_ver, out_f)
+    #with open(code_file, "w") as out_f:
+    #    shutil.copyfileobj(code_file_ver, out_f)
 
     return JSONResponse(content={"message": "影像程式版本切換到成功"}, status_code=200)
 
@@ -172,11 +173,12 @@ async def switch_version_func(
         os.makedirs(output_folder)
 
     output_path = f"{output_folder}/{func_file}"
-    output_path_ver = output_path + f".{version}"
+    output_path_ver = f"{output_path}.{version}"
 
+    shutil.copy2(output_path_ver, output_path)
     # copy file
-    with open(output_path, "w") as out_f:
-        shutil.copyfileobj(output_path_ver, out_f)
+    # with open(output_path, "w") as out_f:
+    #    shutil.copyfileobj(output_path_ver, out_f)
 
     return JSONResponse(content={"message": "應用程式版本切換到成功"}, status_code=200)
 
