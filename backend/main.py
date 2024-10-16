@@ -600,7 +600,8 @@ def general_rep(user_input, user_id, task_id,
     # tasks[task_id] = "@@END@@處理完畢"
 
 
-def analyze_images_from_llm(images_b64: [str], images_type: [str], user_input: str, task_id: str, username: str,file_location:str):
+def analyze_images_from_llm(images_b64: [str], images_type: [str], user_input: str, task_id: str, username: str,
+                            file_location: str):
     """与 LLM 模型交互分析图像"""
     image_desc = []
     log("開始分析圖片")
@@ -666,6 +667,36 @@ def process_code_task_from_analyze(
     globals.tasks[task_id] = "@@END@@處理完畢"
 
 
+def build_code_task_messages(image_desc: list, user_input: str, username: str):
+    """构建用于代码生成任务的消息"""
+    user_config = globals.sys_config[username]
+    log("取得CONFIG")
+    # log(user_config)
+    employee = globals.sys_employees[user_config[Constant.USER_CFG_EMPLOYEE_KEY]]
+    log("查詢工程師")
+    # log(employee)
+    llm_mode = employee[Constant.EMP_KEY_LLM_ENGINE]
+    llm_code_prompt = employee[Constant.EMP_KEY_LLM_PROMPT][Constant.EMP_KEY_LLM_PROMPT_CODE]
+    llm_code_prompt_model = llm_code_prompt[Constant.EMP_KEY_LLM_PROMPT_MODEL]
+    llm_code_prompt_messages = llm_code_prompt[Constant.EMP_KEY_LLM_PROMPT_MESSAGES]
+
+    messages = []
+
+    json_str = json.dumps(llm_code_prompt_messages)
+    modify_json_str = json_str.replace(Constant.LLM_MSG_USER_INPUT, user_input)
+    pass_message = json.loads(modify_json_str)
+    for prompt_message in pass_message:
+        messages.append(prompt_message)
+
+    for idx, description in enumerate(image_desc):
+        messages.append({
+            'role': 'user',
+            'content': f'圖片{idx + 1}的描述：{description}',
+        })
+
+    return messages
+
+
 def analyze_image(images_b64: [str],
                   images_type: [str],
                   user_input,
@@ -677,13 +708,13 @@ def analyze_image(images_b64: [str],
                   ):
     try:
         globals.tasks[task_id] = f"分析圖片中"
-        image_desc = analyze_images_from_llm(images_b64, images_type, user_input, task_id, username,file_location)
+        image_desc = analyze_images_from_llm(images_b64, images_type, user_input, task_id, username, file_location)
 
         globals.tasks[task_id] = "解析完成"
-        log(f"图片分析结果：{image_desc}")
+        log(f"圖片分析结果：{image_desc}")
 
         # 处理代码生成任务
-        code_task_messages = build_code_task_messages(image_desc, user_input)
+        code_task_messages = build_code_task_messages(image_desc, user_input, username)
         process_code_task_from_analyze(
             filename=None,
             username=username,
@@ -744,8 +775,8 @@ def generate_program(file_location, llm_code_prompt_model, llm_mode, messages, s
             out_f.writelines(code_blocks)
 
         filename = os.path.basename(file_location)
-        code_ver = version_service.get_next_image_file_version(db,username, filename)
-        func_ver = version_service.get_next_app_function_version(db,username, prj_id, app_name, func_file)
+        code_ver = version_service.get_next_image_file_version(db, username, filename)
+        func_ver = version_service.get_next_app_function_version(db, username, prj_id, app_name, func_file)
 
         # write version program
         code_loc_ver = code_loc + f".{code_ver}"
@@ -756,8 +787,8 @@ def generate_program(file_location, llm_code_prompt_model, llm_mode, messages, s
         with open(output_path_ver, "w") as out_f:
             out_f.writelines(code_blocks)
 
-        version_service.upsert_image_file_version(db, username, filename,code_ver)
-        version_service.upsert_app_function_version(db, username, prj_id, app_name, func_file,func_ver)
+        version_service.upsert_image_file_version(db, username, filename, code_ver)
+        version_service.upsert_app_function_version(db, username, prj_id, app_name, func_file, func_ver)
 
         # 更新路由
         print("開始更新路由")

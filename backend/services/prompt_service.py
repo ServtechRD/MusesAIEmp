@@ -3,16 +3,7 @@ import json
 from constant import Constant
 import globals
 
-def build_code_task_messages(image_desc: list, user_input: str):
-    """构建用于代码生成任务的消息"""
-    messages = []
-    for idx, description in enumerate(image_desc):
-        messages.append({
-            'role': 'user',
-            'content': f'圖片{idx + 1}的描述：{description}',
-        })
 
-    return messages
 
 def build_image_task_messages(encode_image: str, file_type: str, user_input: str, llm_img_prompt_messages: list):
     """构建用于图像任务的 LLM 消息"""
