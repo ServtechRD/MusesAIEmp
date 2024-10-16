@@ -177,6 +177,22 @@ const ClipArea = styled(Box)(({ theme }) => ({
   borderBottom: `1px solid ${theme.palette.divider}`,
 }));
 
+// 自定義樣式的 ToggleButton
+const StyledToggleButton = styled(ToggleButton)(({ theme }) => ({
+  marginLeft: theme.spacing(2),
+  "&.Mui-selected": {
+    backgroundColor: theme.palette.primary.main,
+    color: theme.palette.primary.contrastText,
+    "&:hover": {
+      backgroundColor: theme.palette.primary.dark,
+    },
+  },
+  "&:not(.Mui-selected)": {
+    borderColor: theme.palette.primary.main,
+    color: theme.palette.primary.main,
+  },
+}));
+
 function ChatPage({ token, engineer, setToken }) {
   const [darkMode, setDarkMode] = useState(false);
   const [code, setCode] = useState("// Your React code here");
@@ -1207,15 +1223,18 @@ function ChatPage({ token, engineer, setToken }) {
                       >
                         再做一次
                       </Button>
-                      <ToggleButton
+                      <StyledToggleButton
                         value="check"
                         selected={isEditingCurrentVersion}
                         onChange={handleEditCurrentVersionToggle}
-                        sx={{ mr: 1 }}
+                        sx={{
+                          height: 36, // 確保與其他按鈕高度一致
+                          px: 2, // 增加水平內邊距
+                        }}
                       >
-                        <EditIcon />
+                        <EditIcon sx={{ mr: 1 }} />
                         修改目前版本
-                      </ToggleButton>
+                      </StyledToggleButton>
                     </Box>
                     <Box sx={{ display: "flex", alignItems: "center" }}>
                       <IconButton
