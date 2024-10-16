@@ -72,9 +72,9 @@ class AppFunctionVersion(Base):
     __tablename__ = 'app_function_versions'
 
     user_name = Column(String(50), nullable=False)
-    proj_id = Column(String(255), nullable=False)
-    app_name = Column(String(255), nullable=False)
-    func_name = Column(String(255), nullable=False)
+    proj_id = Column(String(100), nullable=False)
+    app_name = Column(String(100), nullable=False)
+    func_name = Column(String(200), nullable=False)
     timestamp = Column(DateTime, default=datetime.datetime.utcnow, nullable=False)
     version = Column(Integer, nullable=False)
 
