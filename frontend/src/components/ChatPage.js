@@ -761,6 +761,9 @@ function ChatPage({ token, engineer, setToken }) {
       //  console.log("Creating project mode:", rep3);
 
       setProjects([...projects, currentProject]);
+
+      fetchVersionInfo();
+
       setMessages((prevMessages) => [
         ...prevMessages,
         { sender: "assistant", text: "切換成功" },
@@ -803,6 +806,8 @@ function ChatPage({ token, engineer, setToken }) {
 
       const rep4 = await handleApiCall(input4, null);
       console.log("switch func name:", rep4);
+
+      fetchVersionInfo();
 
       setMessages((prevMessages) => [
         ...prevMessages,

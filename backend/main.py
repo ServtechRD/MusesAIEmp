@@ -105,7 +105,7 @@ async def get_version_image(
         db: Session = Depends(database.get_db),
 ):
     versions = version_service.get_all_image_file_versions(db, current_user.username, filename)
-    return JSONResponse(content={"versions": versions},
+    return JSONResponse(content={"versions": json.dumps(versions)},
                         status_code=200)
 
 
@@ -123,7 +123,8 @@ async def get_version_func(
     versions = version_service.get_all_app_function_versions(db, current_user.username, prj_id, app_name, func_file)
     log(f"proj:{prj_id} / app:{app_name} / func :{func_file}")
 
-    return JSONResponse(content={"versions": versions}, status_code=200)
+    return JSONResponse(content={"versions": json.dumps(versions)}, status_code=200)
+
 
 
 @app.post("/version/image/switch")
