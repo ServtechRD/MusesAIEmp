@@ -106,5 +106,7 @@ def get_all_app_function_versions(db: Session, user_name: str, proj_id: str, app
         func_name=func_name
     ).order_by(asc(AppFunctionVersion.timestamp)).all()
 
+    log(versions)
+
     # 将结果转换为版本号列表
     return [v.version for v in versions]

@@ -121,6 +121,8 @@ async def get_version_func(
     func_file = user_config[Constant.USER_CFG_FUNC_FILE]
 
     versions = version_service.get_all_app_function_versions(db, current_user.username, prj_id, app_name, func_file)
+    log(f"proj:{prj_id} / app:{app_name} / func :{func_file}")
+
     return JSONResponse(content={"versions": versions}, status_code=200)
 
 
