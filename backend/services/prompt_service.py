@@ -1,7 +1,7 @@
 import json
 
 from constant import Constant
-from .. import globals
+import globals
 
 def build_code_task_messages(image_desc: list, user_input: str):
     """构建用于代码生成任务的消息"""

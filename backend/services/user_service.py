@@ -11,7 +11,7 @@ from schemas import UserCreate, UserLogin
 from utils import get_password_hash
 from utils import log
 
-from backend import globals
+import globals
 
 
 def register_user(user: UserCreate, db: Session):
