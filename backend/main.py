@@ -756,8 +756,8 @@ def generate_program(file_location, llm_code_prompt_model, llm_mode, messages, s
         with open(output_path_ver, "w") as out_f:
             out_f.writelines(code_blocks)
 
-        version_service.upsert_image_file_version(db, username, filename)
-        version_service.upsert_app_function_version(db, username, prj_id, app_name, func_file)
+        version_service.upsert_image_file_version(db, username, filename,code_ver)
+        version_service.upsert_app_function_version(db, username, prj_id, app_name, func_file,func_ver)
 
         # 更新路由
         print("開始更新路由")
