@@ -50,6 +50,7 @@ import {
   NavigateBefore as NavigateBeforeIcon,
   NavigateNext as NavigateNextIcon,
   Edit as EditIcon,
+  CheckCircle as CheckCircleIcon,
 } from "@mui/icons-material";
 
 import { Light as SyntaxHighlighter } from "react-syntax-highlighter";
@@ -1232,7 +1233,9 @@ function ChatPage({ token, engineer, setToken }) {
                           px: 2, // 增加水平內邊距
                         }}
                       >
-                        <EditIcon sx={{ mr: 1 }} />
+                        {isEditingCurrentVersion && (
+                          <CheckCircleIcon sx={{ mr: 1 }} />
+                        )}
                         修改目前版本
                       </StyledToggleButton>
                     </Box>
