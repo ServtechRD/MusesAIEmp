@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy import desc, asc
 from datetime import datetime
 
-import globals
+from globals import *
 from constant import Constant
 from models import ImageFileVersion, AppFunctionVersion
 

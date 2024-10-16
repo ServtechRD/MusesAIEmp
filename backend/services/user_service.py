@@ -13,6 +13,7 @@ from schemas import UserCreate, UserLogin, Token
 from database import get_db
 from utils import get_password_hash
 from auth import create_access_token, authenticate_user, get_user
+from globals import *
 
 
 
