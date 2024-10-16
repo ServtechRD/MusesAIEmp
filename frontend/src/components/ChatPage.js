@@ -322,6 +322,7 @@ function ChatPage({ token, engineer, setToken }) {
           response.data.status.startsWith("錯誤")
         ) {
           clearInterval(intervalId);
+          fetchVersionInfo();
         }
       }, 500);
 
