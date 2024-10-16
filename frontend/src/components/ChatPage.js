@@ -1147,24 +1147,6 @@ function ChatPage({ token, engineer, setToken }) {
                             <Typography variant="subtitle2">
                               {assistantName}
                             </Typography>
-                            <Typography variant="caption" color="text.success">
-                              {configStatus}
-                            </Typography>
-
-                            <IconButton
-                              color="inherit"
-                              onClick={() => handleViewCode()}
-                              size="small"
-                            >
-                              <CodeIcon fontSize="small" />
-                            </IconButton>
-                            <IconButton
-                              color="inherit"
-                              onClick={handleOpenLink}
-                              size="small"
-                            >
-                              <LinkIcon fontSize="small" />
-                            </IconButton>
                           </Box>
                         </UserInfoContainer>
                       )}
@@ -1236,6 +1218,24 @@ function ChatPage({ token, engineer, setToken }) {
                         }
                       >
                         <NavigateNextIcon />
+                      </IconButton>
+                      <Typography variant="caption" color="text.success">
+                        {configStatus}
+                      </Typography>
+
+                      <IconButton
+                        color="inherit"
+                        onClick={() => handleViewCode()}
+                        size="small"
+                      >
+                        <CodeIcon fontSize="small" />
+                      </IconButton>
+                      <IconButton
+                        color="inherit"
+                        onClick={handleOpenLink}
+                        size="small"
+                      >
+                        <LinkIcon fontSize="small" />
                       </IconButton>
                     </Box>
                   </Grid>
