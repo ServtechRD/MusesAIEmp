@@ -1,20 +1,17 @@
 import os
 
-from fastapi import HTTPException, Depends
+from fastapi import HTTPException
 from sqlalchemy.orm import Session
 
 import auth
 import models
 from constant import Constant
 from helper import write_json_file
-from utils import log,get_password_hash
-from models import User
-from schemas import UserCreate, UserLogin, Token
-from database import get_db
+from schemas import UserCreate, UserLogin
 from utils import get_password_hash
-from auth import create_access_token, authenticate_user, get_user
-from globals import *
+from utils import log
 
+from .. import globals
 
 
 def register_user(user: UserCreate, db: Session):
@@ -33,7 +30,7 @@ def register_user(user: UserCreate, db: Session):
 def login_user(form_data: UserLogin, db: Session):
     user = auth.authenticate_user(db, form_data.username, form_data.password)
     if not user:
-        raise HTTPException(status_code=400, detail='帳號或密码错误')
+        raise HTTPException(status_code=400, detail='帳號或密碼錯誤')
     access_token = auth.create_access_token(data={'sub': user.username})
     log('sys_config keys')
     log(globals.sys_config.keys())
