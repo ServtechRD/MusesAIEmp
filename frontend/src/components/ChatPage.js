@@ -355,7 +355,8 @@ function ChatPage({ token, engineer, setToken }) {
           headers: { Authorization: `Bearer ${token}` },
         },
       );
-      const versions = response.data;
+
+      const versions = JSON.parse(response.data.versions);
       setVersionInfo({
         current: versions[versions.length - 1],
         total: versions.length,
