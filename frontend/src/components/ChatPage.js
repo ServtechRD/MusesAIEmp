@@ -24,7 +24,12 @@ import {
   Chip,
 } from "@mui/material";
 import { ThemeProvider, createTheme, styled } from "@mui/material/styles";
-import { Snackbar, Alert } from "@mui/material";
+import {
+  Snackbar,
+  Alert,
+  ToggleButton,
+  ToggleButtonGroup,
+} from "@mui/material";
 //import SendIcon from '@mui/icons-material/Send';
 //import DeleteIcon from '@mui/icons-material/Delete';
 
@@ -44,6 +49,7 @@ import {
   ExitToApp as ExitToAppIcon,
   NavigateBefore as NavigateBeforeIcon,
   NavigateNext as NavigateNextIcon,
+  Edit as EditIcon,
 } from "@mui/icons-material";
 
 import { Light as SyntaxHighlighter } from "react-syntax-highlighter";
@@ -227,6 +233,8 @@ function ChatPage({ token, engineer, setToken }) {
   const [selectedClip, setSelectedClip] = useState(null);
   const [clipDialogOpen, setClipDialogOpen] = useState(false);
 
+  const [isEditingCurrentVersion, setIsEditingCurrentVersion] = useState(false);
+
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
   const [userName, setUserName] = useState("");
@@ -393,6 +401,11 @@ function ChatPage({ token, engineer, setToken }) {
     if (currentIndex < versionInfo.versions.length - 1) {
       handleVersionChange(versionInfo.versions[currentIndex + 1]);
     }
+  };
+
+  const handleEditCurrentVersionToggle = () => {
+    setIsEditingCurrentVersion(!isEditingCurrentVersion);
+    // ... (可以添加更多邏輯)
   };
 
   const handleClipClick = (clip) => {
@@ -1194,6 +1207,15 @@ function ChatPage({ token, engineer, setToken }) {
                       >
                         再做一次
                       </Button>
+                      <ToggleButton
+                        value="check"
+                        selected={isEditingCurrentVersion}
+                        onChange={handleEditCurrentVersionToggle}
+                        sx={{ mr: 1 }}
+                      >
+                        <EditIcon />
+                        修改目前版本
+                      </ToggleButton>
                     </Box>
                     <Box sx={{ display: "flex", alignItems: "center" }}>
                       <IconButton
