@@ -348,9 +348,13 @@ function ChatPage({ token, engineer, setToken }) {
 
   const fetchVersionInfo = async () => {
     try {
-      const response = await api.post("/versions/func", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const response = await api.post(
+        "/versions/func",
+        {},
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        },
+      );
       const versions = response.data;
       setVersionInfo({
         current: versions[versions.length - 1],
