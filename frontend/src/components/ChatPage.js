@@ -787,16 +787,16 @@ function ChatPage({ token, engineer, setToken }) {
         },
       ]);
 
-      const rep1 = handleApiCall(input1, null);
+      const rep1 = await handleApiCall(input1, null);
       console.log("switch app name:", rep1);
 
-      const rep2 = handleApiCall(input2, null);
+      const rep2 = await handleApiCall(input2, null);
       console.log("switch app desc:", rep2);
 
-      const rep3 = handleApiCall(input3, null);
+      const rep3 = await handleApiCall(input3, null);
       console.log("switch func desc:", rep3);
 
-      const rep4 = handleApiCall(input4, null);
+      const rep4 = await handleApiCall(input4, null);
       console.log("switch func name:", rep4);
 
       setMessages((prevMessages) => [

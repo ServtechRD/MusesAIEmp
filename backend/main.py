@@ -744,8 +744,8 @@ def generate_program(file_location, llm_code_prompt_model, llm_mode, messages, s
             out_f.writelines(code_blocks)
 
         filename = os.path.basename(file_location)
-        code_ver = version_service.get_next_image_file_version(username, filename)
-        func_ver = version_service.get_next_app_function_version(username, prj_id, app_name, func_file)
+        code_ver = version_service.get_next_image_file_version(db,username, filename)
+        func_ver = version_service.get_next_app_function_version(db,username, prj_id, app_name, func_file)
 
         # write version program
         code_loc_ver = code_loc + f".{code_ver}"
