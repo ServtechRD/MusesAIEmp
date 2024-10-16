@@ -434,7 +434,7 @@ function ChatPage({ token, engineer, setToken }) {
       setAssistantName(engineer.EMP_NAME);
       //setAssistantName(response.data.name);
       let config = response.data.config;
-      let configStatus = `專案: ${config["PROJ_DESC"]} (${config["PROJ_ID"]} ) > 應用: ${config["APP_DESC"]} \ ${config["FUNC_DESC"]} ( ${config["FUNC_FILE"]} )`;
+      let configStatus = `專案: ${config["PROJ_DESC"]} (${config["PROJ_ID"]} ) > 應用: ${config["APP_DESC"]} > 功能: ${config["FUNC_DESC"]} ( ${config["FUNC_FILE"]} )`;
 
       setAppName(config["APP_NAME"] || "");
       setAppDescription(config["APP_DESC"] || "");
