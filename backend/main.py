@@ -600,7 +600,7 @@ def general_rep(user_input, user_id, task_id,
     # tasks[task_id] = "@@END@@處理完畢"
 
 
-def analyze_images_from_llm(images_b64: [str], images_type: [str], user_input: str, task_id: str, username: str):
+def analyze_images_from_llm(images_b64: [str], images_type: [str], user_input: str, task_id: str, username: str,file_location:str):
     """与 LLM 模型交互分析图像"""
     image_desc = []
     log("開始分析圖片")
@@ -621,7 +621,7 @@ def analyze_images_from_llm(images_b64: [str], images_type: [str], user_input: s
             response = llm.askllm(llm_mode, llm_img_prompt_model, messages)
             image_desc.append(response)
 
-            desc_loc = f"{globals.sys_setting['TEMP_PATH']}/uploads/{username}/{task_id}_desc.txt"
+            desc_loc = f"{file_location}_desc.txt"
             with open(desc_loc, "w", encoding="UTF-8") as f:
                 f.write(response)
 
@@ -677,7 +677,7 @@ def analyze_image(images_b64: [str],
                   ):
     try:
         globals.tasks[task_id] = f"分析圖片中"
-        image_desc = analyze_images_from_llm(images_b64, images_type, user_input, task_id, username)
+        image_desc = analyze_images_from_llm(images_b64, images_type, user_input, task_id, username,file_location)
 
         globals.tasks[task_id] = "解析完成"
         log(f"图片分析结果：{image_desc}")
