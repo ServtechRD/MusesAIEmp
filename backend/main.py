@@ -24,7 +24,7 @@ from llmengine import LLMEngine
 from helper import *
 from routers import bases
 from services import user_service, version_service
-from services.prompt_service import build_image_task_messages, build_code_task_messages
+from services.prompt_service import build_image_task_messages
 from utils import log
 
 from PIL import Image
