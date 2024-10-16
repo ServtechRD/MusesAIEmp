@@ -369,13 +369,11 @@ function ChatPage({ token, engineer, setToken }) {
 
   const handleVersionChange = async (newVersion) => {
     try {
-      await api.post(
-        "/version/func/switch",
-        { version: newVersion },
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        },
-      );
+      const formData = new FormData();
+      formData.append("version", newVersion);
+      await api.post("/version/func/switch", formData, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
       setVersionInfo((prev) => ({ ...prev, current: newVersion }));
       fetchMessages(); // 重新加載消息
     } catch (error) {
