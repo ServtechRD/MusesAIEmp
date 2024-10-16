@@ -42,6 +42,8 @@ import {
   Close as CloseIcon,
   Sync as SyncIcon,
   ExitToApp as ExitToAppIcon,
+  NavigateBefore as NavigateBeforeIcon,
+  NavigateNext as NavigateNextIcon,
 } from "@mui/icons-material";
 
 import { Light as SyntaxHighlighter } from "react-syntax-highlighter";
@@ -188,6 +190,12 @@ function ChatPage({ token, engineer, setToken }) {
     useState(false);
 
   const [reDoDialogOpen, setReDoDialogOpen] = useState(false);
+
+  const [versionInfo, setVersionInfo] = useState({
+    current: 0,
+    total: 0,
+    versions: [],
+  });
 
   const [thumbnails, setThumbnails] = useState([]);
   const [selectedImage, setSelectedImage] = useState(null);
@@ -336,6 +344,52 @@ function ChatPage({ token, engineer, setToken }) {
       fetchThumbnails();
     }
   }, [reDoDialogOpen]);
+
+  const fetchVersionInfo = async () => {
+    try {
+      const response = await api.post("/versions/func", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const versions = response.data;
+      setVersionInfo({
+        current: versions[versions.length - 1],
+        total: versions.length,
+        versions: versions,
+      });
+    } catch (error) {
+      handleApiError(error);
+    }
+  };
+
+  const handleVersionChange = async (newVersion) => {
+    try {
+      await api.post(
+        "/version/func/switch",
+        { version: newVersion },
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        },
+      );
+      setVersionInfo((prev) => ({ ...prev, current: newVersion }));
+      fetchMessages(); // 重新加載消息
+    } catch (error) {
+      handleApiError(error);
+    }
+  };
+
+  const handlePreviousVersion = () => {
+    const currentIndex = versionInfo.versions.indexOf(versionInfo.current);
+    if (currentIndex > 0) {
+      handleVersionChange(versionInfo.versions[currentIndex - 1]);
+    }
+  };
+
+  const handleNextVersion = () => {
+    const currentIndex = versionInfo.versions.indexOf(versionInfo.current);
+    if (currentIndex < versionInfo.versions.length - 1) {
+      handleVersionChange(versionInfo.versions[currentIndex + 1]);
+    }
+  };
 
   const handleClipClick = (clip) => {
     setSelectedClip(clip);
@@ -1116,7 +1170,14 @@ function ChatPage({ token, engineer, setToken }) {
                 <Grid container spacing={2}>
                   {/* Main content area */}
                   <Grid item xs={12}>
-                    <Box sx={{ display: "flex", gap: 2, p: 2 }}>
+                    <Box
+                      sx={{
+                        display: "flex",
+                        gap: 2,
+                        p: 2,
+                        alignItems: "center",
+                      }}
+                    >
                       {/* Buttons */}
                       <Button
                         variant="contained"
@@ -1142,6 +1203,31 @@ function ChatPage({ token, engineer, setToken }) {
                       >
                         再做一次
                       </Button>
+                    </Box>
+                    <Box sx={{ display: "flex", alignItems: "center" }}>
+                      <IconButton
+                        onClick={handlePreviousVersion}
+                        disabled={
+                          versionInfo.versions.indexOf(versionInfo.current) ===
+                          0
+                        }
+                      >
+                        <NavigateBeforeIcon />
+                      </IconButton>
+                      <Typography variant="body2" sx={{ mx: 1 }}>
+                        版本:{" "}
+                        {versionInfo.versions.indexOf(versionInfo.current) + 1}/
+                        {versionInfo.total}
+                      </Typography>
+                      <IconButton
+                        onClick={handleNextVersion}
+                        disabled={
+                          versionInfo.versions.indexOf(versionInfo.current) ===
+                          versionInfo.total - 1
+                        }
+                      >
+                        <NavigateNextIcon />
+                      </IconButton>
                     </Box>
                   </Grid>
                 </Grid>

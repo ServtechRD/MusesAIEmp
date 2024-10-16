@@ -2,6 +2,8 @@
   "WORK_PATH": "../../WORK",
   "TEMP_PATH": "../../TEMP",
   "TEMPLATE": "../../WORK/template",
+  "IMAGE_CODE_VERSION_COUNT": 10,
+  "APP_CODE_VERSION_COUNT":10,
   "WORK_MODE_PATH": [
     "work1",
     "work2"

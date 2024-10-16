@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, Text, Boolean
+from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, Text, Boolean, PrimaryKeyConstraint
 from sqlalchemy.orm import relationship
 from database import Base
 import datetime
@@ -51,3 +51,36 @@ class Message(Base):
     timestamp = Column(DateTime, default=datetime.datetime.utcnow)
 
     owner = relationship('Conversation', back_populates='messages')
+
+
+class ImageFileVersion(Base):
+    __tablename__ = 'image_file_versions'
+
+    user_name = Column(String(50), nullable=False)
+    filename = Column(String(255), nullable=False)
+    timestamp = Column(DateTime, default=datetime.datetime.utcnow, nullable=False)
+    version = Column(Integer, nullable=False)
+
+    __table_args__ = (
+        PrimaryKeyConstraint('user_name', 'filename', 'version'),
+    )
+
+    def __repr__(self):
+        return f"<ImageFileVersion(user_id={self.user_name}, filename={self.filename}, version={self.version}, timestamp={self.timestamp})>"
+
+class AppFunctionVersion(Base):
+    __tablename__ = 'app_function_versions'
+
+    user_name = Column(String(50), nullable=False)
+    proj_id = Column(String(255), nullable=False)
+    app_name = Column(String(255), nullable=False)
+    func_name = Column(String(255), nullable=False)
+    timestamp = Column(DateTime, default=datetime.datetime.utcnow, nullable=False)
+    version = Column(Integer, nullable=False)
+
+    __table_args__ = (
+        PrimaryKeyConstraint('user_name', 'proj_id', 'app_name', 'func_name', 'version'),
+    )
+
+    def __repr__(self):
+        return f"<AppFunctionVersion(user_id={self.user_name}, proj_id={self.proj_id}, app_name={self.app_name}, func_name={self.func_name}, version={self.version}, timestamp={self.timestamp})>"

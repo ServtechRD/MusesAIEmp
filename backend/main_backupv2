@@ -23,8 +23,6 @@ from llmengine import LLMEngine
 
 from helper import *
 from routers import bases
-from services import user_service, version_service
-from services.prompt_service import build_image_task_messages, build_code_task_messages
 from utils import log
 
 from PIL import Image
@@ -90,92 +88,51 @@ def read_root():
 
 @app.post('/register', response_model=schemas.Token)
 def register(user: schemas.UserCreate, db: Session = Depends(database.get_db)):
-    return user_service.register_user(user, db)
+    db_user = auth.get_user(db, user.username)
+    if db_user:
+        raise HTTPException(status_code=400, detail='用户名已被注册')
+    hashed_password = utils.get_password_hash(user.password)
+    new_user = models.User(username=user.username, password_hash=hashed_password)
+    db.add(new_user)
+    db.commit()
+    db.refresh(new_user)
+    access_token = auth.create_access_token(data={'sub': new_user.username})
+    return {'access_token': access_token, 'token_type': 'bearer'}
 
 
 @app.post('/login', response_model=schemas.Token)
 def login(form_data: schemas.UserLogin, db: Session = Depends(database.get_db)):
-    return user_service.login_user(form_data, db)
+    user = auth.authenticate_user(db, form_data.username, form_data.password)
+    if not user:
+        raise HTTPException(status_code=400, detail='用户名或密码错误')
+    access_token = auth.create_access_token(data={'sub': user.username})
+    log('sys_config keys')
+    log(globals.sys_config.keys())
+    log('user name :' + user.username)
+    if (user.username not in globals.sys_config.keys()):
+        globals.sys_config[user.username] = globals.sys_default_config.copy()
 
+    globals.sys_config[user.username][Constant.USER_CFG_EMPLOYEE_KEY] = form_data.employee
+    log(globals.sys_config)
 
-@app.post("/versions/image")
-async def get_version_image(
-        filename: str = Form(...),
-        current_user: models.User = Depends(auth.get_current_user),
-        db: Session = Depends(database.get_db),
-):
-    versions = version_service.get_all_image_file_versions(db, current_user.username, filename)
-    return JSONResponse(content={"versions": versions},
-                        status_code=200)
+    emp = globals.sys_employees[form_data.employee]
+    idx = int(emp[Constant.EMP_KEY_WORK_MODE])
 
+    if idx == 0:
+        log("emp mode is 0")
+        root_path = globals.sys_setting[Constant.SET_WORK_PATH]
+        work_mode_path = globals.sys_setting[Constant.SET_WORK_MODE_PATH][idx]
+        user_path = os.path.join(root_path, work_mode_path, "public", "users", form_data.username)
+        if not os.path.exists(user_path):
+            log("create user folder :" + user_path)
+            os.makedirs(user_path)
 
-@app.post("/versions/func")
-async def get_version_func(
-        current_user: models.User = Depends(auth.get_current_user),
-        db: Session = Depends(database.get_db),
-):
-    user_config = sys_config[current_user.username]
+        prj_route_json = os.path.join(user_path, "route.json")
+        if not os.path.exists(prj_route_json):
+            log("create user route.json :" + prj_route_json)
+            write_json_file(prj_route_json, {})
 
-    prj_id = user_config[Constant.USER_CFG_PROJ_ID]
-    app_name = user_config[Constant.USER_CFG_APP_NAME]
-    func_file = user_config[Constant.USER_CFG_FUNC_FILE]
-
-    versions = version_service.get_all_app_function_versions(db, current_user.username, prj_id, app_name, func_file)
-    return JSONResponse(content={"versions": versions}, status_code=200)
-
-
-@app.post("/version/image/switch")
-async def switch_version_image(
-        version: int = Form(...),
-        filename: str = Form(...),
-        current_user: models.User = Depends(auth.get_current_user),
-        db: Session = Depends(database.get_db),
-):
-    username = current_user.username
-    UPLOAD_DIR = globals.sys_setting['TEMP_PATH'] + "/uploads/" + username
-    code_file = f"{UPLOAD_DIR}/{filename}_code.txt"
-    code_file_ver = f"{UPLOAD_DIR}/{filename}_code.txt.{version}"
-
-    # copy file
-    with open(code_file, "w") as out_f:
-        shutil.copyfileobj(code_file_ver, out_f)
-
-    return JSONResponse(content={"message": "影像程式版本切換到成功"}, status_code=200)
-
-
-@app.post("/version/func/switch")
-async def switch_version_func(
-        version: int = Form(...),
-        current_user: models.User = Depends(auth.get_current_user),
-        db: Session = Depends(database.get_db),
-):
-    username = current_user.username
-
-    user_config = sys_config[current_user.username]
-    idx = int(user_config[Constant.USER_CFG_PROJ_MODE])
-
-    work_path = globals.sys_setting[Constant.SET_WORK_PATH]
-    work_mode_path = globals.sys_setting[Constant.SET_WORK_MODE_PATH]
-    user_root_path = os.path.join(work_path, work_mode_path[idx], "public", "users", username)
-
-    prj_id = user_config[Constant.USER_CFG_PROJ_ID]
-    app_name = user_config[Constant.USER_CFG_APP_NAME]
-    func_file = user_config[Constant.USER_CFG_FUNC_FILE]
-
-    log(user_root_path)
-
-    output_folder = f"{user_root_path}/{prj_id}/{app_name}"
-    if not os.path.exists(output_folder):
-        os.makedirs(output_folder)
-
-    output_path = f"{output_folder}/{func_file}"
-    output_path_ver = output_path + f".{version}"
-
-    # copy file
-    with open(output_path, "w") as out_f:
-        shutil.copyfileobj(output_path_ver, out_f)
-
-    return JSONResponse(content={"message": "應用程式版本切換到成功"}, status_code=200)
+    return {'access_token': access_token, 'token_type': 'bearer'}
 
 
 @app.get('/messages')
@@ -275,49 +232,41 @@ async def modify_code(
                         status_code=200)
 
 
-def process_code_task(
-        filename: str,
-        username: str,
-        task_id: str,
-        conversation_id: int,
-        user_input: str,
-        db: Session,
-        mode: str
+def do_modify_code(
+        filename,
+        username,
+        task_id,
+        conversation_id,
+        user_input,
+        db
 ):
-    """
-    通用代码任务处理函数
-    :param filename: 文件名
-    :param username: 用户名
-    :param task_id: 任务ID
-    :param conversation_id: 会话ID
-    :param user_input: 用户输入
-    :param db: 数据库会话
-    :param mode: 任务模式 "modify" 或 "rewrite"
-    """
     UPLOAD_DIR = globals.sys_setting['TEMP_PATH'] + "/uploads/" + username
     desc_file = f"{UPLOAD_DIR}/{filename}_desc.txt"
-    code_file = f"{UPLOAD_DIR}/{filename}_code.txt" if mode == "modify" else None
+    code_file = f"{UPLOAD_DIR}/{filename}_code.txt"
     file_location = f"{UPLOAD_DIR}/{filename}"
 
     img_desc = read_text_file(desc_file)
-    code_base = read_text_file(code_file) if code_file else None
+    code_base = read_text_file(code_file)
 
     if code_base is None:
         code_base = ""
 
     user_config = globals.sys_config[username]
     log("取得CONFIG")
+    # log(user_config)
     employee = globals.sys_employees[user_config[Constant.USER_CFG_EMPLOYEE_KEY]]
     log("查詢工程師")
-
+    # log(employee)
     llm_mode = employee[Constant.EMP_KEY_LLM_ENGINE]
+    log("查詢模型")
+
     llm_code_prompt = employee[Constant.EMP_KEY_LLM_PROMPT][Constant.EMP_KEY_LLM_PROMPT_CODE]
     llm_code_prompt_model = llm_code_prompt[Constant.EMP_KEY_LLM_PROMPT_MODEL]
     llm_code_prompt_messages = llm_code_prompt[Constant.EMP_KEY_LLM_PROMPT_MESSAGES]
 
     messages = []
 
-    globals.tasks[task_id] = f"{mode.capitalize()}程式中"
+    globals.tasks[task_id] = f"修改程式中"
 
     json_str = json.dumps(llm_code_prompt_messages)
     modify_json_str = json_str.replace(Constant.LLM_MSG_USER_INPUT, user_input)
@@ -328,41 +277,29 @@ def process_code_task(
     for idx, description in enumerate([img_desc]):
         messages.append({
             'role': 'user',
-            'content': f'圖片{idx + 1}的描述：{description}',
+            'content': f'图片{idx + 1}的描述：{description}',
         })
 
-    if mode == "modify":
-        messages.append({
-            'role': 'user',
-            'content': f'請以下面程式為基礎進行修改:{code_base}'
-        })
+    messages.append({
+        'role': 'user',
+        'content': f'請以下面程式為基礎進行修改:{code_base}'
+    })
 
     assistant_reply = generate_program(file_location, llm_code_prompt_model, llm_mode, messages, globals.sys_config,
-                                       sys_setting, task_id, username, db)
+                                       sys_setting, task_id, username)
 
     globals.tasks[task_id] = assistant_reply
 
     # 保存对话记录到数据库
     new_message = models.Message(
         conversation_id=conversation_id,
-        message=f"{mode.capitalize()}程式:" + filename,
+        message="修改程式:" + filename,
         response=assistant_reply,
     )
     db.add(new_message)
     db.commit()
 
     globals.tasks[task_id] = "@@END@@處理完畢"
-
-
-def do_modify_code(
-        filename,
-        username,
-        task_id,
-        conversation_id,
-        user_input,
-        db
-):
-    process_code_task(filename, username, task_id, conversation_id, user_input, db, mode="modify")
 
 
 @app.post('/redo/copycode')
@@ -437,7 +374,56 @@ def do_rewrite_code(
         user_input,
         db
 ):
-    process_code_task(filename, username, task_id, conversation_id, user_input, db, mode="rewrite")
+    UPLOAD_DIR = globals.sys_setting['TEMP_PATH'] + "/uploads/" + username
+    desc_file = f"{UPLOAD_DIR}/{filename}_desc.txt"
+    file_location = f"{UPLOAD_DIR}/{filename}"
+
+    img_desc = read_text_file(desc_file)
+
+    user_config = globals.sys_config[username]
+    log("取得CONFIG")
+    # log(user_config)
+    employee = globals.sys_employees[user_config[Constant.USER_CFG_EMPLOYEE_KEY]]
+    log("查詢工程師")
+    # log(employee)
+    llm_mode = employee[Constant.EMP_KEY_LLM_ENGINE]
+    log("查詢模型")
+
+    llm_code_prompt = employee[Constant.EMP_KEY_LLM_PROMPT][Constant.EMP_KEY_LLM_PROMPT_CODE]
+    llm_code_prompt_model = llm_code_prompt[Constant.EMP_KEY_LLM_PROMPT_MODEL]
+    llm_code_prompt_messages = llm_code_prompt[Constant.EMP_KEY_LLM_PROMPT_MESSAGES]
+
+    messages = []
+
+    globals.tasks[task_id] = f"重新生成程式中"
+
+    json_str = json.dumps(llm_code_prompt_messages)
+    modify_json_str = json_str.replace(Constant.LLM_MSG_USER_INPUT, user_input)
+    pass_message = json.loads(modify_json_str)
+    for prompt_message in pass_message:
+        messages.append(prompt_message)
+
+    for idx, description in enumerate([img_desc]):
+        messages.append({
+            'role': 'user',
+            'content': f'图片{idx + 1}的描述：{description}',
+        })
+
+    assistant_reply = generate_program(file_location, llm_code_prompt_model, llm_mode, messages, globals.sys_config,
+                                       sys_setting, task_id, username)
+
+    globals.tasks[task_id] = assistant_reply
+
+    # 保存对话记录到数据库
+    new_message = models.Message(
+        conversation_id=conversation_id,
+        message="重新寫一次程式:" + filename,
+        response=assistant_reply,
+    )
+    db.add(new_message)
+    db.commit()
+
+    globals.tasks[task_id] = "@@END@@處理完畢"
 
 
 @app.post('/redo/reseeandwrite')
@@ -600,72 +586,6 @@ def general_rep(user_input, user_id, task_id,
     # tasks[task_id] = "@@END@@處理完畢"
 
 
-def analyze_images_from_llm(images_b64: [str], images_type: [str], user_input: str, task_id: str, username: str):
-    """与 LLM 模型交互分析图像"""
-    image_desc = []
-    log("開始分析圖片")
-
-    user_config = globals.sys_config[username]
-    employee = globals.sys_employees[user_config[Constant.USER_CFG_EMPLOYEE_KEY]]
-    llm_mode = employee[Constant.EMP_KEY_LLM_ENGINE]
-    llm_img_prompt = employee[Constant.EMP_KEY_LLM_PROMPT][Constant.EMP_KEY_LLM_PROMPT_IMAGE]
-    llm_img_prompt_model = llm_img_prompt[Constant.EMP_KEY_LLM_PROMPT_MODEL]
-    llm_img_prompt_messages = llm_img_prompt[Constant.EMP_KEY_LLM_PROMPT_MESSAGES]
-
-    for idx, encode_image in enumerate(images_b64):
-        file_type = images_type[idx]
-
-        try:
-            messages = build_image_task_messages(encode_image, file_type, user_input, llm_img_prompt_messages)
-            log(f"發送圖像分析需求：{messages}")
-            response = llm.askllm(llm_mode, llm_img_prompt_model, messages)
-            image_desc.append(response)
-
-            desc_loc = f"{globals.sys_setting['TEMP_PATH']}/uploads/{username}/{task_id}_desc.txt"
-            with open(desc_loc, "w", encoding="UTF-8") as f:
-                f.write(response)
-
-        except Exception as imge:
-            log(f"圖片分析錯誤：{str(imge)}")
-            globals.tasks[task_id] = f"圖片分析錯誤: {str(imge)}"
-
-    return image_desc
-
-
-def process_code_task_from_analyze(
-        filename: str,
-        username: str,
-        task_id: str,
-        conversation_id: int,
-        user_input: str,
-        db: Session,
-        messages: list,
-        file_location: str):
-    """用于处理从图像分析中生成代码的任务"""
-    user_config = globals.sys_config[username]
-    employee = globals.sys_employees[user_config[Constant.USER_CFG_EMPLOYEE_KEY]]
-    llm_mode = employee[Constant.EMP_KEY_LLM_ENGINE]
-    llm_code_prompt = employee[Constant.EMP_KEY_LLM_PROMPT][Constant.EMP_KEY_LLM_PROMPT_CODE]
-    llm_code_prompt_model = llm_code_prompt[Constant.EMP_KEY_LLM_PROMPT_MODEL]
-
-    # 调用 process_code_task 生成代码
-    assistant_reply = generate_program(file_location, llm_code_prompt_model, llm_mode, messages, globals.sys_config,
-                                       sys_setting, task_id, username, db)
-
-    globals.tasks[task_id] = assistant_reply
-
-    # 保存对话记录到数据库
-    new_message = models.Message(
-        conversation_id=conversation_id,
-        message=f"圖像分析後生成程式: {user_input}",
-        response=assistant_reply,
-    )
-    db.add(new_message)
-    db.commit()
-
-    globals.tasks[task_id] = "@@END@@處理完畢"
-
-
 def analyze_image(images_b64: [str],
                   images_type: [str],
                   user_input,
@@ -675,33 +595,125 @@ def analyze_image(images_b64: [str],
                   conversation_id,
                   db
                   ):
+    # global sys_setting, sys_employees, sys_config
     try:
         globals.tasks[task_id] = f"分析圖片中"
-        image_desc = analyze_images_from_llm(images_b64, images_type, user_input, task_id, username)
+        image_desc = []
+
+        log("開始分析圖片中")
+        # log(sys_config)
+        user_config = globals.sys_config[username]
+        log("取得CONFIG")
+        # log(user_config)
+        employee = globals.sys_employees[user_config[Constant.USER_CFG_EMPLOYEE_KEY]]
+        log("查詢工程師")
+        # log(employee)
+        llm_mode = employee[Constant.EMP_KEY_LLM_ENGINE]
+        log("查詢模型")
+        # log(llm_mode)
+        llm_img_prompt = employee[Constant.EMP_KEY_LLM_PROMPT][Constant.EMP_KEY_LLM_PROMPT_IMAGE]
+        llm_img_prompt_model = llm_img_prompt[Constant.EMP_KEY_LLM_PROMPT_MODEL]
+        llm_img_prompt_messages = llm_img_prompt[Constant.EMP_KEY_LLM_PROMPT_MESSAGES]
+
+        log("開始看圖")
+        for idx, encode_image in enumerate(images_b64):
+            file_type = images_type[idx]
+            try:
+
+                messages = []
+
+                json_str = json.dumps(llm_img_prompt_messages)
+                modify_json_str = json_str.replace(Constant.LLM_MSG_USER_INPUT, user_input)
+                modify_json_str = modify_json_str.replace(Constant.LLM_MSG_FILE_TYPE, file_type)
+                modify_json_str = modify_json_str.replace(Constant.LLM_MSG_ENCODE_IMAGE, encode_image)
+                pass_message = json.loads(modify_json_str)
+
+                for prompt_message in pass_message:
+                    messages.append(prompt_message)
+
+                log("詢問訊息:")
+                # log(messages)
+                rep = llm.askllm(llm_mode, llm_img_prompt_model, messages)
+                image_desc.append(rep)
+
+                desc_loc = file_location + "_desc.txt"
+                with open(desc_loc, "w", encoding="UTF-8") as f:
+                    f.write(rep)
+
+            except Exception as imge:
+                print(str(imge))
+                globals.tasks[task_id] = f"圖片分析錯誤:{str(idx) + ' => ' + str(imge)}"
 
         globals.tasks[task_id] = "解析完成"
-        log(f"图片分析结果：{image_desc}")
 
-        # 处理代码生成任务
-        code_task_messages = build_code_task_messages(image_desc, user_input)
-        process_code_task_from_analyze(
-            filename=None,
-            username=username,
-            task_id=task_id,
+        print(str(globals.tasks[task_id]))
+
+        # 获取用户的对话历史，如果没有则初始化
+        # conversation = user_conversations.get(user_id, [])
+
+        # 获取用户的对话历史，如果没有则初始化
+        originalMessage = db.query(models.Message).filter(models.Message.conversation_id == conversation_id).all()
+
+        conversation = []
+        if not originalMessage:
+            conversation = originalMessage
+
+        # 添加用户的消息到对话历史
+        # conversation.append({'role': 'user', 'content': user_input})
+
+        llm_code_prompt = employee[Constant.EMP_KEY_LLM_PROMPT][Constant.EMP_KEY_LLM_PROMPT_CODE]
+        llm_code_prompt_model = llm_code_prompt[Constant.EMP_KEY_LLM_PROMPT_MODEL]
+        llm_code_prompt_messages = llm_code_prompt[Constant.EMP_KEY_LLM_PROMPT_MESSAGES]
+
+        messages = []
+
+        json_str = json.dumps(llm_code_prompt_messages)
+        modify_json_str = json_str.replace(Constant.LLM_MSG_USER_INPUT, user_input)
+        pass_message = json.loads(modify_json_str)
+        for prompt_message in pass_message:
+            messages.append(prompt_message)
+
+        for idx, description in enumerate(image_desc):
+            messages.append({
+                'role': 'user',
+                'content': f'图片{idx + 1}的描述：{description}',
+            })
+
+        assistant_reply = generate_program(file_location, llm_code_prompt_model, llm_mode, messages, globals.sys_config,
+                                           sys_setting, task_id, username)
+
+        globals.tasks[task_id] = assistant_reply
+
+        # 将助手的回复添加到对话历史
+        # conversation.append({'role': 'assistant', 'content': assistant_reply})
+
+        # 更新用户的对话历史
+        # user_conversations[user_id] = conversation
+
+        in_msg = user_input
+
+        if len(image_desc) > 0:
+            in_msg = in_msg + "\n" + (image_desc[0])
+
+        # 保存对话记录到数据库
+        new_message = models.Message(
             conversation_id=conversation_id,
-            user_input=user_input,
-            db=db,
-            messages=code_task_messages,
-            file_location=file_location
+            message=in_msg,
+            response=assistant_reply,
         )
+        db.add(new_message)
+        db.commit()
+
+        globals.tasks[task_id] = "@@END@@處理完畢"
+
+        print(str(globals.tasks[task_id]))
 
     except Exception as e:
         globals.tasks[task_id] = f"錯誤發生: {str(e)}"
-        log(f"图片分析发生错误: {str(e)}")
 
 
 def generate_program(file_location, llm_code_prompt_model, llm_mode, messages, sys_config, sys_setting, task_id,
-                     username, db):
+                     username):
     try:
         globals.tasks[task_id] = "生成程式碼"
         log(globals.tasks[task_id])
@@ -731,33 +743,23 @@ def generate_program(file_location, llm_code_prompt_model, llm_mode, messages, s
 
         print("prog path :" + output_path)
 
-        code_blocks = assistant_reply
         # 3. 分析結果包含程式碼時，進行檔案寫入
         if "```" in assistant_reply:
             print("remove markdown and write")
             code_blocks = extract_code_blocks(assistant_reply)
+            with open(output_path, "w") as out_f:
+                out_f.writelines(code_blocks)
+            code_loc = file_location + "_code.txt"
+            with open(code_loc, "w") as out_f:
+                out_f.writelines(code_blocks)
 
-        with open(output_path, "w") as out_f:
-            out_f.writelines(code_blocks)
-        code_loc = file_location + "_code.txt"
-        with open(code_loc, "w") as out_f:
-            out_f.writelines(code_blocks)
-
-        filename = os.path.basename(file_location)
-        code_ver = version_service.get_next_image_file_version(username, filename)
-        func_ver = version_service.get_next_app_function_version(username, prj_id, app_name, func_file)
-
-        # write version program
-        code_loc_ver = code_loc + f".{code_ver}"
-        with open(code_loc_ver, "w") as out_f:
-            out_f.writelines(code_blocks)
-
-        output_path_ver = output_path + f".{func_ver}"
-        with open(output_path_ver, "w") as out_f:
-            out_f.writelines(code_blocks)
-
-        version_service.upsert_image_file_version(db, username, filename)
-        version_service.upsert_app_function_version(db, username, prj_id, app_name, func_file)
+        else:
+            print("write program")
+            with open(output_path, "w") as out_f:
+                out_f.write(assistant_reply)
+            code_loc = file_location + "_code.txt"
+            with open(code_loc, "w") as out_f:
+                out_f.writelines(assistant_reply)
 
         # 更新路由
         print("開始更新路由")
