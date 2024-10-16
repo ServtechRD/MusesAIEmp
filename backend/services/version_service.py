@@ -6,6 +6,7 @@ from datetime import datetime
 import globals
 from constant import Constant
 from models import ImageFileVersion, AppFunctionVersion
+from utils import log
 
 
 def get_next_image_file_version(db, user_name: str, filename: str):
