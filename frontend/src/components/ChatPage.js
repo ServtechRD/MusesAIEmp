@@ -380,7 +380,7 @@ function ChatPage({ token, engineer, setToken }) {
 
   const handleFetchFunctions = async () => {
     try {
-      const formdata = FormData();
+      const formdata = new FormData();
       formData.append("prj_id", projectId);
       const response = await api.post("/functions", formdata, {
         headers: { Authorization: `Bearer ${token}` },
@@ -1485,14 +1485,6 @@ function ChatPage({ token, engineer, setToken }) {
       >
         <DialogTitle>切換功能</DialogTitle>
         <DialogContent>
-          <Button
-            variant="contained"
-            color="primary"
-            onClick={handleFetchFunctions}
-            sx={{ mt: 2 }}
-          >
-            選擇原有功能
-          </Button>
           <TextField
             label="應用代號"
             fullWidth
@@ -1523,6 +1515,14 @@ function ChatPage({ token, engineer, setToken }) {
           />
         </DialogContent>
         <DialogActions>
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={handleFetchFunctions}
+            sx={{ mt: 2 }}
+          >
+            選擇原有功能
+          </Button>
           <Button onClick={() => setSwitchFunctionDialogOpen(false)}>
             取消
           </Button>
