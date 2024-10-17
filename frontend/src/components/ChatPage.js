@@ -732,6 +732,10 @@ function ChatPage({ token, engineer, setToken }) {
       showMsg(false, "尚有命令未完成, 請等待");
     }
 
+    if (currentConversationId == 0) {
+      showMsg(false, "請先建立需求!");
+    }
+
     setMessages([...messages, { sender: "user", text: input, name: userName }]);
 
     try {
@@ -1720,6 +1724,9 @@ function ChatPage({ token, engineer, setToken }) {
         <DialogContent>
           <Typography variant="body1" component="div">
             <ol>
+              <li>
+                <strong>新需求:</strong> 建立一個需求來啟動對話
+              </li>
               <li>
                 <strong>建立專案:</strong> 建立一個新專案來放程式
               </li>
