@@ -48,6 +48,8 @@ print("KEY:" + SECRET_KEY)
 # 数据
 data = {"sub": "user_id"}
 
+action_map = {"modify": "調整", "rewrite": "重寫", "edit": "修改"}
+
 # 讀取設定檔
 load_setting()
 # 讀取預設值
@@ -141,7 +143,7 @@ async def switch_version_image(
     shutil.copy2(code_file_ver, code_file)
 
     # copy file
-    #with open(code_file, "w") as out_f:
+    # with open(code_file, "w") as out_f:
     #    shutil.copyfileobj(code_file_ver, out_f)
 
     return JSONResponse(content={"message": "影像程式版本切換到成功"}, status_code=200)
@@ -280,6 +282,21 @@ async def modify_code(
                         status_code=200)
 
 
+@app.post('/redo/editcode')
+async def edit_code(
+        conversation_id: int = Form(...),
+        message: str = Form(...),
+        background_tasks: BackgroundTasks = BackgroundTasks(),
+        current_user: models.User = Depends(auth.get_current_user),
+):
+    task_id = str(uuid.uuid4())
+    filename = f"{task_id}.png"
+    background_tasks.add_task(do_edit_code, filename,
+                              current_user.username, task_id, conversation_id, message, database.SessionLocal())
+    return JSONResponse(content={"task_id": task_id, "message": "調整程式中"},
+                        status_code=200)
+
+
 def process_code_task(
         filename: str,
         username: str,
@@ -297,12 +314,36 @@ def process_code_task(
     :param conversation_id: 会话ID
     :param user_input: 用户输入
     :param db: 数据库会话
-    :param mode: 任务模式 "modify" 或 "rewrite"
+    :param mode: 任务模式 "modify" 或 "rewrite" 或 "edit"
     """
     UPLOAD_DIR = globals.sys_setting['TEMP_PATH'] + "/uploads/" + username
+
     desc_file = f"{UPLOAD_DIR}/{filename}_desc.txt"
     code_file = f"{UPLOAD_DIR}/{filename}_code.txt" if mode == "modify" else None
     file_location = f"{UPLOAD_DIR}/{filename}"
+
+    if mode == "edit":
+        user_config = sys_config[username]
+        idx = int(user_config[Constant.USER_CFG_PROJ_MODE])
+
+        work_path = globals.sys_setting[Constant.SET_WORK_PATH]
+        work_mode_path = globals.sys_setting[Constant.SET_WORK_MODE_PATH]
+        user_root_path = os.path.join(work_path, work_mode_path[idx], "public", "users", username)
+
+        log(user_root_path)
+
+        prj_id = user_config[Constant.USER_CFG_PROJ_ID]
+        app_name = user_config[Constant.USER_CFG_APP_NAME]
+        func_file = user_config[Constant.USER_CFG_FUNC_FILE]
+
+        output_folder = f"{user_root_path}/{prj_id}/{app_name}"
+        if not os.path.exists(output_folder):
+            os.makedirs(output_folder)
+
+        output_path = f"{output_folder}/{func_file}"
+
+        code_file = output_path
+        desc_file = output_path
 
     img_desc = read_text_file(desc_file)
     code_base = read_text_file(code_file) if code_file else None
@@ -322,7 +363,7 @@ def process_code_task(
 
     messages = []
 
-    globals.tasks[task_id] = f"{mode.capitalize()}程式中"
+    globals.tasks[task_id] = f"{action_map[mode]}程式中"
 
     json_str = json.dumps(llm_code_prompt_messages)
     modify_json_str = json_str.replace(Constant.LLM_MSG_USER_INPUT, user_input)
@@ -330,13 +371,14 @@ def process_code_task(
     for prompt_message in pass_message:
         messages.append(prompt_message)
 
-    for idx, description in enumerate([img_desc]):
-        messages.append({
-            'role': 'user',
-            'content': f'圖片{idx + 1}的描述：{description}',
-        })
+    if mode == "modify" or mode == "rewrite":
+        for idx, description in enumerate([img_desc]):
+            messages.append({
+                'role': 'user',
+                'content': f'圖片{idx + 1}的描述：{description}',
+            })
 
-    if mode == "modify":
+    if mode == "modify" or mode == "edit":
         messages.append({
             'role': 'user',
             'content': f'請以下面程式為基礎進行修改:{code_base}'
@@ -350,13 +392,23 @@ def process_code_task(
     # 保存对话记录到数据库
     new_message = models.Message(
         conversation_id=conversation_id,
-        message=f"{mode.capitalize()}程式:" + filename,
+        message=f"{action_map[mode]}程式:" + filename,
         response=assistant_reply,
     )
     db.add(new_message)
     db.commit()
 
     globals.tasks[task_id] = "@@END@@處理完畢"
+
+
+def do_edit_code(filename,
+                 username,
+                 task_id,
+                 conversation_id,
+                 user_input,
+                 db
+                 ):
+    process_code_task(filename, username, task_id, conversation_id, user_input, db, mode="edit")
 
 
 def do_modify_code(
