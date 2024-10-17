@@ -798,7 +798,7 @@ def generate_program(file_location, llm_code_prompt_model, llm_mode, messages, s
         assistant_reply = llm.askllm(llm_mode, llm_code_prompt_model, messages)
         log(assistant_reply)
 
-        user_config = sys_config[username]
+        user_config = globals.sys_config[username]
         idx = int(user_config[Constant.USER_CFG_PROJ_MODE])
 
         work_path = globals.sys_setting[Constant.SET_WORK_PATH]

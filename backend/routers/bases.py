@@ -228,3 +228,31 @@ async def read_history_file(filename: str = Form(...),
         "markdownText": markdown_text,
         "codeText": code_text
     })
+
+
+@router.post("/functions")
+def get_all_functions_by_user_and_proj(
+        prj_id: str = Form(...),
+        current_user: models.User = Depends(auth.get_current_user)
+):
+    username = current_user.username
+    user_config = globals.sys_config[username]
+    idx = int(user_config[Constant.USER_CFG_PROJ_MODE])
+
+    work_path = globals.sys_setting[Constant.SET_WORK_PATH]
+    work_mode_path = globals.sys_setting[Constant.SET_WORK_MODE_PATH]
+    user_root_path = os.path.join(work_path, work_mode_path[idx], "public", "users", username)
+
+    log(user_root_path)
+
+    route_path = f"{user_root_path}/{prj_id}/route.json"
+
+    if not os.path.exists(route_path):
+        write_json_file(route_path, [])
+
+    route_js = read_json_file(route_path)
+
+    # 返回 JSON 响应
+    return JSONResponse(content={
+        "functions": route_js
+    })

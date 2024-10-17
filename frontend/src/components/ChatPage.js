@@ -23,6 +23,8 @@ import {
   FormControl,
   Chip,
 } from "@mui/material";
+
+import { DataGrid } from "@mui/x-data-grid";
 import { ThemeProvider, createTheme, styled } from "@mui/material/styles";
 import {
   Snackbar,
@@ -252,6 +254,9 @@ function ChatPage({ token, engineer, setToken }) {
 
   const [isEditingCurrentVersion, setIsEditingCurrentVersion] = useState(false);
 
+  const [functionData, setFunctionData] = useState([]);
+  const [functionDialogOpen, setFunctionDialogOpen] = useState(false);
+
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
   const [userName, setUserName] = useState("");
@@ -372,6 +377,42 @@ function ChatPage({ token, engineer, setToken }) {
       fetchThumbnails();
     }
   }, [reDoDialogOpen]);
+
+  const handleFetchFunctions = async () => {
+    try {
+      const formdata = FormData();
+      formData.append("prj_id", projectId);
+      const response = await api.post("/functions", formdata, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      // 為每個項目添加一個唯一的 id
+      const dataWithIds = response.data.map((item, index) => ({
+        ...item,
+        id: index + 1,
+      }));
+      setFunctionData(dataWithIds);
+      setFunctionDialogOpen(true);
+    } catch (error) {
+      handleApiError(error);
+    }
+  };
+
+  const handleFunctionSelect = (params) => {
+    const selectedFunction = params.row;
+    setAppName(selectedFunction.APP_NAME);
+    setAppDescription(selectedFunction.APP_DESC);
+    setFuncDescription(selectedFunction.FUNC_DESC);
+    setFuncFileName(selectedFunction.FUNC_FILE);
+    setFunctionDialogOpen(false);
+  };
+
+  const columns = [
+    { field: "id", headerName: "ID", width: 70 },
+    { field: "APP_NAME", headerName: "應用代號", width: 130 },
+    { field: "APP_DESC", headerName: "應用描述", width: 200 },
+    { field: "FUNC_DESC", headerName: "功能描述", width: 200 },
+    { field: "FUNC_FILE", headerName: "功能檔名", width: 150 },
+  ];
 
   const fetchVersionInfo = async () => {
     try {
@@ -1444,6 +1485,14 @@ function ChatPage({ token, engineer, setToken }) {
       >
         <DialogTitle>切換功能</DialogTitle>
         <DialogContent>
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={handleFetchFunctions}
+            sx={{ mt: 2 }}
+          >
+            選擇原有功能
+          </Button>
           <TextField
             label="應用代號"
             fullWidth
@@ -1478,6 +1527,29 @@ function ChatPage({ token, engineer, setToken }) {
             取消
           </Button>
           <Button onClick={handleSwitchFunction}>切換</Button>
+        </DialogActions>
+      </Dialog>
+      {/* Function Selection Dialog */}
+      <Dialog
+        open={functionDialogOpen}
+        onClose={() => setFunctionDialogOpen(false)}
+        maxWidth="lg"
+        fullWidth
+      >
+        <DialogTitle>選擇功能</DialogTitle>
+        <DialogContent>
+          <div style={{ height: 400, width: "100%" }}>
+            <DataGrid
+              rows={functionData}
+              columns={columns}
+              pageSize={5}
+              rowsPerPageOptions={[5]}
+              onRowDoubleClick={handleFunctionSelect}
+            />
+          </div>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setFunctionDialogOpen(false)}>關閉</Button>
         </DialogActions>
       </Dialog>
       {/* Image Dialog */}
