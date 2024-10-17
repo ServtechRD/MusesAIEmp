@@ -229,15 +229,15 @@ function ChatPage({ token, engineer, setToken }) {
   const [selectedFilename, setSelectedFilename] = useState(null);
 
   // Project data
-  const [projectId, setProjectId] = useState("");
-  const [projectDescription, setProjectDescription] = useState("");
+  const [projectId, setProjectId] = useState("prj01");
+  const [projectDescription, setProjectDescription] = useState("預設專案");
   const [projectMode, setProjectMode] = useState("Basic");
 
   // Feature data
-  const [appName, setAppName] = useState("");
-  const [appDescription, setAppDescription] = useState("");
-  const [funcDescription, setFuncDescription] = useState("");
-  const [funcFileName, setFuncFileName] = useState("");
+  const [appName, setAppName] = useState("01_Report");
+  const [appDescription, setAppDescription] = useState("報表");
+  const [funcDescription, setFuncDescription] = useState("預設子報表");
+  const [funcFileName, setFuncFileName] = useState("sub_report1.html");
 
   const [currentProject, setCurrentProject] = useState("");
   const [projects, setProjects] = useState([
@@ -386,7 +386,7 @@ function ChatPage({ token, engineer, setToken }) {
         headers: { Authorization: `Bearer ${token}` },
       });
       // 為每個項目添加一個唯一的 id
-      const dataWithIds = response.data.map((item, index) => ({
+      const dataWithIds = response.data.functions.map((item, index) => ({
         ...item,
         id: index + 1,
       }));
