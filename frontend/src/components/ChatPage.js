@@ -929,6 +929,7 @@ function ChatPage({ token, engineer, setToken }) {
       navigator.clipboard
         .writeText(code)
         .then(() => {
+          console.log("copy new");
           showMsg(true, "程式碼已成功複製到剪貼板");
         })
         .catch((err) => {
@@ -944,8 +945,9 @@ function ChatPage({ token, engineer, setToken }) {
       textArea.select();
       try {
         const successful = document.execCommand("copy");
+        console.log(successful);
         if (successful) {
-          showMsg(true, "程式碼已成功複製到剪貼板");
+          showMsg(true, "程式碼已複製到剪貼板");
         } else {
           showMsg(false, "複製失敗，請手動複製");
         }
