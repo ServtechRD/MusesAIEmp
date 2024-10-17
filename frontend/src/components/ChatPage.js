@@ -53,6 +53,7 @@ import {
   NavigateNext as NavigateNextIcon,
   Edit as EditIcon,
   CheckCircle as CheckCircleIcon,
+  HelpOutline as HelpOutlineIcon,
 } from "@mui/icons-material";
 
 import { Light as SyntaxHighlighter } from "react-syntax-highlighter";
@@ -257,6 +258,8 @@ function ChatPage({ token, engineer, setToken }) {
   const [functionData, setFunctionData] = useState([]);
   const [functionDialogOpen, setFunctionDialogOpen] = useState(false);
 
+  const [helpDialogOpen, setHelpDialogOpen] = useState(false);
+
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
   const [userName, setUserName] = useState("");
@@ -377,6 +380,14 @@ function ChatPage({ token, engineer, setToken }) {
       fetchThumbnails();
     }
   }, [reDoDialogOpen]);
+
+  const handleOpenHelpDialog = () => {
+    setHelpDialogOpen(true);
+  };
+
+  const handleCloseHelpDialog = () => {
+    setHelpDialogOpen(false);
+  };
 
   const handleFetchFunctions = async () => {
     try {
@@ -1154,6 +1165,13 @@ function ChatPage({ token, engineer, setToken }) {
             <IconButton color="inherit" onClick={handleReload} size="small">
               <SyncIcon fontSize="small" />
             </IconButton>
+            <IconButton
+              color="inherit"
+              onClick={handleOpenHelpDialog}
+              size="small"
+            >
+              <HelpOutlineIcon fontSize="small" />
+            </IconButton>
 
             <IconButton color="inherit" onClick={() => setDarkMode(!darkMode)}>
               {darkMode ? <Brightness7Icon /> : <Brightness4Icon />}
@@ -1515,10 +1533,11 @@ function ChatPage({ token, engineer, setToken }) {
           />
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleFetchFunctions}>選擇原有功能</Button>
           <Button onClick={() => setSwitchFunctionDialogOpen(false)}>
             取消
           </Button>
+          <Button onClick={handleFetchFunctions}>選擇原有功能</Button>
+
           <Button onClick={handleSwitchFunction}>切換</Button>
         </DialogActions>
       </Dialog>
@@ -1690,6 +1709,43 @@ function ChatPage({ token, engineer, setToken }) {
             {selectedClip && renderClipContent(selectedClip)}
           </Box>
         </DialogContent>
+      </Dialog>
+      <Dialog
+        open={helpDialogOpen}
+        onClose={handleCloseHelpDialog}
+        maxWidth="md"
+        fullWidth
+      >
+        <DialogTitle>功能說明</DialogTitle>
+        <DialogContent>
+          <Typography variant="body1" component="div">
+            <ol>
+              <li>
+                <strong>建立專案:</strong> 建立一個新專案來放程式
+              </li>
+              <li>
+                <strong>切換專案:</strong> 選擇原有的專案來放程式
+              </li>
+              <li>
+                <strong>切換功能:</strong> 建立或選擇已有的功能, 放生成的程式
+              </li>
+              <li>
+                <strong>再做一次:</strong>{" "}
+                從歷史的圖庫中選擇圖片,重新生成一次或以該程式為基礎修改
+              </li>
+              <li>
+                <strong>修改目前版本:</strong> 按下(出現勾) ,
+                依輸入框內容修改目前的程式
+              </li>
+              <li>
+                <strong>上傳圖片:</strong> 依據圖片自動生成程式
+              </li>
+            </ol>
+          </Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCloseHelpDialog}>關閉</Button>
+        </DialogActions>
       </Dialog>
       <Snackbar
         anchorOrigin={{
