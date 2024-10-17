@@ -185,12 +185,12 @@ const StyledToggleButton = styled(ToggleButton)(({ theme }) => ({
     backgroundColor: theme.palette.primary.main,
     color: theme.palette.primary.contrastText,
     "&:hover": {
-      backgroundColor: theme.palette.primary.dark,
+      backgroundColor: theme.palette.primary.main,
     },
   },
   "&:not(.Mui-selected)": {
     borderColor: theme.palette.primary.main,
-    color: theme.palette.primary.main,
+    color: theme.palette.primary.dark,
   },
 }));
 
@@ -346,6 +346,7 @@ function ChatPage({ token, engineer, setToken }) {
           response.data.status.startsWith("@@END@@") ||
           response.data.status.startsWith("錯誤")
         ) {
+          setTaskId(null);
           clearInterval(intervalId);
           fetchVersionInfo();
         }
@@ -359,6 +360,7 @@ function ChatPage({ token, engineer, setToken }) {
 
   useEffect(() => {
     getInfo();
+    fetchVersionInfo();
   }, [assistantName, configStatus, token]);
 
   useEffect(() => {
@@ -674,6 +676,9 @@ function ChatPage({ token, engineer, setToken }) {
 
   const handleSend = async () => {
     if (!input.trim()) return;
+    if (taskId != null) {
+      showMsg(false, "尚有命令未完成, 請等待");
+    }
 
     setMessages([...messages, { sender: "user", text: input, name: userName }]);
 
