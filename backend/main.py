@@ -384,6 +384,8 @@ def process_code_task(
             'content': f'請以下面程式為基礎進行修改:{code_base}'
         })
 
+    log(messages)
+
     assistant_reply = generate_program(file_location, llm_code_prompt_model, llm_mode, messages, globals.sys_config,
                                        sys_setting, task_id, username, db)
 
