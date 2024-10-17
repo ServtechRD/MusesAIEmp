@@ -635,6 +635,8 @@ function ChatPage({ token, engineer, setToken }) {
         } else if (mode == 2) {
           api_name = "/redo/reseeandwrite";
         }
+      } else if (isEditingCurrentVersion) {
+        api_name = "/redo/editcode";
       } else {
         api_name = "/message";
         if (images instanceof File) {
