@@ -850,7 +850,7 @@ def generate_program(file_location, llm_code_prompt_model, llm_mode, messages, s
         version_service.upsert_app_function_version(db, username, prj_id, app_name, func_file, func_ver)
 
         # 更新路由
-        print("開始更新路由")
+        log("開始更新路由git ")
         globals.tasks[task_id] = "更新路由"
 
         route_path = f"{user_root_path}/{prj_id}/route.json"
