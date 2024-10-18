@@ -844,7 +844,7 @@ function ChatPage({ token, engineer, setToken }) {
       ]);
 
       const rep1 = await handleApiCall(input1, null);
-      console.log("Swtich project id:", rep1);
+      console.log("Swtich project id ->:", rep1);
 
       const rep2 = await handleApiCall(input2, null);
       console.log("Swtich project desc:", rep2);
