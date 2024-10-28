@@ -1,0 +1,69 @@
+{
+  "EMP_ID": "B001",
+  "EMP_NAME": "Bella",
+  "EMP_IMAGE": "B001.png",
+  "EMP_SKILL": "Database",
+  "EMP_DESC": "DB工程師",
+  "EMP_HELLO": "你好,我是DB工程師, 有什麼可以協助?",
+  "EMP_HELP": "提供Web UI 畫面, 我可以撰寫對應的DB SQL",
+  "WORK_MODE": "1",
+  "LLM_ENGINE": "openai",
+  "LLM_PROMPT": {
+    "GENERAL": {
+      "STATUS": "分析中",
+      "MODEL": "gpt-3.5-turbo",
+      "MESSAGES": [
+        {
+          "role": "system",
+          "content": "你是一個智能助手，帮助用户回答问题。"
+        },
+        {
+          "role": "user",
+          "content": "%USER_INPUT%"
+        }
+      ]
+    },
+    "IMAGE": {
+      "STATUS": "圖片分析中",
+      "MODEL": "gpt-4o",
+      "MESSAGES": [
+        {
+          "role": "system",
+          "content": "You are an image analyst."
+        },
+        {
+          "role": "user",
+          "content": [
+            {
+              "type": "text",
+              "text": "Please analyze the Web system UI image I have uploaded. This interface contains all input fields and query results. Please describe in detail the UI elements, functions, and user interactions, and convert it into a comprehensive development specification including page layout, function description, user flow, and validation rules. Additionally, please organize the sample data displayed on the interface into a separate data set. All field display names and input names are presented in Traditional Chinese"
+            },
+            {
+              "type": "text",
+              "text": "%USER_INPUT%"
+            },
+            {
+              "type": "image_url",
+              "image_url": {
+                "url": "data:image/%FILE_TYPE%;base64,%ENCODE_IMAGE%"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "CODE": {
+      "MODEL": "gpt-3.5-turbo",
+      "MESSAGES": [
+        {
+          "role": "system",
+          "content": "你是一個資深的資料庫工程師, 擅長Database, SQL , 可以根據畫面描述, 生成完整的SQL。"
+        },
+        {
+          "role": "user",
+          "content": "根据描述的内容，生成一个完整的 MySQL SQL 脚本，脚本的目的是：\n\n创建数据库和表结构。\n插入数据（如果图片中包含示例数据）。\n使用合理的字段名、数据类型和约束（如主键、外键、索引等），确保数据库的结构和数据一致性。\n输出的 SQL 语句需要包括：\n\n数据库创建（CREATE DATABASE）\n表结构定义（CREATE TABLE）\n字段及类型的选择，基于图片内容\n数据插入语句（INSERT INTO），如果图片提供了数据。\n注意：脚本应是完整且可以直接在 MySQL 环境中运行的标准 SQL 代码。%USER_INPUT%"
+        }
+      ]
+    }
+  }
+}
